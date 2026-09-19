@@ -1,6 +1,5 @@
 import { CustomizationManager } from '../utils/CustomizationManager';
 import { localize } from '../utils/LocalizationService';
-import { navigateToDashboardPath } from '../utils/Navigation';
 
 export interface BatteryInfo {
   entityId: string;
@@ -80,7 +79,6 @@ export class BatterySection {
 
     const card = document.createElement('div');
     card.className = 'apple-battery-card';
-    card.addEventListener('click', () => navigateToDashboardPath('batteries'));
 
     const header = document.createElement('div');
     header.className = 'battery-header';
@@ -174,7 +172,6 @@ export class BatterySection {
         padding: 16px 20px;
         margin-top: 20px;
         color: white;
-        cursor: pointer;
         position: relative;
         overflow: hidden;
         background: var(--apple-card-bg-inactive, rgba(0, 0, 0, 0.3));
@@ -185,11 +182,8 @@ export class BatterySection {
         max-width: 100%;
         box-sizing: border-box;
         font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', Roboto, sans-serif;
-        transition: transform 0.2s ease;
-        -webkit-tap-highlight-color: transparent;
       }
-      .apple-battery-card:active { transform: scale(0.99); }
-      .apple-battery-card.battery-page-list { margin-top: 6px; cursor: default; }
+      .apple-battery-card.battery-page-list { margin-top: 6px; }
 
       .battery-header {
         display: flex;

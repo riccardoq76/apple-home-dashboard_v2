@@ -112,7 +112,7 @@ async function generateLovelaceDashboard(
   });
 
   // Group view configurations - one for each device group (exclude OTHER group as it doesn't have its own page)
-  const deviceGroups = (Object.keys(DashboardConfig.GROUP_STYLES) as DeviceGroup[]).filter(group => group !== DeviceGroup.OTHER && group !== DeviceGroup.BATTERY);
+  const deviceGroups = (Object.keys(DashboardConfig.GROUP_STYLES) as DeviceGroup[]).filter(group => group !== DeviceGroup.OTHER);
   
   for (const group of deviceGroups) {
     const groupStyle = DashboardConfig.getGroupStyle(group);
@@ -160,20 +160,6 @@ async function generateLovelaceDashboard(
       type: 'custom:apple-home-view',
       title: localize('pages.cameras'),
       pageType: 'cameras',
-      customizations: customizations
-    }]
-  });
-
-  views.push({
-    title: localize('pages.batteries'),
-    path: 'batteries',
-    icon: 'mdi:battery-alert-variant-outline',
-    panel: true,
-    subview: true,
-    cards: [{
-      type: 'custom:apple-home-view',
-      title: localize('pages.batteries'),
-      pageType: 'batteries',
       customizations: customizations
     }]
   });

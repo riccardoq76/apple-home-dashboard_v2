@@ -1,5 +1,5 @@
 /**
- * Navigate to a sub-page of the current dashboard (e.g. 'batteries' -> /apple-home/batteries)
+ * Navigate to a sub-page of the current dashboard (e.g. 'calendar' -> /apple-home/calendar)
  * using Home Assistant's location-changed event.
  */
 export function navigateToDashboardPath(path: string): void {

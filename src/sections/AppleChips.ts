@@ -144,8 +144,7 @@ export class AppleChips {
       battery: {
         group: DeviceGroup.BATTERY,
         enabled: true,
-        show_when_zero: false,
-        navigation_path: 'batteries' // reuses the Batteries page, no group view of its own
+        show_when_zero: false
       }
     };
   }

@@ -14,7 +14,6 @@ import { RoomPage } from '../pages/RoomPage';
 import { ScenesPage } from '../pages/ScenesPage';
 import { CamerasPage } from '../pages/CamerasPage';
 import { SectionPage } from '../pages/SectionPage';
-import { BatterySection } from '../sections/BatterySection';
 import { CalendarSection } from '../sections/CalendarSection';
 import { DeviceGroup } from '../config/DashboardConfig';
 import { RegistrySubscriptionManager, RegistryChangeCallback, RegistryChangeEvent } from '../utils/RegistrySubscriptionManager';
@@ -76,7 +75,6 @@ export class AppleHomeView extends HTMLElement {
   private roomPage: RoomPage;
   private scenesPage: ScenesPage;
   private camerasPage: CamerasPage;
-  private batteriesPage: SectionPage;
   private calendarPage: SectionPage;
 
   // Managers
@@ -118,9 +116,7 @@ export class AppleHomeView extends HTMLElement {
     this.roomPage = new RoomPage();
     this.scenesPage = new ScenesPage();
     this.camerasPage = new CamerasPage();
-    const batterySection = new BatterySection(this.customizationManager);
     const calendarSection = new CalendarSection(this.customizationManager);
-    this.batteriesPage = new SectionPage('pages.batteries', (container, hass) => batterySection.render(container, hass, 'page'));
     this.calendarPage = new SectionPage('pages.calendar', (container, hass) => calendarSection.render(container, hass, 'page'));
     
     // Set up header manager dependencies
@@ -557,7 +553,7 @@ export class AppleHomeView extends HTMLElement {
     
     // Determine page type for header configuration
     const isGroupPage = this.config.pageType === 'group';
-    const isSpecialPage = ['room', 'scenes', 'cameras', 'batteries', 'calendar'].includes(this.config.pageType);
+    const isSpecialPage = ['room', 'scenes', 'cameras', 'calendar'].includes(this.config.pageType);
     
     // Always ensure Apple Home header exists and is properly configured
     
@@ -589,9 +585,6 @@ export class AppleHomeView extends HTMLElement {
       } else if (this.config.pageType === 'cameras') {
         pageTitle = localize('pages.cameras');
         showBackButton = true;
-      } else if (this.config.pageType === 'batteries') {
-        pageTitle = localize('pages.batteries');
-        showBackButton = true;
       } else if (this.config.pageType === 'calendar') {
         pageTitle = localize('pages.calendar');
         showBackButton = true;
@@ -618,7 +611,7 @@ export class AppleHomeView extends HTMLElement {
     
     // Only set chips to header if this is a group page
     const isGroupPage = this.config?.pageType === 'group';
-    const isSpecialPage = ['room', 'scenes', 'cameras', 'batteries', 'calendar'].includes(this.config?.pageType);
+    const isSpecialPage = ['room', 'scenes', 'cameras', 'calendar'].includes(this.config?.pageType);
     
     // Hide chips completely for special pages (room, scenes, cameras)
     if (isSpecialPage) {
@@ -1858,7 +1851,6 @@ export class AppleHomeView extends HTMLElement {
       case 'room': return this.roomPage;
       case 'scenes': return this.scenesPage;
       case 'cameras': return this.camerasPage;
-      case 'batteries': return this.batteriesPage;
       case 'calendar': return this.calendarPage;
       default: return this.homePage;
     }
@@ -2198,8 +2190,6 @@ export class AppleHomeView extends HTMLElement {
           this._hass,
           (entityId: string, areaId: string) => this.toggleTallCard(entityId, areaId)
         );
-      } else if (this.config?.pageType === 'batteries') {
-        await this.batteriesPage.render(this.content, this._hass);
       } else if (this.config?.pageType === 'calendar') {
         await this.calendarPage.render(this.content, this._hass);
       } else {
@@ -2334,7 +2324,7 @@ export class AppleHomeView extends HTMLElement {
     // Configure chips for current page type
     if (this.chipsElement && this.chipsElement.isConfigured()) {
       const isGroupPage = this.config?.pageType === 'group';
-      const isSpecialPage = ['room', 'scenes', 'cameras', 'batteries', 'calendar'].includes(this.config?.pageType);
+      const isSpecialPage = ['room', 'scenes', 'cameras', 'calendar'].includes(this.config?.pageType);
       
       if (isGroupPage && this.config?.deviceGroup) {
         // Group page - set active group for highlighting using deviceGroup
