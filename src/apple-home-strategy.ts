@@ -164,6 +164,34 @@ async function generateLovelaceDashboard(
     }]
   });
 
+  views.push({
+    title: localize('pages.batteries'),
+    path: 'batteries',
+    icon: 'mdi:battery-alert-variant-outline',
+    panel: true,
+    subview: true,
+    cards: [{
+      type: 'custom:apple-home-view',
+      title: localize('pages.batteries'),
+      pageType: 'batteries',
+      customizations: customizations
+    }]
+  });
+
+  views.push({
+    title: localize('pages.calendar'),
+    path: 'calendar',
+    icon: 'mdi:calendar-month',
+    panel: true,
+    subview: true,
+    cards: [{
+      type: 'custom:apple-home-view',
+      title: localize('pages.calendar'),
+      pageType: 'calendar',
+      customizations: customizations
+    }]
+  });
+
   // Add room views for each area
   try {
     const areas = await hass.callWS({ type: 'config/area_registry/list' });

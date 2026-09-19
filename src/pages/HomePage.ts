@@ -7,6 +7,8 @@ import { AreaSection } from '../sections/AreaSection';
 import { FavoritesSection } from '../sections/FavoritesSection';
 import { WeatherSection } from '../sections/WeatherSection';
 import { EnergySection } from '../sections/EnergySection';
+import { BatterySection } from '../sections/BatterySection';
+import { CalendarSection } from '../sections/CalendarSection';
 import { Entity, Area } from '../types/types';
 
 export class HomePage {
@@ -17,6 +19,8 @@ export class HomePage {
   private favoritesSection?: FavoritesSection;
   private weatherSection?: WeatherSection;
   private energySection?: EnergySection;
+  private batterySection?: BatterySection;
+  private calendarSection?: CalendarSection;
   private _hass?: any;
   private _title?: string;
   private _config?: any;
@@ -49,6 +53,8 @@ export class HomePage {
       this.favoritesSection = new FavoritesSection(this.customizationManager);
       this.weatherSection = new WeatherSection(this.customizationManager);
       this.energySection = new EnergySection(this.customizationManager);
+      this.batterySection = new BatterySection(this.customizationManager);
+      this.calendarSection = new CalendarSection(this.customizationManager);
     }
   }
 
@@ -189,7 +195,7 @@ export class HomePage {
     hass: any,
     onTallToggle?: (entityId: string, areaId: string) => void | Promise<void | boolean>
   ): Promise<void> {
-    if (!this.customizationManager || !this.scenesSection || !this.camerasSection || !this.areaSection || !this.favoritesSection || !this.weatherSection || !this.energySection) {
+    if (!this.customizationManager || !this.scenesSection || !this.camerasSection || !this.areaSection || !this.favoritesSection || !this.weatherSection || !this.energySection || !this.batterySection || !this.calendarSection) {
       throw new Error('Required sections not initialized');
     }
     
@@ -215,6 +221,21 @@ export class HomePage {
     if (hasEnergy) {
       availableSections.set('energy_section', async (target?: HTMLElement) => {
         await this.energySection!.render(target || container, hass);
+      });
+    }
+
+    // Add calendar section if at least one calendar is selected in settings
+    if (await this.calendarSection.hasCalendars(hass)) {
+      availableSections.set('calendar_section', async (target?: HTMLElement) => {
+        await this.calendarSection!.render(target || container, hass, 'home');
+      });
+    }
+
+    // Add battery section if enabled in settings and battery entities exist
+    const showBattery = await this.customizationManager?.getShowBattery();
+    if (showBattery && BatterySection.hasBatteries(hass)) {
+      availableSections.set('battery_section', async (target?: HTMLElement) => {
+        await this.batterySection!.render(target || container, hass, 'home');
       });
     }
 
@@ -274,6 +295,10 @@ export class HomePage {
         if (b === 'weather_section') return 1;
         if (a === 'energy_section') return -1;
         if (b === 'energy_section') return 1;
+        if (a === 'calendar_section') return -1;
+        if (b === 'calendar_section') return 1;
+        if (a === 'battery_section') return -1;
+        if (b === 'battery_section') return 1;
         if (a === 'cameras_section') return -1;
         if (b === 'cameras_section') return 1;
         if (a === 'scenes_section') return -1;

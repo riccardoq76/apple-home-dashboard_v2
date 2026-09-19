@@ -10,7 +10,7 @@
     "unknown": "Unknown",
     "unavailable": "Unavailable",
     "heating": "Heat to",
-    "cooling": "Cool to", 
+    "cooling": "Cool to",
     "auto": "Auto",
     "heat_cool": "Auto",
     "heat": "Heat to",
@@ -124,7 +124,9 @@
     "scenes": "Scenes",
     "cameras": "Cameras",
     "weather": "Weather",
-    "energy": "Energy"
+    "energy": "Energy",
+    "batteries": "Batteries",
+    "calendar": "Calendar"
   },
   "ui_actions": {
     "done": "Done",
@@ -147,11 +149,13 @@
     "scenes": "Scenes",
     "cameras": "Cameras",
     "default_room": "Default Room",
-    "my_home": "My Home"
+    "my_home": "My Home",
+    "batteries": "Batteries",
+    "calendar": "Calendar"
   },
   "edit": {
     "edit_home_view": "Edit Home View",
-    "edit_scenes_view": "Edit Scenes View", 
+    "edit_scenes_view": "Edit Scenes View",
     "edit_cameras_view": "Edit Cameras View",
     "edit_room_view": "Edit Room View",
     "make_tall": "Make Tall",
@@ -160,7 +164,7 @@
   "toggles": {
     "hide_header": "Hide Header",
     "show_header": "Show Header",
-    "hide_sidebar": "Hide Sidebar", 
+    "hide_sidebar": "Hide Sidebar",
     "show_sidebar": "Show Sidebar",
     "hide_ha_header": "Hide Home Assistant Header",
     "show_ha_header": "Show Home Assistant Header",
@@ -178,7 +182,7 @@
   },
   "covers": {
     "all_closed": "All Closed",
-    "open": "Open", 
+    "open": "Open",
     "all_open": "All Open"
   },
   "contact": {
@@ -254,7 +258,7 @@
     "favorite_accessories_description": "Add accessories to show in a dedicated Favorites section on the home screen",
     "exclude_from_home": "Exclude from Home Screen",
     "exclude_from_home_description": "Accessories that will be hidden from the home screen but visible on other pages",
-    "exclude_from_dashboard": "Exclude from Dashboard", 
+    "exclude_from_dashboard": "Exclude from Dashboard",
     "exclude_from_dashboard_description": "Accessories that will be completely hidden from all pages",
     "show_switches_cards": "Show Switches Cards",
     "include_specific_switches": "Include Specific Switches",
@@ -276,7 +280,13 @@
     "show_cost": "Show Cost",
     "show_cost_description": "Show cost figures on the energy dashboard when available",
     "show_gas": "Show Gas",
-    "show_gas_description": "Show gas consumption on the home screen and energy dashboard when configured"
+    "show_gas_description": "Show gas consumption on the home screen and energy dashboard when configured",
+    "show_battery": "Show Batteries Section",
+    "battery_threshold": "Low battery threshold",
+    "show_battery_description": "Show a card on the home screen with devices whose battery is low, and a page with all batteries",
+    "calendar_entities": "Calendars",
+    "calendar_entities_description": "Choose the calendars to show in the Calendar section on the home screen",
+    "no_calendars": "No calendar entities found"
   },
   "status_messages": {
     "unavailable": "Unavailable",
@@ -305,5 +315,20 @@
       "windy-variant": "Windy",
       "exceptional": "Exceptional"
     }
+  },
+  "batteries": {
+    "low": "low",
+    "all_ok": "All batteries OK",
+    "low_group": "Low",
+    "ok_group": "Charged",
+    "low_short": "Low",
+    "ok_short": "OK"
+  },
+  "calendar": {
+    "no_title": "(No title)",
+    "no_events": "No upcoming events",
+    "today": "Today",
+    "tomorrow": "Tomorrow",
+    "all_day": "All day"
   }
 }
