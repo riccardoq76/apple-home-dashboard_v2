@@ -91,6 +91,9 @@ const put = (s) => { states[s.entity_id] = s; };
   st('sensor.motion_battery', '100', { device_class: 'battery', unit_of_measurement: '%' }),
   st('binary_sensor.smoke_battery_low', 'on', { device_class: 'battery' }),
   st('binary_sensor.leak_battery_low', 'off', { device_class: 'battery' }),
+  // energy: the grid meter is recorded in Wh, its power sensor in kW (as on many real meters)
+  st('sensor.grid_import', '15000', { device_class: 'energy', state_class: 'total_increasing', unit_of_measurement: 'Wh' }),
+  st('sensor.grid_power', '1.5', { device_class: 'power', state_class: 'measurement', unit_of_measurement: 'kW' }),
   // calendars
   st('calendar.famiglia', 'on', { message: 'Cena da Marco', start_time: iso(addH(3)), end_time: iso(addH(5)) }),
   st('calendar.lavoro', 'off', { message: 'Riunione', start_time: iso(addH(26)), end_time: iso(addH(27)) }),
@@ -108,8 +111,9 @@ const areaOf = {
   'lock.front_door': 'living_room', 'binary_sensor.front_door': 'living_room',
 };
 const entities = {};
+const deviceOf = { 'sensor.grid_import': 'meter', 'sensor.grid_power': 'meter' };
 const entityRegistry = Object.keys(states).map((id) => {
-  const e = { entity_id: id, area_id: areaOf[id] || null, device_id: null, hidden_by: null, disabled_by: null, entity_category: null, platform: 'mock' };
+  const e = { entity_id: id, area_id: areaOf[id] || null, device_id: deviceOf[id] || null, hidden_by: null, disabled_by: null, entity_category: null, platform: 'mock' };
   entities[id] = e;
   return e;
 });
@@ -156,7 +160,22 @@ const hass = {
       case 'lovelace/config/save': customizations = msg.config.customizations; console.log('saved', customizations); return null;
       case 'calendar/event/list': return calendarEvents[msg.entity_id] || [];
       case 'weather/get_forecasts': return { forecast: [] };
-      case 'energy/get_prefs': throw new Error('not_found');
+      case 'energy/get_prefs':
+        return { energy_sources: [{ type: 'grid', flow_from: [{ stat_energy_from: 'sensor.grid_import' }], flow_to: [] }], device_consumption: [] };
+      case 'recorder/statistics_during_period': {
+        // Mimic the recorder: statistics are in the recorded unit (Wh) unless `units.energy` asks for kWh.
+        console.log('statistics request units:', JSON.stringify(msg.units || null));
+        const factor = msg.units?.energy === 'kWh' ? 1 / 1000 : 1;
+        const step = msg.period === 'day' ? 24 : 1;
+        const out = {};
+        for (const id of msg.statistic_ids) {
+          out[id] = [];
+          for (let t = new Date(msg.start_time).getTime(); t < new Date(msg.end_time).getTime(); t += step * 3600e3) {
+            out[id].push({ start: new Date(t).toISOString(), end: new Date(t + step * 3600e3).toISOString(), change: 500 * step * factor });
+          }
+        }
+        return out;
+      }
       default: console.warn('unmocked WS', msg); return null;
     }
   },
