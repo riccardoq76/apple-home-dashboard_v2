@@ -179,7 +179,21 @@ export class AppleChips {
     }
   }
 
-  private static readonly RELEVANT_DOMAINS = new Set(['light', 'switch', 'climate', 'alarm_control_panel', 'lock', 'media_player', 'water_heater']);
+  private static readonly RELEVANT_DOMAINS = new Set(['light', 'switch', 'climate', 'alarm_control_panel', 'lock', 'media_player', 'water_heater', 'cover']);
+  private static readonly OPENING_DEVICE_CLASSES = new Set(['door', 'window', 'opening', 'garage_door']);
+
+  /** True for door/window/opening sensors and garage doors/gates that are currently open. */
+  private static isOpenOpening(entity: EntityState): boolean {
+    const domain = entity.entity_id.split('.')[0];
+    if (domain === 'binary_sensor') {
+      return AppleChips.OPENING_DEVICE_CLASSES.has(entity.attributes?.device_class as string) && entity.state === 'on';
+    }
+    if (domain === 'cover') {
+      return DashboardConfig.isGarageDoorOrGate(entity.entity_id, entity.attributes) &&
+        (entity.state === 'open' || entity.state === 'opening' || entity.state === 'closing');
+    }
+    return false;
+  }
   private static readonly WATER_KEYWORDS = ['water', 'leak', 'flood'];
 
   private hasRelevantEntityChanges(newHass: any): boolean {
@@ -197,7 +211,9 @@ export class AppleChips {
         const isWaterEntity = AppleChips.WATER_KEYWORDS.some(kw => entityId.includes(kw)) ||
                              newHass.states[entityId]?.attributes?.device_class === 'moisture';
         const isPowerEntity = domain === 'sensor' && newHass.states[entityId]?.attributes?.device_class === 'power';
-        if (!isWaterEntity && !isPowerEntity) continue;
+        const isOpeningEntity = domain === 'binary_sensor' &&
+          AppleChips.OPENING_DEVICE_CLASSES.has(newHass.states[entityId]?.attributes?.device_class);
+        if (!isWaterEntity && !isPowerEntity && !isOpeningEntity) continue;
       }
 
       const oldEntity = this._hass.states[entityId];
@@ -873,18 +889,15 @@ export class AppleChips {
         const alarmEntities = entities.filter(entity => entity.entity_id.startsWith('alarm_control_panel.'));
         const lockEntities = entities.filter(entity => entity.entity_id.startsWith('lock.'));
         
-        const armed = alarmEntities.filter(entity => entity.state === 'armed_away' || entity.state === 'armed_home');
+        const armed = alarmEntities.filter(entity => entity.state === 'armed_away' || entity.state === 'armed_home' || entity.state === 'armed_night' || entity.state === 'armed_vacation' || entity.state === 'armed_custom_bypass');
         const unlocked = lockEntities.filter(entity => entity.state === 'unlocked');
-        
-        if (armed.length > 0 && unlocked.length > 0) {
-          statusText = `${localize('status.armed')}, ${unlocked.length} ${localize('status.unlocked')}`;
-        } else if (armed.length > 0) {
-          statusText = localize('status.armed');
-        } else if (unlocked.length > 0) {
-          statusText = `${unlocked.length} ${localize('status.unlocked')}`;
-        } else {
-          statusText = localize('chip_status.secure');
-        }
+        const openings = entities.filter(entity => AppleChips.isOpenOpening(entity));
+
+        const securityParts: string[] = [];
+        if (armed.length > 0) securityParts.push(localize('status.armed'));
+        if (openings.length > 0) securityParts.push(`${openings.length} ${localize('status.open')}`);
+        if (unlocked.length > 0) securityParts.push(`${unlocked.length} ${localize('status.unlocked')}`);
+        statusText = securityParts.length > 0 ? securityParts.join(', ') : localize('chip_status.secure');
         break;
         
       case DeviceGroup.MEDIA:
