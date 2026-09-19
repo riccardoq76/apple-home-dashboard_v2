@@ -73,7 +73,8 @@
     "media": "Speakers & TVs",
     "vacuum": "Vacuums",
     "energy": "Energy",
-    "other": "Other"
+    "other": "Other",
+    "battery": "Batteries"
   },
   "chip_status": {
     "secure": "Secure",

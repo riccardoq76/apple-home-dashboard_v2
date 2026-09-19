@@ -73,7 +73,8 @@
     "media": "Altoparlanti e TV",
     "vacuum": "Aspirapolvere",
     "energy": "Energia",
-    "other": "Altri"
+    "other": "Altri",
+    "battery": "Batterie"
   },
   "chip_status": {
     "secure": "Sicuro",

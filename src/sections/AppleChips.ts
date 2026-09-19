@@ -3,6 +3,7 @@ import { EntityState } from '../types/types';
 import { localize } from '../utils/LocalizationService';
 import { RTLHelper } from '../utils/RTLHelper';
 import { EnergySection } from './EnergySection';
+import { BatterySection } from './BatterySection';
 
 export interface ChipConfig {
   group: DeviceGroup;
@@ -18,6 +19,7 @@ export interface ChipsConfig {
   media?: ChipConfig;
   water?: ChipConfig;
   energy?: ChipConfig;
+  battery?: ChipConfig;
 }
 
 export interface ChipData {
@@ -138,6 +140,12 @@ export class AppleChips {
         group: DeviceGroup.ENERGY,
         enabled: true,
         show_when_zero: false
+      },
+      battery: {
+        group: DeviceGroup.BATTERY,
+        enabled: true,
+        show_when_zero: false,
+        navigation_path: 'batteries' // reuses the Batteries page, no group view of its own
       }
     };
   }
@@ -211,9 +219,10 @@ export class AppleChips {
         const isWaterEntity = AppleChips.WATER_KEYWORDS.some(kw => entityId.includes(kw)) ||
                              newHass.states[entityId]?.attributes?.device_class === 'moisture';
         const isPowerEntity = domain === 'sensor' && newHass.states[entityId]?.attributes?.device_class === 'power';
-        const isOpeningEntity = domain === 'binary_sensor' &&
-          AppleChips.OPENING_DEVICE_CLASSES.has(newHass.states[entityId]?.attributes?.device_class);
-        if (!isWaterEntity && !isPowerEntity && !isOpeningEntity) continue;
+        const deviceClass = newHass.states[entityId]?.attributes?.device_class;
+        const isOpeningEntity = domain === 'binary_sensor' && AppleChips.OPENING_DEVICE_CLASSES.has(deviceClass);
+        const isBatteryEntity = deviceClass === 'battery';
+        if (!isWaterEntity && !isPowerEntity && !isOpeningEntity && !isBatteryEntity) continue;
       }
 
       const oldEntity = this._hass.states[entityId];
@@ -366,7 +375,8 @@ export class AppleChips {
       { group: DeviceGroup.SECURITY, config: this.config.security },
       { group: DeviceGroup.MEDIA, config: this.config.media },
       { group: DeviceGroup.WATER, config: this.config.water },
-      { group: DeviceGroup.ENERGY, config: this.config.energy }
+      { group: DeviceGroup.ENERGY, config: this.config.energy },
+      { group: DeviceGroup.BATTERY, config: this.config.battery }
     ];
 
     for (const { group, config } of deviceGroups) {
@@ -414,10 +424,22 @@ export class AppleChips {
       if (group === DeviceGroup.ENERGY) {
         shouldShow = EnergySection.hasEnergySensors(this._hass);
       }
+
+      // Battery chip: shown whenever battery entities exist (like the Energy chip); the Home card is opt-in via settings
+      let batteryStatusText: string | undefined;
+      if (group === DeviceGroup.BATTERY) {
+        const home = this.customizationManager?.getCustomization('home') || {};
+        const threshold = typeof home.battery_threshold === 'number' ? home.battery_threshold : 20;
+        const batteries = BatterySection.getBatteries(this._hass, threshold);
+        shouldShow = batteries.length > 0;
+        const lowCount = batteries.filter(b => b.low).length;
+        // Computed here rather than in getGroupStatusText: that cache is keyed on group entities, which this group has none of
+        batteryStatusText = lowCount > 0 ? `${lowCount} ${localize('batteries.low')}` : localize('batteries.ok_short');
+      }
       
       if (shouldShow) {
         const groupStyle = DashboardConfig.getGroupStyle(group);
-        let statusText = this.getGroupStatusText(group, groupEntities);
+        let statusText = batteryStatusText ?? this.getGroupStatusText(group, groupEntities);
         
         // Get inactive background color from DashboardConfig
         const inactiveStyle = DashboardConfig.getEntityData(

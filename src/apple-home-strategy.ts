@@ -112,7 +112,7 @@ async function generateLovelaceDashboard(
   });
 
   // Group view configurations - one for each device group (exclude OTHER group as it doesn't have its own page)
-  const deviceGroups = (Object.keys(DashboardConfig.GROUP_STYLES) as DeviceGroup[]).filter(group => group !== DeviceGroup.OTHER);
+  const deviceGroups = (Object.keys(DashboardConfig.GROUP_STYLES) as DeviceGroup[]).filter(group => group !== DeviceGroup.OTHER && group !== DeviceGroup.BATTERY);
   
   for (const group of deviceGroups) {
     const groupStyle = DashboardConfig.getGroupStyle(group);

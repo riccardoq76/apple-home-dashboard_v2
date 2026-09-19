@@ -30,6 +30,7 @@ export enum DeviceGroup {
   MEDIA = 'media',
   VACUUM = 'vacuum',
   ENERGY = 'energy',
+  BATTERY = 'battery',
   OTHER = 'other'
 }
 
@@ -109,6 +110,11 @@ export class DashboardConfig {
       iconColor: '#34C759', // Green for energy (Apple's energy color)
       icon: 'mdi:flash',
       name: () => localize('groups.energy')
+    },
+    [DeviceGroup.BATTERY]: {
+      iconColor: '#ff9f0a', // Amber: the chip is about batteries that need attention
+      icon: 'mdi:battery-high',
+      name: () => localize('groups.battery')
     },
     [DeviceGroup.OTHER]: {
       iconColor: '#ffcc0f', // Yellow for switches/outlets (same as lights)
