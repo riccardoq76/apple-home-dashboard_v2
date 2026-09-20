@@ -11,7 +11,7 @@
     "unavailable": "לא זמין",
     "idle": "כבוי",
     "heating": "חימום ל",
-    "cooling": "קירור ל", 
+    "cooling": "קירור ל",
     "auto": "אוטומטי",
     "heat_cool": "אוטומטי",
     "heat": "חימום ל",
@@ -74,7 +74,8 @@
     "media": "רמקולים וטלוויזיות",
     "vacuum": "שואבי אבק",
     "energy": "אנרגיה",
-    "other": "אחר"
+    "other": "אחר",
+    "battery": "סוללות"
   },
   "chip_status": {
     "secure": "מאובטח",
@@ -88,7 +89,9 @@
     "motion": "תנועה",
     "locks": "מנעולים",
     "security": "אבטחה",
-    "covers": "תריסים",    "blinds": "תריסים",    "garage_doors": "דלתות מוסך",
+    "covers": "תריסים",
+    "blinds": "תריסים",
+    "garage_doors": "דלתות מוסך",
     "occupancy": "נוכחות",
     "light": "אור",
     "light_sensor": "אור",
@@ -126,7 +129,9 @@
     "scenes": "תרחישים",
     "cameras": "מצלמות",
     "weather": "מזג אוויר",
-    "energy": "אנרגיה"
+    "energy": "אנרגיה",
+    "batteries": "סוללות",
+    "calendar": "לוח שנה"
   },
   "ui_actions": {
     "done": "סיום",
@@ -149,7 +154,8 @@
     "scenes": "תרחישים",
     "cameras": "מצלמות",
     "default_room": "חדר עיקרי",
-    "my_home": "הבית שלי"
+    "my_home": "הבית שלי",
+    "calendar": "לוח שנה"
   },
   "edit": {
     "edit_home_view": "עריכת תצוגת בית",
@@ -290,7 +296,13 @@
     "show_cost": "הצג עלות",
     "show_cost_description": "הצג נתוני עלות בלוח האנרגיה כאשר זמינים",
     "show_gas": "הצג גז",
-    "show_gas_description": "הצג צריכת גז במסך הבית ובלוח האנרגיה כאשר מוגדר"
+    "show_gas_description": "הצג צריכת גז במסך הבית ובלוח האנרגיה כאשר מוגדר",
+    "battery_threshold": "סף סוללה חלשה",
+    "calendar_entities": "לוחות שנה",
+    "calendar_entities_description": "בחר את לוחות השנה שיוצגו באזור לוח השנה במסך הבית",
+    "no_calendars": "לא נמצאו לוחות שנה",
+    "show_battery": "הצג אזור סוללות",
+    "show_battery_description": "מציג במסך הבית כרטיס עם הסוללות החלשות. הכפתור סוללות בחלק העליון תמיד פותח את הרשימה המלאה"
   },
   "status_messages": {
     "unavailable": "לא זמין",
@@ -319,5 +331,20 @@
       "windy-variant": "סוער",
       "exceptional": "חריג"
     }
+  },
+  "batteries": {
+    "all_ok": "כל הסוללות תקינות",
+    "low": "חלשות",
+    "low_group": "חלשות",
+    "low_short": "חלשה",
+    "ok_group": "טעונות",
+    "ok_short": "תקין"
+  },
+  "calendar": {
+    "all_day": "כל היום",
+    "no_events": "אין אירועים קרובים",
+    "no_title": "(ללא כותרת)",
+    "today": "היום",
+    "tomorrow": "מחר"
   }
 }

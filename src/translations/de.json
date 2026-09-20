@@ -11,7 +11,7 @@
     "unavailable": "Nicht verfügbar",
     "idle": "Aus",
     "heating": "Heizen auf",
-    "cooling": "Kühlen auf", 
+    "cooling": "Kühlen auf",
     "auto": "Auto",
     "heat_cool": "Auto",
     "heat": "Heizen auf",
@@ -74,7 +74,8 @@
     "media": "Lautsprecher & TVs",
     "vacuum": "Staubsauger",
     "energy": "Energie",
-    "other": "Andere"
+    "other": "Andere",
+    "battery": "Batterien"
   },
   "chip_status": {
     "secure": "Sicher",
@@ -86,7 +87,7 @@
     "all_locked": "Alle verschlossen",
     "all_unlocked": "Alle geöffnet",
     "motion": "Bewegung",
-    "locks": "Schlösser", 
+    "locks": "Schlösser",
     "security": "Sicherheit",
     "covers": "Abdeckungen",
     "blinds": "Jalousien",
@@ -128,11 +129,13 @@
     "scenes": "Szenen",
     "cameras": "Kameras",
     "weather": "Wetter",
-    "energy": "Energie"
+    "energy": "Energie",
+    "batteries": "Batterien",
+    "calendar": "Kalender"
   },
   "ui_actions": {
     "done": "Fertig",
-    "cancel": "Abbrechen", 
+    "cancel": "Abbrechen",
     "back": "Zurück",
     "home": "Startseite",
     "home_settings": "Hauseinstellungen",
@@ -151,12 +154,13 @@
     "scenes": "Szenen",
     "cameras": "Kameras",
     "default_room": "Standard Raum",
-    "my_home": "Mein Zuhause"
+    "my_home": "Mein Zuhause",
+    "calendar": "Kalender"
   },
   "edit": {
     "edit_home_view": "Startseite bearbeiten",
     "edit_scenes_view": "Szenen bearbeiten",
-    "edit_cameras_view": "Kameras bearbeiten", 
+    "edit_cameras_view": "Kameras bearbeiten",
     "edit_room_view": "Raum bearbeiten",
     "make_tall": "Groß machen",
     "make_normal_size": "Normale Größe"
@@ -292,7 +296,13 @@
     "show_cost": "Kosten anzeigen",
     "show_cost_description": "Zeigt Kostenangaben im Energie-Dashboard, sofern verfügbar",
     "show_gas": "Gas anzeigen",
-    "show_gas_description": "Zeigt den Gasverbrauch auf dem Startbildschirm und im Energie-Dashboard, sofern konfiguriert"
+    "show_gas_description": "Zeigt den Gasverbrauch auf dem Startbildschirm und im Energie-Dashboard, sofern konfiguriert",
+    "battery_threshold": "Schwellenwert für schwache Batterie",
+    "calendar_entities": "Kalender",
+    "calendar_entities_description": "Wähle die Kalender aus, die im Kalenderbereich des Startbildschirms angezeigt werden",
+    "no_calendars": "Keine Kalender gefunden",
+    "show_battery": "Batterie-Bereich anzeigen",
+    "show_battery_description": "Zeigt auf dem Startbildschirm eine Karte mit den schwachen Batterien. Der Batterien-Chip öffnet immer die vollständige Liste"
   },
   "status_messages": {
     "unavailable": "Nicht verfügbar",
@@ -321,5 +331,20 @@
       "windy-variant": "Windig",
       "exceptional": "Außergewöhnlich"
     }
+  },
+  "batteries": {
+    "all_ok": "Alle Batterien in Ordnung",
+    "low": "schwach",
+    "low_group": "Schwach",
+    "low_short": "Schwach",
+    "ok_group": "Geladen",
+    "ok_short": "OK"
+  },
+  "calendar": {
+    "all_day": "Ganztägig",
+    "no_events": "Keine anstehenden Termine",
+    "no_title": "(Kein Titel)",
+    "today": "Heute",
+    "tomorrow": "Morgen"
   }
 }

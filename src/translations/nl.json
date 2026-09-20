@@ -11,7 +11,7 @@
     "unavailable": "Uit",
     "idle": "Uit",
     "heating": "Verwarmen naar",
-    "cooling": "Koelen naar", 
+    "cooling": "Koelen naar",
     "auto": "Auto",
     "heat_cool": "Auto",
     "heat": "Verwarmen naar",
@@ -74,7 +74,8 @@
     "media": "Speakers & TV's",
     "vacuum": "Stofzuigers",
     "energy": "Energie",
-    "other": "Overige"
+    "other": "Overige",
+    "battery": "Batterijen"
   },
   "chip_status": {
     "secure": "Beveiligd",
@@ -87,8 +88,10 @@
     "all_unlocked": "Alles ontgrendeld",
     "motion": "Beweging",
     "locks": "Sloten",
-    "security": "Beveiliging", 
-    "covers": "Covers",    "blinds": "Jalozieën",    "garage_doors": "Garagedeuren",
+    "security": "Beveiliging",
+    "covers": "Covers",
+    "blinds": "Jalozieën",
+    "garage_doors": "Garagedeuren",
     "occupancy": "Bezetting",
     "light": "Licht",
     "light_sensor": "Licht",
@@ -126,7 +129,9 @@
     "scenes": "Scènes",
     "cameras": "Camera's",
     "weather": "Weer",
-    "energy": "Energie"
+    "energy": "Energie",
+    "batteries": "Batterijen",
+    "calendar": "Agenda"
   },
   "ui_actions": {
     "done": "Klaar",
@@ -149,7 +154,8 @@
     "scenes": "Scènes",
     "cameras": "Camera's",
     "default_room": "Standaard Kamer",
-    "my_home": "Mijn Huis"
+    "my_home": "Mijn Huis",
+    "calendar": "Agenda"
   },
   "edit": {
     "edit_home_view": "Bewerk Thuis Weergave",
@@ -290,7 +296,13 @@
     "show_cost": "Kosten Tonen",
     "show_cost_description": "Toont kostencijfers op het energiedashboard indien beschikbaar",
     "show_gas": "Gas Tonen",
-    "show_gas_description": "Toont gasverbruik op het startscherm en energiedashboard indien geconfigureerd"
+    "show_gas_description": "Toont gasverbruik op het startscherm en energiedashboard indien geconfigureerd",
+    "battery_threshold": "Drempel voor lage batterij",
+    "calendar_entities": "Agenda's",
+    "calendar_entities_description": "Kies de agenda's die in de sectie Agenda op het startscherm worden getoond",
+    "no_calendars": "Geen agenda's gevonden",
+    "show_battery": "Batterijsectie tonen",
+    "show_battery_description": "Toont op het startscherm een kaart met de batterijen die bijna leeg zijn. De chip Batterijen opent altijd de volledige lijst"
   },
   "status_messages": {
     "unavailable": "Niet beschikbaar",
@@ -319,5 +331,20 @@
       "windy-variant": "Winderig",
       "exceptional": "Uitzonderlijk"
     }
+  },
+  "batteries": {
+    "all_ok": "Alle batterijen zijn in orde",
+    "low": "laag",
+    "low_group": "Laag",
+    "low_short": "Laag",
+    "ok_group": "Opgeladen",
+    "ok_short": "OK"
+  },
+  "calendar": {
+    "all_day": "Hele dag",
+    "no_events": "Geen aankomende afspraken",
+    "no_title": "(Geen titel)",
+    "today": "Vandaag",
+    "tomorrow": "Morgen"
   }
 }

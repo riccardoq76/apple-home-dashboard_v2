@@ -284,7 +284,7 @@
     "show_gas_description": "Show gas consumption on the home screen and energy dashboard when configured",
     "show_battery": "Show Batteries Section",
     "battery_threshold": "Low battery threshold",
-    "show_battery_description": "Show a card on the home screen with devices whose battery is low, and a page with all batteries",
+    "show_battery_description": "Show a card on the home screen with the batteries that are low. The Batteries chip always opens the full list",
     "calendar_entities": "Calendars",
     "calendar_entities_description": "Choose the calendars to show in the Calendar section on the home screen",
     "no_calendars": "No calendar entities found"

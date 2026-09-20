@@ -11,7 +11,7 @@
     "unavailable": "Desligado",
     "idle": "Desligado",
     "heating": "Aquecer para",
-    "cooling": "Resfriar para", 
+    "cooling": "Resfriar para",
     "auto": "Auto",
     "heat_cool": "Auto",
     "heat": "Aquecer para",
@@ -74,7 +74,8 @@
     "media": "Alto-falantes e TVs",
     "vacuum": "Aspiradores",
     "energy": "Energia",
-    "other": "Outros"
+    "other": "Outros",
+    "battery": "Baterias"
   },
   "chip_status": {
     "secure": "Seguro",
@@ -128,7 +129,9 @@
     "scenes": "Cenas",
     "cameras": "Câmeras",
     "weather": "Clima",
-    "energy": "Energia"
+    "energy": "Energia",
+    "batteries": "Baterias",
+    "calendar": "Calendário"
   },
   "ui_actions": {
     "done": "Concluído",
@@ -151,7 +154,8 @@
     "scenes": "Cenas",
     "cameras": "Câmeras",
     "default_room": "Quarto Padrão",
-    "my_home": "Minha Casa"
+    "my_home": "Minha Casa",
+    "calendar": "Calendário"
   },
   "edit": {
     "edit_home_view": "Editar Vista Casa",
@@ -292,7 +296,13 @@
     "show_cost": "Mostrar Custo",
     "show_cost_description": "Mostra os valores de custo no painel de energia quando disponíveis",
     "show_gas": "Mostrar Gás",
-    "show_gas_description": "Mostra o consumo de gás na tela inicial e no painel de energia quando configurado"
+    "show_gas_description": "Mostra o consumo de gás na tela inicial e no painel de energia quando configurado",
+    "battery_threshold": "Limite de bateria fraca",
+    "calendar_entities": "Calendários",
+    "calendar_entities_description": "Escolha os calendários a mostrar na seção Calendário da tela inicial",
+    "no_calendars": "Nenhum calendário encontrado",
+    "show_battery": "Mostrar seção de baterias",
+    "show_battery_description": "Mostra na tela inicial um cartão com as baterias fracas. O chip Baterias sempre abre a lista completa"
   },
   "status_messages": {
     "unavailable": "Indisponível",
@@ -321,5 +331,20 @@
       "windy-variant": "Ventoso",
       "exceptional": "Excepcional"
     }
+  },
+  "batteries": {
+    "all_ok": "Todas as baterias estão OK",
+    "low": "baixas",
+    "low_group": "Baixas",
+    "low_short": "Baixa",
+    "ok_group": "Carregadas",
+    "ok_short": "OK"
+  },
+  "calendar": {
+    "all_day": "Dia inteiro",
+    "no_events": "Nenhum evento próximo",
+    "no_title": "(Sem título)",
+    "today": "Hoje",
+    "tomorrow": "Amanhã"
   }
 }

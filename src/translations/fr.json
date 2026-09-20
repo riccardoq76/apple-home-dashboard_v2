@@ -11,7 +11,7 @@
     "unavailable": "Indisponible",
     "idle": "Arrêt",
     "heating": "Chauffer à",
-    "cooling": "Refroidir à", 
+    "cooling": "Refroidir à",
     "auto": "Auto",
     "heat_cool": "Auto",
     "heat": "Chauffer à",
@@ -74,7 +74,8 @@
     "media": "Haut-parleurs et TVs",
     "vacuum": "Aspirateurs",
     "energy": "Énergie",
-    "other": "Autres"
+    "other": "Autres",
+    "battery": "Batteries"
   },
   "chip_status": {
     "secure": "Sécurisé",
@@ -87,8 +88,10 @@
     "all_unlocked": "Tout déverrouillé",
     "motion": "Mouvement",
     "locks": "Serrures",
-    "security": "Sécurité", 
-    "covers": "Volets",    "blinds": "Stores",    "garage_doors": "Portes de Garage",
+    "security": "Sécurité",
+    "covers": "Volets",
+    "blinds": "Stores",
+    "garage_doors": "Portes de Garage",
     "occupancy": "Occupation",
     "light": "Lumière",
     "light_sensor": "Lumière",
@@ -126,7 +129,9 @@
     "scenes": "Scènes",
     "cameras": "Caméras",
     "weather": "Météo",
-    "energy": "Énergie"
+    "energy": "Énergie",
+    "batteries": "Batteries",
+    "calendar": "Calendrier"
   },
   "ui_actions": {
     "done": "Terminé",
@@ -149,7 +154,8 @@
     "scenes": "Scènes",
     "cameras": "Caméras",
     "default_room": "Pièce par Défaut",
-    "my_home": "Ma Maison"
+    "my_home": "Ma Maison",
+    "calendar": "Calendrier"
   },
   "edit": {
     "edit_home_view": "Modifier Vue Accueil",
@@ -290,7 +296,13 @@
     "show_cost": "Afficher le Coût",
     "show_cost_description": "Affiche les montants du coût sur le tableau de bord énergie lorsqu'ils sont disponibles",
     "show_gas": "Afficher le Gaz",
-    "show_gas_description": "Affiche la consommation de gaz sur l'écran d'accueil et le tableau de bord énergie lorsqu'elle est configurée"
+    "show_gas_description": "Affiche la consommation de gaz sur l'écran d'accueil et le tableau de bord énergie lorsqu'elle est configurée",
+    "battery_threshold": "Seuil de batterie faible",
+    "calendar_entities": "Calendriers",
+    "calendar_entities_description": "Choisissez les calendriers à afficher dans la section Calendrier de l'écran d'accueil",
+    "no_calendars": "Aucun calendrier trouvé",
+    "show_battery": "Afficher la section Batteries",
+    "show_battery_description": "Affiche sur l'écran d'accueil une carte avec les batteries faibles. La pastille Batteries ouvre toujours la liste complète"
   },
   "status_messages": {
     "unavailable": "Indisponible",
@@ -319,5 +331,20 @@
       "windy-variant": "Venteux",
       "exceptional": "Exceptionnel"
     }
+  },
+  "batteries": {
+    "all_ok": "Toutes les batteries sont OK",
+    "low": "faibles",
+    "low_group": "Faibles",
+    "low_short": "Faible",
+    "ok_group": "Chargées",
+    "ok_short": "OK"
+  },
+  "calendar": {
+    "all_day": "Toute la journée",
+    "no_events": "Aucun événement à venir",
+    "no_title": "(Sans titre)",
+    "today": "Aujourd'hui",
+    "tomorrow": "Demain"
   }
 }
