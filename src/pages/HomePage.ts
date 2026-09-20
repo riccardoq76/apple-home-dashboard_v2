@@ -310,42 +310,25 @@ export class HomePage {
       });
     }
 
-    // Render sections in order, pairing adjacent weather+energy in a side-by-side row
-    const rendered = new Set<string>();
-    for (let i = 0; i < orderedSectionIds.length; i++) {
-      const sectionId = orderedSectionIds[i];
-      if (rendered.has(sectionId) || hiddenSections.includes(sectionId) || !availableSections.has(sectionId)) continue;
+    // Render the visible sections in order. Card sections (weather, energy, calendar, batteries) that are
+    // adjacent in that order sit side by side, two per row; a leftover card takes the full width.
+    const cardSections = new Set(['weather_section', 'energy_section', 'calendar_section', 'battery_section']);
+    const visibleIds = orderedSectionIds.filter(id => !hiddenSections.includes(id) && availableSections.has(id));
+    for (let i = 0; i < visibleIds.length; i++) {
+      const sectionId = visibleIds[i];
+      const nextId = visibleIds[i + 1];
 
-      // Check if weather and energy are adjacent — pair them side-by-side
-      if ((sectionId === 'weather_section' || sectionId === 'energy_section') && hasWeather && hasEnergy) {
-        const otherSection = sectionId === 'weather_section' ? 'energy_section' : 'weather_section';
-        if (!rendered.has(otherSection) && !hiddenSections.includes(otherSection) && availableSections.has(otherSection)) {
-          // Find the next visible section after current
-          let nextVisible: string | null = null;
-          for (let j = i + 1; j < orderedSectionIds.length; j++) {
-            const nextId = orderedSectionIds[j];
-            if (!rendered.has(nextId) && !hiddenSections.includes(nextId) && availableSections.has(nextId)) {
-              nextVisible = nextId;
-              break;
-            }
-          }
-
-          if (nextVisible === otherSection) {
-            // Adjacent! Wrap in a side-by-side row
-            const wrapper = document.createElement('div');
-            wrapper.className = 'weather-energy-row';
-            container.appendChild(wrapper);
-            await availableSections.get(sectionId)!(wrapper);
-            await availableSections.get(otherSection)!(wrapper);
-            rendered.add(sectionId);
-            rendered.add(otherSection);
-            continue;
-          }
-        }
+      if (cardSections.has(sectionId) && nextId && cardSections.has(nextId)) {
+        const wrapper = document.createElement('div');
+        wrapper.className = 'card-row';
+        container.appendChild(wrapper);
+        await availableSections.get(sectionId)!(wrapper);
+        await availableSections.get(nextId)!(wrapper);
+        i++;
+        continue;
       }
 
       await availableSections.get(sectionId)!();
-      rendered.add(sectionId);
     }
   }
 
