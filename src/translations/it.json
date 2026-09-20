@@ -66,6 +66,7 @@
     "days": "g"
   },
   "groups": {
+    "people": "Persone",
     "lights": "Luci",
     "climate": "Clima",
     "security": "Sicurezza",
@@ -318,6 +319,18 @@
       "windy-variant": "Ventoso",
       "exceptional": "Eccezionale"
     }
+  },
+  "people": {
+    "home": "A casa",
+    "away": "Fuori",
+    "nobody_home": "Nessuno a casa",
+    "unknown": "Sconosciuto",
+    "home_group": "A casa",
+    "away_group": "Fuori",
+    "now": "adesso",
+    "min": "min",
+    "hours": "h",
+    "days": "g"
   },
   "batteries": {
     "low": "basse",

@@ -8,7 +8,7 @@
   Local preview harness: loads dist/apple-home-dashboard.js with a mock `hass`.
   Run `npm run build`, then `python3 -m http.server 8123` from the repo root and open
   http://localhost:8123/dev/harness.html?page=home&theme=dark
-  Query: page=home|lights|climate|security|media|scenes|cameras|batteries|calendar|room, area=<id>, theme=dark|light
+  Query: page=home|lights|climate|security|media|scenes|cameras|batteries|people|calendar|room, area=<id>, theme=dark|light
   In-app navigation (chips, section titles, cards) works via location-changed; a reload returns to ?page=.
 -->
 <!-- @font-face is not registered from inside a shadow root, so load MDI globally too -->
@@ -83,6 +83,11 @@ const put = (s) => { states[s.entity_id] = s; };
   st('media_player.tv', 'playing', { device_class: 'tv', media_title: 'Film' }),
   st('scene.movie', 'scening'),
   st('weather.home', 'sunny', { temperature: 24, humidity: 40, forecast: [] }),
+  // people (a zone, a picture that fails to load falls back to initials)
+  st('zone.office', 'zoning', { friendly_name: 'Ufficio' }),
+  st('person.riccardo', 'home', { friendly_name: 'Riccardo Quaranta' }),
+  st('person.giulia', 'not_home', { friendly_name: 'Giulia' }),
+  st('person.marco', 'Ufficio', { friendly_name: 'Marco' }),
   // batteries
   st('sensor.front_door_battery', '12', { device_class: 'battery', unit_of_measurement: '%' }),
   st('sensor.kitchen_window_battery', '18', { device_class: 'battery', unit_of_measurement: '%' }),
@@ -185,7 +190,7 @@ window.__getCustomizations = () => customizations;
 
 // ---- mount ----
 // Emulates HA's router: the strategy views are addressed by path (/dev/security, /dev/room-kitchen, ...).
-const GROUPS = { lights: 'lighting', lighting: 'lighting', climate: 'climate', security: 'security', media: 'media', other: 'other', battery: 'battery' };
+const GROUPS = { lights: 'lighting', lighting: 'lighting', climate: 'climate', security: 'security', media: 'media', other: 'other', battery: 'battery', people: 'people' };
 function configFor(page) {
   const cfg = { type: 'custom:apple-home-view', title: 'Casa', pageType: page, customizations };
   if (GROUPS[page]) { cfg.pageType = 'group'; cfg.deviceGroup = GROUPS[page]; }

@@ -66,6 +66,7 @@
     "days": "天"
   },
   "groups": {
+    "people": "家人",
     "lights": "灯光",
     "climate": "空调",
     "security": "安全",
@@ -167,6 +168,18 @@
     "show_ha_header": "显示 Home Assistant 标题栏",
     "hide_ha_sidebar": "隐藏 Home Assistant 侧边栏",
     "show_ha_sidebar": "显示 Home Assistant 侧边栏"
+  },
+  "people": {
+    "home": "在家",
+    "away": "外出",
+    "nobody_home": "无人在家",
+    "unknown": "未知",
+    "home_group": "在家",
+    "away_group": "外出",
+    "now": "刚刚",
+    "min": "分钟",
+    "hours": "小时",
+    "days": "天"
   },
   "battery": {
     "low_battery": "电量低",

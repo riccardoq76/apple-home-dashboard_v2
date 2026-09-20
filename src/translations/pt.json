@@ -66,6 +66,7 @@
     "days": "d"
   },
   "groups": {
+    "people": "Pessoas",
     "lights": "Luzes",
     "climate": "Clima",
     "security": "Segurança",
@@ -169,6 +170,18 @@
     "show_ha_header": "Mostrar Cabeçalho Home Assistant",
     "hide_ha_sidebar": "Ocultar Barra Lateral Home Assistant",
     "show_ha_sidebar": "Mostrar Barra Lateral Home Assistant"
+  },
+  "people": {
+    "home": "Em casa",
+    "away": "Fora",
+    "nobody_home": "Ninguém em casa",
+    "unknown": "Desconhecido",
+    "home_group": "Em casa",
+    "away_group": "Fora",
+    "now": "agora",
+    "min": "min",
+    "hours": "h",
+    "days": "d"
   },
   "battery": {
     "low_battery": "Bateria Fraca",

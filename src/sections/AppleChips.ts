@@ -4,6 +4,7 @@ import { localize } from '../utils/LocalizationService';
 import { RTLHelper } from '../utils/RTLHelper';
 import { EnergySection } from './EnergySection';
 import { BatterySection } from './BatterySection';
+import { PeopleSection } from './PeopleSection';
 
 export interface ChipConfig {
   group: DeviceGroup;
@@ -20,6 +21,7 @@ export interface ChipsConfig {
   water?: ChipConfig;
   energy?: ChipConfig;
   battery?: ChipConfig;
+  people?: ChipConfig;
 }
 
 export interface ChipData {
@@ -145,6 +147,11 @@ export class AppleChips {
         group: DeviceGroup.BATTERY,
         enabled: true,
         show_when_zero: false
+      },
+      people: {
+        group: DeviceGroup.PEOPLE,
+        enabled: true,
+        show_when_zero: false
       }
     };
   }
@@ -186,7 +193,7 @@ export class AppleChips {
     }
   }
 
-  private static readonly RELEVANT_DOMAINS = new Set(['light', 'switch', 'climate', 'alarm_control_panel', 'lock', 'media_player', 'water_heater', 'cover']);
+  private static readonly RELEVANT_DOMAINS = new Set(['light', 'switch', 'climate', 'alarm_control_panel', 'lock', 'media_player', 'water_heater', 'cover', 'person']);
   private static readonly OPENING_DEVICE_CLASSES = new Set(['door', 'window', 'opening', 'garage_door']);
 
   /** True for door/window/opening sensors and garage doors/gates that are currently open. */
@@ -387,7 +394,8 @@ export class AppleChips {
       { group: DeviceGroup.MEDIA, config: this.config.media },
       { group: DeviceGroup.WATER, config: this.config.water },
       { group: DeviceGroup.ENERGY, config: this.config.energy },
-      { group: DeviceGroup.BATTERY, config: this.config.battery }
+      { group: DeviceGroup.BATTERY, config: this.config.battery },
+      { group: DeviceGroup.PEOPLE, config: this.config.people }
     ];
 
     for (const { group, config } of deviceGroups) {
@@ -447,9 +455,17 @@ export class AppleChips {
         batteryStatusText = lowCount > 0 ? `${lowCount} ${localize('batteries.low')}` : localize('batteries.ok_short');
       }
       
+      // People chip: shown whenever person entities exist; like Battery, none of the group's entities come from the domain mapping
+      let peopleStatusText: string | undefined;
+      if (group === DeviceGroup.PEOPLE) {
+        const people = PeopleSection.getPeople(this._hass, excludedFromDashboard);
+        shouldShow = people.length > 0;
+        peopleStatusText = PeopleSection.getSummary(people);
+      }
+      
       if (shouldShow) {
         const groupStyle = DashboardConfig.getGroupStyle(group);
-        let statusText = batteryStatusText ?? this.getGroupStatusText(group, groupEntities);
+        let statusText = batteryStatusText ?? peopleStatusText ?? this.getGroupStatusText(group, groupEntities);
         
         // Get inactive background color from DashboardConfig
         const inactiveStyle = DashboardConfig.getEntityData(

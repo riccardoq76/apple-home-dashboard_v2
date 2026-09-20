@@ -66,6 +66,7 @@
     "days": "d"
   },
   "groups": {
+    "people": "Personen",
     "lights": "Beleuchtung",
     "climate": "Klima",
     "security": "Sicherheit",
@@ -169,6 +170,18 @@
     "show_ha_header": "Home Assistant Header Anzeigen",
     "hide_ha_sidebar": "Home Assistant Seitenleiste Verbergen",
     "show_ha_sidebar": "Home Assistant Seitenleiste Anzeigen"
+  },
+  "people": {
+    "home": "Zuhause",
+    "away": "Unterwegs",
+    "nobody_home": "Niemand zuhause",
+    "unknown": "Unbekannt",
+    "home_group": "Zuhause",
+    "away_group": "Unterwegs",
+    "now": "jetzt",
+    "min": "Min.",
+    "hours": "Std.",
+    "days": "T."
   },
   "battery": {
     "low_battery": "Schwache Batterie",

@@ -66,6 +66,7 @@
     "days": "d"
   },
   "groups": {
+    "people": "Personen",
     "lights": "Verlichting",
     "climate": "Klimaat",
     "security": "Beveiliging",
@@ -167,6 +168,18 @@
     "show_ha_header": "Home Assistant Header Tonen",
     "hide_ha_sidebar": "Home Assistant Zijbalk Verbergen",
     "show_ha_sidebar": "Home Assistant Zijbalk Tonen"
+  },
+  "people": {
+    "home": "Thuis",
+    "away": "Weg",
+    "nobody_home": "Niemand thuis",
+    "unknown": "Onbekend",
+    "home_group": "Thuis",
+    "away_group": "Weg",
+    "now": "nu",
+    "min": "min",
+    "hours": "u",
+    "days": "d"
   },
   "battery": {
     "low_battery": "Lage Batterij",

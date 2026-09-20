@@ -66,6 +66,7 @@
     "days": "j"
   },
   "groups": {
+    "people": "Personnes",
     "lights": "Éclairage",
     "climate": "Climat",
     "security": "Sécurité",
@@ -167,6 +168,18 @@
     "show_ha_header": "Afficher l'En-tête Home Assistant",
     "hide_ha_sidebar": "Masquer la Barre Latérale Home Assistant",
     "show_ha_sidebar": "Afficher la Barre Latérale Home Assistant"
+  },
+  "people": {
+    "home": "À la maison",
+    "away": "Absent",
+    "nobody_home": "Personne à la maison",
+    "unknown": "Inconnu",
+    "home_group": "À la maison",
+    "away_group": "Absents",
+    "now": "à l'instant",
+    "min": "min",
+    "hours": "h",
+    "days": "j"
   },
   "battery": {
     "low_battery": "Batterie Faible",

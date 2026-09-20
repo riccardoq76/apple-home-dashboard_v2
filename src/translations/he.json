@@ -66,6 +66,7 @@
     "days": " י' "
   },
   "groups": {
+    "people": "אנשים",
     "lights": "תאורה",
     "climate": "אקלים",
     "security": "אבטחה",
@@ -167,6 +168,18 @@
     "show_ha_header": "הצג את הפס העליון של Home Assistant",
     "hide_ha_sidebar": "הסתר את תפריט הצד של Home Assistant",
     "show_ha_sidebar": "הצג את תפריט הצד של Home Assistant"
+  },
+  "people": {
+    "home": "בבית",
+    "away": "לא בבית",
+    "nobody_home": "אף אחד לא בבית",
+    "unknown": "לא ידוע",
+    "home_group": "בבית",
+    "away_group": "לא בבית",
+    "now": "עכשיו",
+    "min": "דק'",
+    "hours": "שע'",
+    "days": "ימים"
   },
   "battery": {
     "low_battery": "סוללה חלשה",

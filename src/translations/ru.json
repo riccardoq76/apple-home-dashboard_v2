@@ -66,6 +66,7 @@
     "days": "д"
   },
   "groups": {
+    "people": "Люди",
     "lights": "Освещение",
     "climate": "Климат",
     "security": "Безопасность",
@@ -169,6 +170,18 @@
     "show_ha_header": "Показать заголовок Home Assistant",
     "hide_ha_sidebar": "Скрыть боковую панель Home Assistant",
     "show_ha_sidebar": "Показать боковую панель Home Assistant"
+  },
+  "people": {
+    "home": "Дома",
+    "away": "Не дома",
+    "nobody_home": "Никого нет дома",
+    "unknown": "Неизвестно",
+    "home_group": "Дома",
+    "away_group": "Не дома",
+    "now": "сейчас",
+    "min": "мин",
+    "hours": "ч",
+    "days": "д"
   },
   "battery": {
     "low_battery": "Низкий Заряд",

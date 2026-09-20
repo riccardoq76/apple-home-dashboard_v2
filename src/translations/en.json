@@ -66,6 +66,7 @@
     "days": "d"
   },
   "groups": {
+    "people": "People",
     "lights": "Lights",
     "climate": "Climate",
     "security": "Security",
@@ -315,6 +316,18 @@
       "windy-variant": "Windy",
       "exceptional": "Exceptional"
     }
+  },
+  "people": {
+    "home": "Home",
+    "away": "Away",
+    "nobody_home": "Nobody home",
+    "unknown": "Unknown",
+    "home_group": "At home",
+    "away_group": "Away",
+    "now": "now",
+    "min": "min",
+    "hours": "h",
+    "days": "d"
   },
   "batteries": {
     "low": "low",
