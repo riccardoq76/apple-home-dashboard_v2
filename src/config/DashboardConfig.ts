@@ -31,6 +31,7 @@ export enum DeviceGroup {
   VACUUM = 'vacuum',
   ENERGY = 'energy',
   BATTERY = 'battery',
+  PEOPLE = 'people',
   OTHER = 'other'
 }
 
@@ -115,6 +116,11 @@ export class DashboardConfig {
       iconColor: '#ff9f0a', // Amber: the chip is about batteries that need attention
       icon: 'mdi:battery-high',
       name: () => localize('groups.battery')
+    },
+    [DeviceGroup.PEOPLE]: {
+      iconColor: '#0a84ff', // Blue for people
+      icon: 'mdi:account-multiple',
+      name: () => localize('groups.people')
     },
     [DeviceGroup.OTHER]: {
       iconColor: '#ffcc0f', // Yellow for switches/outlets (same as lights)

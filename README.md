@@ -83,7 +83,26 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
-## 🆕 What's New in v1.6.0
+## 🆕 What's New in v1.7.0
+
+### People
+- New **People chip** next to the other chips: shows how many people are home, or where a single person is. Tap it for a page with one card per person (avatar or initials, at home / away / the zone they are in, and how long ago that changed); tap a card to open the person
+- People can be excluded in *Home Settings → Exclude from Dashboard*
+
+### Cards side by side
+- Any two adjacent card sections (Weather, Energy, Calendar, Batteries) now sit side by side, two per row, following the order you chose in *Reorder Sections*. If you hide Energy, Calendar can sit next to Weather. A leftover card takes the full width; cards stack on narrow screens
+
+### Calendar
+- The Home card now shows up to 5 events from the next **3 days** (it was 7) to keep the section compact. The Calendar page still lists the next 30 days
+
+### Chips order
+- Reordering the chips by drag and drop is now saved (the new order used to be lost)
+
+### Translations and layout
+- Batteries and Calendar texts are now translated in all languages (German, Spanish, French, Portuguese, Dutch, Russian, Chinese, Hebrew), and long labels no longer overflow the Batteries card
+
+---
+## v1.6.0
 
 ### Exclude sensors
 - Sensors that appear in the status rows and their lists (motion, occupancy, illuminance, doors, windows, temperature, humidity, smoke, gas, moisture, batteries) can now be excluded: search for them in *Home Settings → Exclude from Dashboard*. Handy for virtual sensors or things like `browser_mod` entities
@@ -109,7 +128,7 @@ No manual YAML card definitions required.
 - Configurable low-battery threshold (10–50%)
 
 ### Calendar
-- New **Calendar** section on Home: the next 7 days of events, color-coded per calendar. Tap it for a page with the next 30 days
+- New **Calendar** section on Home: up to 5 events from the next 3 days, color-coded per calendar. Tap it for a page with the next 30 days
 - Choose which calendars to show in Home Settings → *Calendars*
 
 ### Security chip
@@ -305,7 +324,7 @@ strategy:
 | Batteries Section | Home Settings | Yes | Optional Home card; the Batteries chip is always shown when battery entities exist |
 | Low Battery Threshold | Home Settings | Yes | 10–50%, default 20% |
 | Calendars | Home Settings | Yes | Pick which `calendar.*` entities appear in the Calendar section |
-| Excluded Entities | Home Settings | Yes | *Exclude from Dashboard* also accepts status sensors (motion, occupancy, illuminance, doors…); chips and the Batteries section honor it |
+| Excluded Entities | Home Settings | Yes | *Exclude from Dashboard* also accepts status sensors (motion, occupancy, illuminance, doors…) and people; chips, the Batteries section and the People page honor it |
 
 No YAML needed for any of the above.
 

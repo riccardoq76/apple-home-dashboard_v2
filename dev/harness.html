@@ -8,7 +8,7 @@
   Local preview harness: loads dist/apple-home-dashboard.js with a mock `hass`.
   Run `npm run build`, then `python3 -m http.server 8123` from the repo root and open
   http://localhost:8123/dev/harness.html?page=home&theme=dark
-  Query: page=home|lights|climate|security|media|scenes|cameras|batteries|calendar|room, area=<id>, theme=dark|light
+  Query: lang=<code, e.g. he for RTL>, page=home|lights|climate|security|media|scenes|cameras|batteries|people|calendar|room, area=<id>, theme=dark|light
   In-app navigation (chips, section titles, cards) works via location-changed; a reload returns to ?page=.
 -->
 <!-- @font-face is not registered from inside a shadow root, so load MDI globally too -->
@@ -83,6 +83,11 @@ const put = (s) => { states[s.entity_id] = s; };
   st('media_player.tv', 'playing', { device_class: 'tv', media_title: 'Film' }),
   st('scene.movie', 'scening'),
   st('weather.home', 'sunny', { temperature: 24, humidity: 40, forecast: [] }),
+  // people (a zone, a picture that fails to load falls back to initials)
+  st('zone.office', 'zoning', { friendly_name: 'Ufficio' }),
+  st('person.riccardo', 'home', { friendly_name: 'Riccardo Quaranta' }),
+  st('person.giulia', 'not_home', { friendly_name: 'Giulia' }),
+  st('person.marco', 'Ufficio', { friendly_name: 'Marco' }),
   // batteries
   st('sensor.front_door_battery', '12', { device_class: 'battery', unit_of_measurement: '%' }),
   st('sensor.kitchen_window_battery', '18', { device_class: 'battery', unit_of_measurement: '%' }),
@@ -122,6 +127,10 @@ const calendarEvents = {
   'calendar.famiglia': [
     { summary: 'Cena da Marco', start: { dateTime: iso(addH(3)) }, end: { dateTime: iso(addH(5)) }, location: 'Via Roma 1' },
     { summary: 'Compleanno Anna', start: { date: iso(addH(50)).slice(0, 10) }, end: { date: iso(addH(74)).slice(0, 10) } },
+    { summary: 'Palestra', start: { dateTime: iso(addH(30)) }, end: { dateTime: iso(addH(31)) } },
+    { summary: 'Pranzo con Luca', start: { dateTime: iso(addH(52)) }, end: { dateTime: iso(addH(53)) } },
+    { summary: 'Cinema', start: { dateTime: iso(addH(60)) }, end: { dateTime: iso(addH(62)) } },
+    { summary: 'Weekend fuori (oltre 3 giorni)', start: { dateTime: iso(addH(100)) }, end: { dateTime: iso(addH(102)) } },
   ],
   'calendar.lavoro': [
     { summary: 'Riunione team', start: { dateTime: iso(addH(26)) }, end: { dateTime: iso(addH(27)) } },
@@ -139,7 +148,7 @@ const dashKey = location.pathname.split('/')[1];
 const hass = {
   states, entities,
   devices: {}, areas: Object.fromEntries(areas.map(a => [a.area_id, a])),
-  language: 'it', locale: { language: 'it', number_format: 'language', time_format: '24' },
+  language: q.get('lang') || 'it', locale: { language: q.get('lang') || 'it', number_format: 'language', time_format: '24' },
   config: { location_name: 'Casa', unit_system: { temperature: '°C' }, time_zone: 'Europe/Rome' },
   themes: { darkMode: q.get('theme') !== 'light' }, selectedTheme: null,
   user: { name: 'Demo', is_admin: true },
@@ -149,7 +158,12 @@ const hass = {
   callApi: async (method, path) => {
     console.log('callApi', method, path);
     const m = path.match(/^calendars\/([^?]+)/);
-    return m ? (calendarEvents[decodeURIComponent(m[1])] || []) : [];
+    if (!m) return [];
+    // Like Home Assistant: only events overlapping the requested [start, end) range
+    const params = new URLSearchParams(path.split('?')[1] || '');
+    const from = new Date(params.get('start')).getTime(), to = new Date(params.get('end')).getTime();
+    const at = (e) => new Date(e.dateTime || (e.date + 'T00:00:00')).getTime();
+    return (calendarEvents[decodeURIComponent(m[1])] || []).filter(e => at(e.end) > from && at(e.start) < to);
   },
   callWS: async (msg) => {
     switch (msg.type) {
@@ -185,7 +199,7 @@ window.__getCustomizations = () => customizations;
 
 // ---- mount ----
 // Emulates HA's router: the strategy views are addressed by path (/dev/security, /dev/room-kitchen, ...).
-const GROUPS = { lights: 'lighting', lighting: 'lighting', climate: 'climate', security: 'security', media: 'media', other: 'other', battery: 'battery' };
+const GROUPS = { lights: 'lighting', lighting: 'lighting', climate: 'climate', security: 'security', media: 'media', other: 'other', battery: 'battery', people: 'people' };
 function configFor(page) {
   const cfg = { type: 'custom:apple-home-view', title: 'Casa', pageType: page, customizations };
   if (GROUPS[page]) { cfg.pageType = 'group'; cfg.deviceGroup = GROUPS[page]; }

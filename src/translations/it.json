@@ -66,6 +66,7 @@
     "days": "g"
   },
   "groups": {
+    "people": "Persone",
     "lights": "Luci",
     "climate": "Clima",
     "security": "Sicurezza",
@@ -286,7 +287,7 @@
     "show_gas_description": "Mostra il consumo di gas nella schermata principale e nella dashboard energia quando configurato",
     "show_battery": "Mostra sezione Batterie",
     "battery_threshold": "Soglia batteria scarica",
-    "show_battery_description": "Mostra nella Home una card con i dispositivi a batteria scarica e una pagina con tutte le batterie",
+    "show_battery_description": "Mostra nella Home una card con le batterie scariche. Il chip Batterie apre sempre l'elenco completo",
     "calendar_entities": "Calendari",
     "calendar_entities_description": "Scegli i calendari da mostrare nella sezione Calendario della Home",
     "no_calendars": "Nessun calendario trovato"
@@ -318,6 +319,18 @@
       "windy-variant": "Ventoso",
       "exceptional": "Eccezionale"
     }
+  },
+  "people": {
+    "home": "A casa",
+    "away": "Fuori",
+    "nobody_home": "Nessuno a casa",
+    "unknown": "Sconosciuto",
+    "home_group": "A casa",
+    "away_group": "Fuori",
+    "now": "adesso",
+    "min": "min",
+    "hours": "h",
+    "days": "g"
   },
   "batteries": {
     "low": "basse",

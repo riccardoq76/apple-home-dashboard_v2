@@ -11,7 +11,7 @@
     "unavailable": "No disponible",
     "idle": "Apagado",
     "heating": "Calentar a",
-    "cooling": "Enfriar a", 
+    "cooling": "Enfriar a",
     "auto": "Auto",
     "heat_cool": "Auto",
     "heat": "Calentar a",
@@ -51,8 +51,7 @@
     "returning": "Regresando",
     "error": "Error",
     "heat_to": "Calentar a",
-    "cool_to": "Enfriar a",
-    "none": "Ninguno"
+    "cool_to": "Enfriar a"
   },
   "units": {
     "percent": "%",
@@ -67,6 +66,7 @@
     "days": "d"
   },
   "groups": {
+    "people": "Personas",
     "lights": "Luces",
     "climate": "Clima",
     "security": "Seguridad",
@@ -74,7 +74,8 @@
     "media": "Altavoces y TVs",
     "vacuum": "Aspiradoras",
     "energy": "Energía",
-    "other": "Otros"
+    "other": "Otros",
+    "battery": "Baterías"
   },
   "chip_status": {
     "secure": "Seguro",
@@ -88,7 +89,9 @@
     "motion": "Movimiento",
     "locks": "Cerraduras",
     "security": "Seguridad",
-    "covers": "Cubiertas",    "blinds": "Persianas",    "garage_doors": "Puertas de Garaje",
+    "covers": "Cubiertas",
+    "blinds": "Persianas",
+    "garage_doors": "Puertas de Garaje",
     "occupancy": "Ocupación",
     "light": "Luz",
     "light_sensor": "Luz",
@@ -126,7 +129,9 @@
     "scenes": "Escenas",
     "cameras": "Cámaras",
     "weather": "Clima",
-    "energy": "Energía"
+    "energy": "Energía",
+    "batteries": "Baterías",
+    "calendar": "Calendario"
   },
   "ui_actions": {
     "done": "Hecho",
@@ -149,7 +154,8 @@
     "scenes": "Escenas",
     "cameras": "Cámaras",
     "default_room": "Habitación Predeterminada",
-    "my_home": "Mi Hogar"
+    "my_home": "Mi Hogar",
+    "calendar": "Calendario"
   },
   "edit": {
     "edit_home_view": "Editar Vista Inicio",
@@ -168,6 +174,18 @@
     "show_ha_header": "Mostrar Encabezado de Home Assistant",
     "hide_ha_sidebar": "Ocultar Barra Lateral de Home Assistant",
     "show_ha_sidebar": "Mostrar Barra Lateral de Home Assistant"
+  },
+  "people": {
+    "home": "En casa",
+    "away": "Fuera",
+    "nobody_home": "Nadie en casa",
+    "unknown": "Desconocido",
+    "home_group": "En casa",
+    "away_group": "Fuera",
+    "now": "ahora",
+    "min": "min",
+    "hours": "h",
+    "days": "d"
   },
   "battery": {
     "low_battery": "Batería Baja",
@@ -278,7 +296,13 @@
     "show_cost": "Mostrar Costo",
     "show_cost_description": "Muestra las cifras de costo en el panel de energía cuando estén disponibles",
     "show_gas": "Mostrar Gas",
-    "show_gas_description": "Muestra el consumo de gas en la pantalla principal y el panel de energía cuando esté configurado"
+    "show_gas_description": "Muestra el consumo de gas en la pantalla principal y el panel de energía cuando esté configurado",
+    "battery_threshold": "Umbral de batería baja",
+    "calendar_entities": "Calendarios",
+    "calendar_entities_description": "Elige los calendarios que se muestran en la sección Calendario de la pantalla de inicio",
+    "no_calendars": "No se encontraron calendarios",
+    "show_battery": "Mostrar sección de baterías",
+    "show_battery_description": "Muestra en la pantalla de inicio una tarjeta con las baterías bajas. El chip Baterías siempre abre la lista completa"
   },
   "status_messages": {
     "unavailable": "No disponible",
@@ -307,5 +331,20 @@
       "windy-variant": "Ventoso",
       "exceptional": "Excepcional"
     }
+  },
+  "batteries": {
+    "all_ok": "Todas las baterías están bien",
+    "low": "bajas",
+    "low_group": "Bajas",
+    "low_short": "Baja",
+    "ok_group": "Cargadas",
+    "ok_short": "OK"
+  },
+  "calendar": {
+    "all_day": "Todo el día",
+    "no_events": "No hay eventos próximos",
+    "no_title": "(Sin título)",
+    "today": "Hoy",
+    "tomorrow": "Mañana"
   }
 }

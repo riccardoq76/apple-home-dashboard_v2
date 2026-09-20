@@ -8,6 +8,7 @@ import { StatusSection } from '../sections/StatusSection';
 import { WeatherSection } from '../sections/WeatherSection';
 import { EnergySection } from '../sections/EnergySection';
 import { BatterySection } from '../sections/BatterySection';
+import { PeopleSection } from '../sections/PeopleSection';
 import { Entity } from '../types/types';
 
 export class GroupPage {
@@ -19,6 +20,7 @@ export class GroupPage {
   private weatherSection?: WeatherSection;
   private energySection?: EnergySection;
   private batterySection?: BatterySection;
+  private peopleSection?: PeopleSection;
   private _hass?: any;
   private _group?: DeviceGroup;
   private _config?: any;
@@ -61,6 +63,7 @@ export class GroupPage {
       this.weatherSection = new WeatherSection(this.customizationManager);
       this.energySection = new EnergySection(this.customizationManager);
       this.batterySection = new BatterySection(this.customizationManager);
+      this.peopleSection = new PeopleSection(this.customizationManager);
     }
   }
 
@@ -385,6 +388,13 @@ export class GroupPage {
     if (this._group === DeviceGroup.BATTERY && this.batterySection) {
       availableSections.set('battery_section', async () => {
         await this.batterySection!.render(container, hass, 'page');
+      });
+    }
+
+    // Add people list for people group
+    if (this._group === DeviceGroup.PEOPLE && this.peopleSection) {
+      availableSections.set('people_section', async () => {
+        await this.peopleSection!.render(container, hass);
       });
     }
 

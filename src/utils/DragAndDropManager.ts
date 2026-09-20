@@ -815,7 +815,7 @@ export class DragAndDropManager {
         document.body.style.userSelect = '';
         if ('vibrate' in navigator) navigator.vibrate(30);
         
-        const chipsGrid = evt.item.closest('.carousel-grid.chips') as HTMLElement;
+        const chipsGrid = evt.item.closest('.chips-grid') as HTMLElement;
         if (chipsGrid) {
           this.updateChipsOrder(chipsGrid);
         }

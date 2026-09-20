@@ -1061,33 +1061,35 @@ export class AppleHomeView extends HTMLElement {
             touch-action: none;
           }
 
-          /* Weather + Energy side-by-side row */
-          .weather-energy-row {
+          /* Side-by-side row for card sections (weather, energy, calendar, batteries): equal heights, stacked on narrow widths */
+          .card-row {
             display: flex;
             gap: 12px;
             margin-top: 20px;
             align-items: stretch;
           }
-          .weather-energy-row .apple-weather-card,
-          .weather-energy-row .apple-energy-card {
+          .card-row .apple-weather-card,
+          .card-row .apple-energy-card,
+          .card-row .apple-calendar-card,
+          .card-row .apple-battery-card {
             flex: 1;
             margin-top: 0;
             width: auto;
             min-width: 0;
             overflow: hidden;
           }
-          .weather-energy-row .apple-weather-card {
+          .card-row .apple-weather-card {
             display: flex;
             flex-direction: column;
             justify-content: center;
           }
           /* Force weather card to stack its inner layout when in the row at medium widths */
           @container apple-home-view (max-width: 1100px) {
-            .weather-energy-row .weather-card-inner {
+            .card-row .weather-card-inner {
               flex-direction: column;
               gap: 10px;
             }
-            .weather-energy-row .weather-clock-side {
+            .card-row .weather-clock-side {
               padding-right: 0;
               border-right: none;
               padding-bottom: 10px;
@@ -1095,19 +1097,21 @@ export class AppleHomeView extends HTMLElement {
             }
           }
           @container apple-home-view (max-width: 755px) {
-            .weather-energy-row {
+            .card-row {
               flex-direction: column;
             }
-            .weather-energy-row .apple-weather-card,
-            .weather-energy-row .apple-energy-card {
+            .card-row .apple-weather-card,
+            .card-row .apple-energy-card,
+            .card-row .apple-calendar-card,
+            .card-row .apple-battery-card {
               width: 100%;
             }
             /* Restore weather card's row layout when stacked vertically (has full width) */
-            .weather-energy-row .weather-card-inner {
+            .card-row .weather-card-inner {
               flex-direction: row;
               gap: 24px;
             }
-            .weather-energy-row .weather-clock-side {
+            .card-row .weather-clock-side {
               padding-right: 24px;
               border-right: 1px solid rgba(255, 255, 255, 0.1);
               padding-bottom: 0;
@@ -1115,12 +1119,12 @@ export class AppleHomeView extends HTMLElement {
             }
           }
           @container apple-home-view (max-width: 555px) {
-            .weather-energy-row .weather-card-inner {
+            .card-row .weather-card-inner {
               flex-direction: column;
               gap: 10px;
               text-align: center;
             }
-            .weather-energy-row .weather-clock-side {
+            .card-row .weather-clock-side {
               padding-right: 0;
               border-right: none;
               padding-bottom: 10px;

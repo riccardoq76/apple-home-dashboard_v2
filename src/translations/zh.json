@@ -11,7 +11,7 @@
     "unavailable": "关闭",
     "idle": "关闭",
     "heating": "加热至",
-    "cooling": "制冷至", 
+    "cooling": "制冷至",
     "auto": "自动",
     "heat_cool": "自动",
     "heat": "加热至",
@@ -66,6 +66,7 @@
     "days": "天"
   },
   "groups": {
+    "people": "家人",
     "lights": "灯光",
     "climate": "空调",
     "security": "安全",
@@ -73,7 +74,8 @@
     "media": "音响和电视",
     "vacuum": "吸尘器",
     "energy": "能源",
-    "other": "其他"
+    "other": "其他",
+    "battery": "电池"
   },
   "chip_status": {
     "secure": "安全",
@@ -86,8 +88,10 @@
     "all_unlocked": "全部已解锁",
     "motion": "运动",
     "locks": "锁",
-    "security": "安全", 
-    "covers": "遮盖",    "blinds": "百叶窗",    "garage_doors": "车库门",
+    "security": "安全",
+    "covers": "遮盖",
+    "blinds": "百叶窗",
+    "garage_doors": "车库门",
     "occupancy": "占用",
     "light": "光",
     "light_sensor": "光",
@@ -125,7 +129,9 @@
     "scenes": "场景",
     "cameras": "摄像头",
     "weather": "天气",
-    "energy": "能源"
+    "energy": "能源",
+    "batteries": "电池",
+    "calendar": "日历"
   },
   "ui_actions": {
     "done": "完成",
@@ -148,7 +154,8 @@
     "scenes": "场景",
     "cameras": "摄像头",
     "default_room": "默认房间",
-    "my_home": "我的家"
+    "my_home": "我的家",
+    "calendar": "日历"
   },
   "edit": {
     "edit_home_view": "编辑家庭视图",
@@ -167,6 +174,18 @@
     "show_ha_header": "显示 Home Assistant 标题栏",
     "hide_ha_sidebar": "隐藏 Home Assistant 侧边栏",
     "show_ha_sidebar": "显示 Home Assistant 侧边栏"
+  },
+  "people": {
+    "home": "在家",
+    "away": "外出",
+    "nobody_home": "无人在家",
+    "unknown": "未知",
+    "home_group": "在家",
+    "away_group": "外出",
+    "now": "刚刚",
+    "min": "分钟",
+    "hours": "小时",
+    "days": "天"
   },
   "battery": {
     "low_battery": "电量低",
@@ -247,7 +266,7 @@
     "file_size_limit": "文件大小必须小于5MB。",
     "image_processing": "处理图像时出错。请重试。"
   },
-    "settings": {
+  "settings": {
     "title": "家庭设置",
     "show_switches_cards_description": "在仪表板上显示开关卡片。默认禁用以保持界面简洁并专注于基本控件。",
     "include_switches_description": "如果开关被禁用，您仍可以包含希望在仪表板中显示的特定开关",
@@ -277,7 +296,13 @@
     "show_cost": "显示费用",
     "show_cost_description": "在能源仪表板上显示费用数据（如可用）",
     "show_gas": "显示燃气",
-    "show_gas_description": "在主屏幕和能源仪表板上显示燃气消耗（如已配置）"
+    "show_gas_description": "在主屏幕和能源仪表板上显示燃气消耗（如已配置）",
+    "battery_threshold": "低电量阈值",
+    "calendar_entities": "日历",
+    "calendar_entities_description": "选择要在主屏幕“日历”部分显示的日历",
+    "no_calendars": "未找到日历",
+    "show_battery": "显示电池部分",
+    "show_battery_description": "在主屏幕上显示一张列出低电量电池的卡片。“电池”标签始终会打开完整列表"
   },
   "status_messages": {
     "unavailable": "不可用",
@@ -306,5 +331,20 @@
       "windy-variant": "大风",
       "exceptional": "异常"
     }
+  },
+  "batteries": {
+    "all_ok": "所有电池电量正常",
+    "low": "低电量",
+    "low_group": "低电量",
+    "low_short": "低",
+    "ok_group": "电量充足",
+    "ok_short": "正常"
+  },
+  "calendar": {
+    "all_day": "全天",
+    "no_events": "没有即将到来的日程",
+    "no_title": "（无标题）",
+    "today": "今天",
+    "tomorrow": "明天"
   }
 }
