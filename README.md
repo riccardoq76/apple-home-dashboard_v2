@@ -83,7 +83,24 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
-## 🆕 What's New in v1.5.0
+## 🆕 What's New in v1.6.0
+
+### Exclude sensors
+- Sensors that appear in the status rows and their lists (motion, occupancy, illuminance, doors, windows, temperature, humidity, smoke, gas, moisture, batteries) can now be excluded: search for them in *Home Settings → Exclude from Dashboard*. Handy for virtual sensors or things like `browser_mod` entities
+- The status row updates right after saving, no reload needed
+- Sensors are only offered under *Exclude from Dashboard*, since they never appear on the Home page
+
+### Chips follow your exclusions
+- The chips at the top (Lights, Security, Batteries…) used to ignore the exclusion list. Excluded entities are no longer counted, and the Batteries chip, card and page follow it too
+
+### Entities hidden in Home Assistant
+- Entities you hide in Home Assistant are now hidden everywhere, including the chips, the Batteries section, favorites, Energy power sensors and the pickers in Home Settings. Previously the chips and some other places still counted them, so your chip counts may change after updating
+
+### Exclude picker
+- Battery sensors are listed even when Home Assistant marks them as diagnostic, and a saved exclusion stays visible (so it can be removed) even if the entity has since been hidden or disabled
+
+---
+## v1.5.0
 
 ### Batteries
 - **Batteries chip** next to Lights, Climate and Security: shows how many batteries are low (or "OK"). Tap it to open a summary of every battery, lowest first; tap it again to return home
@@ -288,6 +305,7 @@ strategy:
 | Batteries Section | Home Settings | Yes | Optional Home card; the Batteries chip is always shown when battery entities exist |
 | Low Battery Threshold | Home Settings | Yes | 10–50%, default 20% |
 | Calendars | Home Settings | Yes | Pick which `calendar.*` entities appear in the Calendar section |
+| Excluded Entities | Home Settings | Yes | *Exclude from Dashboard* also accepts status sensors (motion, occupancy, illuminance, doors…); chips and the Batteries section honor it |
 
 No YAML needed for any of the above.
 
