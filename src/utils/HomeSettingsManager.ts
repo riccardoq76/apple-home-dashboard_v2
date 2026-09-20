@@ -184,8 +184,8 @@ export class HomeSettingsManager {
         if (!DashboardConfig.isStatusDomain(domain)) return false;
         const entityRegistry = this.hass.entities?.[state.entity_id];
         if (entityRegistry && (entityRegistry.hidden || entityRegistry.hidden_by || entityRegistry.disabled_by)) return false;
-        // Config/diagnostic entities are never shown, so they are not worth listing
-        if (entityRegistry && (entityRegistry.entity_category === 'config' || entityRegistry.entity_category === 'diagnostic')) return false;
+        // Config/diagnostic entities are never shown, so they are not worth listing (batteries are: the Battery card includes diagnostic ones)
+        if (entityRegistry && state.attributes?.device_class !== 'battery' && (entityRegistry.entity_category === 'config' || entityRegistry.entity_category === 'diagnostic')) return false;
         const unit = state.attributes?.unit_of_measurement;
         return statusDeviceClasses.has(state.attributes?.device_class) || unit === 'lx';
       })
@@ -507,11 +507,12 @@ export class HomeSettingsManager {
       if (!entity) {
         entity = this.statusEntitiesForExclusion.find(e => e.entity_id === entityId);
       }
-      if (!entity) return '';
+      // A saved id that no longer passes the picker filters (hidden, disabled...) must stay visible so it can be removed
+      const name = entity?.friendly_name || this.hass?.states?.[entityId]?.attributes?.friendly_name || entityId;
       
       return `
         <div class="selected-entity-chip" data-entity-id="${entityId}">
-          <span class="entity-name">${entity.friendly_name}</span>
+          <span class="entity-name">${name}</span>
           <ha-icon icon="mdi:close" class="remove-entity"></ha-icon>
         </div>
       `;
