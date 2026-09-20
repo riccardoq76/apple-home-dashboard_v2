@@ -205,7 +205,7 @@ export class BatterySection {
       .apple-battery-card:not(.battery-page-list) .battery-rows { margin-top: 10px; }
       .battery-row {
         display: grid;
-        grid-template-columns: 24px minmax(0, 1fr) minmax(56px, 90px) 44px;
+        grid-template-columns: 24px minmax(0, 1fr) minmax(56px, 90px) minmax(44px, max-content);
         align-items: center;
         gap: 12px;
         padding: 9px 0;
