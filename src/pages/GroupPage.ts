@@ -235,7 +235,7 @@ export class GroupPage {
           if (!state) return false;
           const dc = state.attributes?.device_class;
           const reg = (hass.entities as any)?.[entity.entity_id];
-          if (reg?.hidden_by || reg?.disabled_by) return false;
+          if (reg?.hidden || reg?.hidden_by || reg?.disabled_by) return false;
           return (dc === 'energy' || dc === 'power') && !!state.attributes?.state_class;
         });
 

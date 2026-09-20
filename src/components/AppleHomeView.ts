@@ -293,7 +293,7 @@ export class AppleHomeView extends HTMLElement {
 
     if (event.action === 'update' && entityReg) {
       // Entity hidden or disabled → fade out
-      if (entityReg.hidden_by || entityReg.disabled_by) {
+      if (entityReg.hidden || entityReg.hidden_by || entityReg.disabled_by) {
         this.fadeOutCard(entityId);
         return;
       }

@@ -105,7 +105,7 @@ export class SectionReorderManager {
 
       // Check if entity is hidden in the entity registry
       const entityRegistry = hass.entities?.[state.entity_id];
-      if (entityRegistry && entityRegistry.hidden_by) {
+      if (entityRegistry && (entityRegistry.hidden || entityRegistry.hidden_by)) {
         return false;
       }
 
@@ -134,7 +134,7 @@ export class SectionReorderManager {
       
       // Check if entity is hidden in the entity registry
       const entityRegistry = hass.entities?.[state.entity_id];
-      if (entityRegistry && entityRegistry.hidden_by) {
+      if (entityRegistry && (entityRegistry.hidden || entityRegistry.hidden_by)) {
         return false;
       }
       

@@ -152,7 +152,7 @@ export class HomeSettingsManager {
         
         // Check if entity is hidden in the entity registry
         const entityRegistry = this.hass.entities?.[state.entity_id];
-        if (entityRegistry && entityRegistry.hidden_by) {
+        if (entityRegistry && (entityRegistry.hidden || entityRegistry.hidden_by)) {
           return false;
         }
         
@@ -207,7 +207,7 @@ export class HomeSettingsManager {
         
         // Check if entity is hidden in the entity registry
         const entityRegistry = this.hass.entities?.[state.entity_id];
-        if (entityRegistry && entityRegistry.hidden_by) {
+        if (entityRegistry && (entityRegistry.hidden || entityRegistry.hidden_by)) {
           return false;
         }
         

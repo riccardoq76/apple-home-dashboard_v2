@@ -36,7 +36,7 @@ export class FavoritesSection {
         
         // Check if entity is hidden in the entity registry
         const entityRegistry = hass.entities?.[entityId];
-        if (entityRegistry && entityRegistry.hidden_by) {
+        if (entityRegistry && (entityRegistry.hidden || entityRegistry.hidden_by)) {
           return null;
         }
         

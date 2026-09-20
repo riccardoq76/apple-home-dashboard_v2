@@ -1370,7 +1370,7 @@ export class EnergySection {
         if (state?.attributes?.device_class !== 'energy') continue;
         if (state?.attributes?.state_class !== 'total_increasing') continue;
         const reg = hass.entities[entityId] as any;
-        if (reg?.entity_category || reg?.hidden_by || reg?.disabled_by) continue;
+        if (reg?.entity_category || reg?.hidden || reg?.hidden_by || reg?.disabled_by) continue;
         energyEntityIds.push(entityId);
       }
 
@@ -1413,7 +1413,7 @@ export class EnergySection {
       if (!state?.attributes?.state_class) continue;
       const reg = hass.entities?.[entityId] as any;
       if (reg?.entity_category === 'config' || reg?.entity_category === 'diagnostic') continue;
-      if (reg?.hidden_by || reg?.disabled_by) continue;
+      if (reg?.hidden || reg?.hidden_by || reg?.disabled_by) continue;
 
       const val = EnergySection.powerInWatts(state);
       if (!isNaN(val) && val >= 0) {
