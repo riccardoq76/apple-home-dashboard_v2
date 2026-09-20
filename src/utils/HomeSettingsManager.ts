@@ -173,7 +173,8 @@ export class HomeSettingsManager {
       }))
       .sort((a, b) => a.friendly_name.localeCompare(b.friendly_name));
 
-    // Sensors shown by the status rows/lists (motion, occupancy, illuminance, doors...), so they can be excluded
+    // Sensors shown by the status rows/lists (motion, occupancy, illuminance, doors...) and the people listed by the
+    // People chip/page, so they can be excluded
     const statusDeviceClasses = new Set([
       'motion', 'occupancy', 'presence', 'illuminance', 'temperature', 'humidity', 'smoke', 'gas',
       'carbon_monoxide', 'moisture', 'door', 'window', 'opening', 'garage_door', 'battery'
@@ -181,13 +182,13 @@ export class HomeSettingsManager {
     this.statusEntitiesForExclusion = Object.values(this.hass.states)
       .filter((state: any) => {
         const domain = state.entity_id.split('.')[0];
-        if (!DashboardConfig.isStatusDomain(domain)) return false;
+        if (!DashboardConfig.isStatusDomain(domain) && domain !== 'person') return false;
         const entityRegistry = this.hass.entities?.[state.entity_id];
         if (entityRegistry && (entityRegistry.hidden || entityRegistry.hidden_by || entityRegistry.disabled_by)) return false;
         // Config/diagnostic entities are never shown, so they are not worth listing (batteries are: the Battery card includes diagnostic ones)
         if (entityRegistry && state.attributes?.device_class !== 'battery' && (entityRegistry.entity_category === 'config' || entityRegistry.entity_category === 'diagnostic')) return false;
         const unit = state.attributes?.unit_of_measurement;
-        return statusDeviceClasses.has(state.attributes?.device_class) || unit === 'lx';
+        return domain === 'person' || statusDeviceClasses.has(state.attributes?.device_class) || unit === 'lx';
       })
       .map((state: any) => ({
         entity_id: state.entity_id,
