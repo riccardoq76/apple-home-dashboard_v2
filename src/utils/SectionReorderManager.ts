@@ -85,7 +85,8 @@ export class SectionReorderManager {
     }
 
     // Add Battery section if enabled in settings and battery entities exist
-    const hasBattery = !!(await this.customizationManager.getShowBattery()) && BatterySection.hasBatteries(hass);
+    const excludedForBattery = new Set(await this.customizationManager.getExcludedFromDashboard());
+    const hasBattery = !!(await this.customizationManager.getShowBattery()) && BatterySection.hasBatteries(hass, excludedForBattery);
     if (hasBattery) {
       sections.push({
         id: 'battery_section',

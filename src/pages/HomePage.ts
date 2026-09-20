@@ -233,7 +233,8 @@ export class HomePage {
 
     // Add battery section if enabled in settings and battery entities exist
     const showBattery = await this.customizationManager?.getShowBattery();
-    if (showBattery && BatterySection.hasBatteries(hass)) {
+    const excludedForBattery = new Set(await this.customizationManager?.getExcludedFromDashboard() || []);
+    if (showBattery && BatterySection.hasBatteries(hass, excludedForBattery)) {
       availableSections.set('battery_section', async (target?: HTMLElement) => {
         await this.batterySection!.render(target || container, hass, 'home');
       });

@@ -24,7 +24,7 @@ export class BatterySection {
    * with device_class battery. Diagnostic entities are included on purpose: batteries are
    * diagnostic by default in most integrations. Sorted with the emptiest first.
    */
-  static getBatteries(hass: any, threshold: number): BatteryInfo[] {
+  static getBatteries(hass: any, threshold: number, excluded: ReadonlySet<string> = new Set()): BatteryInfo[] {
     const result: BatteryInfo[] = [];
     if (!hass?.states) return result;
 
@@ -34,9 +34,11 @@ export class BatterySection {
 
       const state = hass.states[entityId];
       if (state?.attributes?.device_class !== 'battery') continue;
+      if (excluded.has(entityId)) continue;
 
+      // hass.entities is the display registry: it exposes `hidden`, while `hidden_by` only exists in the full registry
       const registry = hass.entities?.[entityId];
-      if (registry && (registry.hidden_by || registry.disabled_by)) continue;
+      if (registry && (registry.hidden || registry.hidden_by || registry.disabled_by)) continue;
 
       const rawName: string = state.attributes.friendly_name || entityId;
       const name = rawName.replace(BATTERY_NAME_SUFFIX, '').trim() || rawName;
@@ -56,13 +58,14 @@ export class BatterySection {
     return result.sort((a, b) => rank(a) - rank(b) || a.name.localeCompare(b.name));
   }
 
-  static hasBatteries(hass: any): boolean {
-    return BatterySection.getBatteries(hass, 0).length > 0;
+  static hasBatteries(hass: any, excluded: ReadonlySet<string> = new Set()): boolean {
+    return BatterySection.getBatteries(hass, 0, excluded).length > 0;
   }
 
   async render(container: HTMLElement, hass: any, context: 'home' | 'page' = 'home'): Promise<void> {
     const threshold = await this.customizationManager.getBatteryThreshold();
-    const batteries = BatterySection.getBatteries(hass, threshold);
+    const excluded = new Set(await this.customizationManager.getExcludedFromDashboard());
+    const batteries = BatterySection.getBatteries(hass, threshold, excluded);
     if (batteries.length === 0) return;
 
     this.injectStyles(container);

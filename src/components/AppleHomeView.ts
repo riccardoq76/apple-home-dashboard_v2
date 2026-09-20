@@ -2486,8 +2486,17 @@ export class AppleHomeView extends HTMLElement {
       if (!this.config?.pageType || this.config?.pageType === 'home') {
         this.diffLists(oldHome.excluded_from_home, newHome.excluded_from_home, toRemove, toAdd);
       }
+      // Sensors have no card: they live in the status row and its lists, so rebuild the page
+      const involvesSensor = [...toRemove, ...toAdd].some(id => ['sensor', 'binary_sensor'].includes(id.split('.')[0]));
+      if (involvesSensor) {
+        this._rendered = false;
+        await this.renderPage('refreshCallback');
+        return;
+      }
       for (const entityId of toRemove) { this.fadeOutCard(entityId); didChange = true; }
       for (const entityId of toAdd) { this.addCardToDOM(entityId); didChange = true; }
+      // The chips count entities too, so they follow the exclusion list
+      if (toRemove.size > 0 || toAdd.size > 0) this.chipsElement?.refresh();
 
       // --- Favorites ---
       const oldFav = new Set<string>(oldHome.favorites || []);

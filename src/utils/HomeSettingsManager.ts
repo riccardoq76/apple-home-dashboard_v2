@@ -68,6 +68,8 @@ export class HomeSettingsManager {
     calendarEntities: []
   };
   private availableEntities: any[] = [];
+  // Sensors that appear in status rows, chips and their lists: selectable only in the exclude lists
+  private statusEntitiesForExclusion: any[] = [];
   private allEntitiesForInclusion: any[] = [];
 
   constructor(customizationManager: CustomizationManager, onSaveCallback: () => void) {
@@ -160,6 +162,32 @@ export class HomeSettingsManager {
         }
         
         return true;
+      })
+      .map((state: any) => ({
+        entity_id: state.entity_id,
+        friendly_name: state.attributes.friendly_name || state.entity_id,
+        domain: state.entity_id.split('.')[0],
+        state: state.state,
+        attributes: state.attributes,
+        area_id: state.attributes.area_id || null
+      }))
+      .sort((a, b) => a.friendly_name.localeCompare(b.friendly_name));
+
+    // Sensors shown by the status rows/lists (motion, occupancy, illuminance, doors...), so they can be excluded
+    const statusDeviceClasses = new Set([
+      'motion', 'occupancy', 'presence', 'illuminance', 'temperature', 'humidity', 'smoke', 'gas',
+      'carbon_monoxide', 'moisture', 'door', 'window', 'opening', 'garage_door', 'battery'
+    ]);
+    this.statusEntitiesForExclusion = Object.values(this.hass.states)
+      .filter((state: any) => {
+        const domain = state.entity_id.split('.')[0];
+        if (!DashboardConfig.isStatusDomain(domain)) return false;
+        const entityRegistry = this.hass.entities?.[state.entity_id];
+        if (entityRegistry && (entityRegistry.hidden || entityRegistry.hidden_by || entityRegistry.disabled_by)) return false;
+        // Config/diagnostic entities are never shown, so they are not worth listing
+        if (entityRegistry && (entityRegistry.entity_category === 'config' || entityRegistry.entity_category === 'diagnostic')) return false;
+        const unit = state.attributes?.unit_of_measurement;
+        return statusDeviceClasses.has(state.attributes?.device_class) || unit === 'lx';
       })
       .map((state: any) => ({
         entity_id: state.entity_id,
@@ -475,6 +503,9 @@ export class HomeSettingsManager {
       let entity = this.availableEntities.find(e => e.entity_id === entityId);
       if (!entity) {
         entity = this.allEntitiesForInclusion.find(e => e.entity_id === entityId);
+      }
+      if (!entity) {
+        entity = this.statusEntitiesForExclusion.find(e => e.entity_id === entityId);
       }
       if (!entity) return '';
       
@@ -1132,6 +1163,10 @@ export class HomeSettingsManager {
       const extraAccessoryIds = new Set(this.tempSettings.extraAccessories);
       const includedFromOtherList = this.allEntitiesForInclusion.filter(e => extraAccessoryIds.has(e.entity_id));
       entityList = [...this.availableEntities, ...includedFromOtherList];
+      // Sensors can be excluded (not favorited: they have no card)
+      if (setting === 'excludedFromDashboard' || setting === 'excludedFromHome') {
+        entityList = [...entityList, ...this.statusEntitiesForExclusion];
+      }
     } else {
       entityList = this.availableEntities;
     }

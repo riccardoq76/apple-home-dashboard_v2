@@ -268,6 +268,13 @@ export class AppleChips {
     }
   }
 
+  /** Re-render now, e.g. after the exclusion list changed (a state change is not needed to notice it). */
+  refresh() {
+    if (this._hass && this.config) {
+      this.render();
+    }
+  }
+
   setOnRenderCallback(callback: () => void) {
     this.onRenderCallback = callback;
   }
@@ -352,11 +359,16 @@ export class AppleChips {
     if (!this._hass || !this.config) return;
 
     this.chips = [];
-    // Filter out hidden, disabled, config/diagnostic entities, and entities from hidden areas
+    // Entities the user excluded from the dashboard in Home Settings must not be counted either
+    const home = this.customizationManager?.getCustomization('home') || {};
+    const excludedFromDashboard = new Set<string>(home.excluded_from_dashboard || []);
+    // Filter out excluded, hidden, disabled, config/diagnostic entities, and entities from hidden areas
     const allEntities = Object.values(this._hass.states).filter((entity: any) => {
+      if (excludedFromDashboard.has(entity.entity_id)) return false;
       const entityRegistry = this._hass.entities?.[entity.entity_id];
       if (entityRegistry) {
-        if (entityRegistry.hidden_by || entityRegistry.disabled_by) return false;
+        // hass.entities is the display registry: `hidden` here, `hidden_by` only in the full registry
+        if (entityRegistry.hidden || entityRegistry.hidden_by || entityRegistry.disabled_by) return false;
         // Exclude configuration and diagnostic entities from chip calculations
         if (entityRegistry.entity_category === 'config' || entityRegistry.entity_category === 'diagnostic') return false;
       }
@@ -427,9 +439,8 @@ export class AppleChips {
       // Battery chip: shown whenever battery entities exist (like the Energy chip); the Home card is opt-in via settings
       let batteryStatusText: string | undefined;
       if (group === DeviceGroup.BATTERY) {
-        const home = this.customizationManager?.getCustomization('home') || {};
         const threshold = typeof home.battery_threshold === 'number' ? home.battery_threshold : 20;
-        const batteries = BatterySection.getBatteries(this._hass, threshold);
+        const batteries = BatterySection.getBatteries(this._hass, threshold, excludedFromDashboard);
         shouldShow = batteries.length > 0;
         const lowCount = batteries.filter(b => b.low).length;
         // Computed here rather than in getGroupStatusText: that cache is keyed on group entities, which this group has none of
