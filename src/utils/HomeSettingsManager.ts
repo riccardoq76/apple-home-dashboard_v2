@@ -1163,9 +1163,11 @@ export class HomeSettingsManager {
       const extraAccessoryIds = new Set(this.tempSettings.extraAccessories);
       const includedFromOtherList = this.allEntitiesForInclusion.filter(e => extraAccessoryIds.has(e.entity_id));
       entityList = [...this.availableEntities, ...includedFromOtherList];
-      // Sensors can be excluded (not favorited: they have no card)
-      if (setting === 'excludedFromDashboard' || setting === 'excludedFromHome') {
-        entityList = [...entityList, ...this.statusEntitiesForExclusion];
+      // Sensors can only be excluded from the dashboard: they show in status rows on the group pages,
+      // never on Home, so "exclude from Home" would do nothing. Skip ids already in the list (extra accessories).
+      if (setting === 'excludedFromDashboard') {
+        const listed = new Set(entityList.map(e => e.entity_id));
+        entityList = [...entityList, ...this.statusEntitiesForExclusion.filter(e => !listed.has(e.entity_id))];
       }
     } else {
       entityList = this.availableEntities;
