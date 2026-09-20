@@ -15,7 +15,7 @@ export interface CalendarEvent {
 
 // One color per selected calendar, in selection order
 const CALENDAR_COLORS = ['#0A84FF', '#30D158', '#FF9F0A', '#BF5AF2', '#FF453A', '#64D2FF'];
-const HOME_DAYS = 7;
+const HOME_DAYS = 3;
 const PAGE_DAYS = 30;
 const MAX_HOME_EVENTS = 5;
 const CACHE_TTL = 5 * 60 * 1000;

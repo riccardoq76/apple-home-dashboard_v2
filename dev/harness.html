@@ -127,6 +127,10 @@ const calendarEvents = {
   'calendar.famiglia': [
     { summary: 'Cena da Marco', start: { dateTime: iso(addH(3)) }, end: { dateTime: iso(addH(5)) }, location: 'Via Roma 1' },
     { summary: 'Compleanno Anna', start: { date: iso(addH(50)).slice(0, 10) }, end: { date: iso(addH(74)).slice(0, 10) } },
+    { summary: 'Palestra', start: { dateTime: iso(addH(30)) }, end: { dateTime: iso(addH(31)) } },
+    { summary: 'Pranzo con Luca', start: { dateTime: iso(addH(52)) }, end: { dateTime: iso(addH(53)) } },
+    { summary: 'Cinema', start: { dateTime: iso(addH(60)) }, end: { dateTime: iso(addH(62)) } },
+    { summary: 'Weekend fuori (oltre 3 giorni)', start: { dateTime: iso(addH(100)) }, end: { dateTime: iso(addH(102)) } },
   ],
   'calendar.lavoro': [
     { summary: 'Riunione team', start: { dateTime: iso(addH(26)) }, end: { dateTime: iso(addH(27)) } },
@@ -154,7 +158,12 @@ const hass = {
   callApi: async (method, path) => {
     console.log('callApi', method, path);
     const m = path.match(/^calendars\/([^?]+)/);
-    return m ? (calendarEvents[decodeURIComponent(m[1])] || []) : [];
+    if (!m) return [];
+    // Like Home Assistant: only events overlapping the requested [start, end) range
+    const params = new URLSearchParams(path.split('?')[1] || '');
+    const from = new Date(params.get('start')).getTime(), to = new Date(params.get('end')).getTime();
+    const at = (e) => new Date(e.dateTime || (e.date + 'T00:00:00')).getTime();
+    return (calendarEvents[decodeURIComponent(m[1])] || []).filter(e => at(e.end) > from && at(e.start) < to);
   },
   callWS: async (msg) => {
     switch (msg.type) {

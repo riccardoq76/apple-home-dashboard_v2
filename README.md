@@ -109,7 +109,7 @@ No manual YAML card definitions required.
 - Configurable low-battery threshold (10–50%)
 
 ### Calendar
-- New **Calendar** section on Home: the next 7 days of events, color-coded per calendar. Tap it for a page with the next 30 days
+- New **Calendar** section on Home: up to 5 events from the next 3 days, color-coded per calendar. Tap it for a page with the next 30 days
 - Choose which calendars to show in Home Settings → *Calendars*
 
 ### Security chip
