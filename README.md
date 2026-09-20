@@ -83,7 +83,30 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
-## 🆕 Recent Improvements (v1.1.2 & v1.1.1)
+## 🆕 What's New in v1.5.0
+
+### Batteries
+- **Batteries chip** next to Lights, Climate and Security: shows how many batteries are low (or "OK"). Tap it to open a summary of every battery, lowest first; tap it again to return home
+- Reads `sensor` entities with `device_class: battery` (percentage) and `binary_sensor` battery entities (on = low)
+- **Optional Home card** (Home Settings → *Show Batteries Section*) listing only the lowest batteries, reorderable and hideable like other sections
+- Configurable low-battery threshold (10–50%)
+
+### Calendar
+- New **Calendar** section on Home: the next 7 days of events, color-coded per calendar. Tap it for a page with the next 30 days
+- Choose which calendars to show in Home Settings → *Calendars*
+
+### Security chip
+- The Security chip now also counts open doors, windows, openings and garage doors, together with the alarm and unlocked locks (for example "2 Open, 1 Unlocked"), and updates live when a sensor changes
+
+### Energy fixes
+- Energy totals are now converted to kWh, so meters recorded in Wh (or other energy units) show correct values without workaround sensors
+- Current power honors the sensor unit (W, kW, MW), so a kW sensor no longer shows as watts
+
+### Build
+- `tsconfig` uses `moduleResolution: bundler` (the old `node` setting is deprecated in TypeScript 6)
+
+---
+## Previous Improvements (v1.1.2 & v1.1.1)
 
 ### Automatic Dashboard Updates
 - Dashboard now automatically adapts to changes without requiring page refresh
@@ -262,6 +285,9 @@ strategy:
 | Switch / Outlet Inclusion | Global logic | Auto | Outlets always shown; other switches configurable (global setting planned) |
 | Background Style | Home view | Yes | (Background presets support – configurable) |
 | Hide Header / Sidebar | UI preference | Yes | Optional minimal mode |
+| Batteries Section | Home Settings | Yes | Optional Home card; the Batteries chip is always shown when battery entities exist |
+| Low Battery Threshold | Home Settings | Yes | 10–50%, default 20% |
+| Calendars | Home Settings | Yes | Pick which `calendar.*` entities appear in the Calendar section |
 
 No YAML needed for any of the above.
 
