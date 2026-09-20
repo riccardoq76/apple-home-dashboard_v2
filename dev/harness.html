@@ -1,0 +1,224 @@
+<!doctype html>
+<html lang="it">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Apple Home harness</title>
+<!--
+  Local preview harness: loads dist/apple-home-dashboard.js with a mock `hass`.
+  Run `npm run build`, then `python3 -m http.server 8123` from the repo root and open
+  http://localhost:8123/dev/harness.html?page=home&theme=dark
+  Query: page=home|lights|climate|security|media|scenes|cameras|batteries|calendar|room, area=<id>, theme=dark|light
+  In-app navigation (chips, section titles, cards) works via location-changed; a reload returns to ?page=.
+-->
+<!-- @font-face is not registered from inside a shadow root, so load MDI globally too -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css" />
+<style>
+  html, body { margin: 0; height: 100%; }
+  body {
+    --primary-text-color: #fff; --secondary-text-color: rgba(255,255,255,.6);
+    --primary-background-color: #1c1c1e; --card-background-color: #2c2c2e;
+    --divider-color: rgba(255,255,255,.12); --primary-color: #ff9f0a;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--primary-background-color); color: var(--primary-text-color);
+  }
+  body.light {
+    --primary-text-color: #000; --secondary-text-color: rgba(0,0,0,.6);
+    --primary-background-color: #f2f2f7; --card-background-color: #fff;
+    --divider-color: rgba(0,0,0,.12);
+  }
+  #root { min-height: 100%; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+<script>
+const q = new URLSearchParams(location.search);
+if (q.get('theme') === 'light') document.body.classList.add('light');
+
+// ---- ha-icon stand-in (MDI webfont from CDN) ----
+customElements.define('ha-icon', class extends HTMLElement {
+  static get observedAttributes() { return ['icon']; }
+  constructor() {
+    super();
+    this.attachShadow({ mode: 'open' }).innerHTML =
+      '<style>@import url("https://cdn.jsdelivr.net/npm/@mdi/font@7.4.47/css/materialdesignicons.min.css");' +
+      ':host{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;--mdc-icon-size:24px}' +
+      'i{font-size:var(--mdc-icon-size,24px);line-height:1}</style><i></i>';
+  }
+  connectedCallback() { this.update(); }
+  attributeChangedCallback() { this.update(); }
+  update() {
+    const i = this.shadowRoot.querySelector('i');
+    const name = (this.getAttribute('icon') || '').replace(/^mdi:/, '');
+    if (i) i.className = 'mdi mdi-' + name;
+  }
+});
+for (const tag of ['ha-card', 'ha-svg-icon', 'ha-state-icon']) {
+  if (!customElements.get(tag)) customElements.define(tag, class extends HTMLElement {});
+}
+
+// ---- mock data ----
+const now = new Date();
+const iso = (d) => d.toISOString();
+const addH = (h, m = 0) => new Date(now.getTime() + h * 3600e3 + m * 60e3);
+const st = (entity_id, state, attributes = {}) => ({
+  entity_id, state, attributes: { friendly_name: entity_id.split('.')[1].replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()), ...attributes },
+  last_changed: iso(now), last_updated: iso(now), context: {},
+});
+
+const states = {};
+const put = (s) => { states[s.entity_id] = s; };
+[
+  st('light.living_room_lamp', 'on', { brightness: 180 }),
+  st('light.kitchen_ceiling', 'off'),
+  st('light.bedroom_lamp', 'on', { brightness: 90 }),
+  st('climate.living_room', 'heat', { current_temperature: 21.5, temperature: 22, hvac_action: 'heating' }),
+  st('lock.front_door', 'unlocked'),
+  st('alarm_control_panel.home', 'disarmed'),
+  st('binary_sensor.front_door', 'on', { device_class: 'door' }),
+  st('binary_sensor.kitchen_window', 'on', { device_class: 'window' }),
+  st('binary_sensor.bedroom_window', 'off', { device_class: 'window' }),
+  st('cover.garage', 'closed', { device_class: 'garage' }),
+  st('media_player.tv', 'playing', { device_class: 'tv', media_title: 'Film' }),
+  st('scene.movie', 'scening'),
+  st('weather.home', 'sunny', { temperature: 24, humidity: 40, forecast: [] }),
+  // batteries
+  st('sensor.front_door_battery', '12', { device_class: 'battery', unit_of_measurement: '%' }),
+  st('sensor.kitchen_window_battery', '18', { device_class: 'battery', unit_of_measurement: '%' }),
+  st('sensor.thermostat_battery', '47', { device_class: 'battery', unit_of_measurement: '%' }),
+  st('sensor.remote_battery', '85', { device_class: 'battery', unit_of_measurement: '%' }),
+  st('sensor.motion_battery', '100', { device_class: 'battery', unit_of_measurement: '%' }),
+  st('binary_sensor.smoke_battery_low', 'on', { device_class: 'battery' }),
+  st('binary_sensor.leak_battery_low', 'off', { device_class: 'battery' }),
+  // energy: the grid meter is recorded in Wh, its power sensor in kW (as on many real meters)
+  st('sensor.grid_import', '15000', { device_class: 'energy', state_class: 'total_increasing', unit_of_measurement: 'Wh' }),
+  st('sensor.grid_power', '1.5', { device_class: 'power', state_class: 'measurement', unit_of_measurement: 'kW' }),
+  // calendars
+  st('calendar.famiglia', 'on', { message: 'Cena da Marco', start_time: iso(addH(3)), end_time: iso(addH(5)) }),
+  st('calendar.lavoro', 'off', { message: 'Riunione', start_time: iso(addH(26)), end_time: iso(addH(27)) }),
+].forEach(put);
+
+const areas = [
+  { area_id: 'living_room', name: 'Soggiorno', aliases: [], picture: null },
+  { area_id: 'kitchen', name: 'Cucina', aliases: [], picture: null },
+  { area_id: 'bedroom', name: 'Camera', aliases: [], picture: null },
+];
+const areaOf = {
+  'light.living_room_lamp': 'living_room', 'climate.living_room': 'living_room', 'media_player.tv': 'living_room',
+  'light.kitchen_ceiling': 'kitchen', 'binary_sensor.kitchen_window': 'kitchen',
+  'light.bedroom_lamp': 'bedroom', 'binary_sensor.bedroom_window': 'bedroom',
+  'lock.front_door': 'living_room', 'binary_sensor.front_door': 'living_room',
+};
+const entities = {};
+const deviceOf = { 'sensor.grid_import': 'meter', 'sensor.grid_power': 'meter' };
+const entityRegistry = Object.keys(states).map((id) => {
+  const e = { entity_id: id, area_id: areaOf[id] || null, device_id: deviceOf[id] || null, hidden_by: null, disabled_by: null, entity_category: null, platform: 'mock' };
+  entities[id] = e;
+  return e;
+});
+
+const calendarEvents = {
+  'calendar.famiglia': [
+    { summary: 'Cena da Marco', start: { dateTime: iso(addH(3)) }, end: { dateTime: iso(addH(5)) }, location: 'Via Roma 1' },
+    { summary: 'Compleanno Anna', start: { date: iso(addH(50)).slice(0, 10) }, end: { date: iso(addH(74)).slice(0, 10) } },
+  ],
+  'calendar.lavoro': [
+    { summary: 'Riunione team', start: { dateTime: iso(addH(26)) }, end: { dateTime: iso(addH(27)) } },
+    { summary: 'Dentista', start: { dateTime: iso(addH(1)) }, end: { dateTime: iso(addH(1, 45)) } },
+  ],
+};
+
+// Customizations live "in the dashboard config" — emulate it in memory (+ ?custom=<json> override).
+let customizations = q.get('custom') ? JSON.parse(q.get('custom')) : { home: {}, pages: {}, ui: {}, background: {} };
+if (q.get('page') === 'home' || !q.get('page')) {
+  customizations.home = { weather_entity: 'weather.home', ...customizations.home };
+}
+const dashKey = location.pathname.split('/')[1];
+
+const hass = {
+  states, entities,
+  devices: {}, areas: Object.fromEntries(areas.map(a => [a.area_id, a])),
+  language: 'it', locale: { language: 'it', number_format: 'language', time_format: '24' },
+  config: { location_name: 'Casa', unit_system: { temperature: '°C' }, time_zone: 'Europe/Rome' },
+  themes: { darkMode: q.get('theme') !== 'light' }, selectedTheme: null,
+  user: { name: 'Demo', is_admin: true },
+  connection: { subscribeEvents: async () => () => {}, subscribeMessage: async () => () => {} },
+  localize: (k) => k,
+  callService: async (d, s, data) => console.log('callService', d, s, data),
+  callApi: async (method, path) => {
+    console.log('callApi', method, path);
+    const m = path.match(/^calendars\/([^?]+)/);
+    return m ? (calendarEvents[decodeURIComponent(m[1])] || []) : [];
+  },
+  callWS: async (msg) => {
+    switch (msg.type) {
+      case 'config/area_registry/list': return areas;
+      case 'config/device_registry/list': return [];
+      case 'config/entity_registry/list': return entityRegistry;
+      case 'lovelace/config': return { views: [], customizations };
+      case 'lovelace/config/save': customizations = msg.config.customizations; console.log('saved', customizations); return null;
+      case 'calendar/event/list': return calendarEvents[msg.entity_id] || [];
+      case 'weather/get_forecasts': return { forecast: [] };
+      case 'energy/get_prefs':
+        return { energy_sources: [{ type: 'grid', flow_from: [{ stat_energy_from: 'sensor.grid_import' }], flow_to: [] }], device_consumption: [] };
+      case 'recorder/statistics_during_period': {
+        // Mimic the recorder: statistics are in the recorded unit (Wh) unless `units.energy` asks for kWh.
+        console.log('statistics request units:', JSON.stringify(msg.units || null));
+        const factor = msg.units?.energy === 'kWh' ? 1 / 1000 : 1;
+        const step = msg.period === 'day' ? 24 : 1;
+        const out = {};
+        for (const id of msg.statistic_ids) {
+          out[id] = [];
+          for (let t = new Date(msg.start_time).getTime(); t < new Date(msg.end_time).getTime(); t += step * 3600e3) {
+            out[id].push({ start: new Date(t).toISOString(), end: new Date(t + step * 3600e3).toISOString(), change: 500 * step * factor });
+          }
+        }
+        return out;
+      }
+      default: console.warn('unmocked WS', msg); return null;
+    }
+  },
+};
+window.__hass = hass;
+window.__getCustomizations = () => customizations;
+
+// ---- mount ----
+// Emulates HA's router: the strategy views are addressed by path (/dev/security, /dev/room-kitchen, ...).
+const GROUPS = { lights: 'lighting', lighting: 'lighting', climate: 'climate', security: 'security', media: 'media', other: 'other', battery: 'battery' };
+function configFor(page) {
+  const cfg = { type: 'custom:apple-home-view', title: 'Casa', pageType: page, customizations };
+  if (GROUPS[page]) { cfg.pageType = 'group'; cfg.deviceGroup = GROUPS[page]; }
+  if (page === 'room' || page.startsWith('room-')) {
+    cfg.pageType = 'room';
+    cfg.areaId = page.startsWith('room-') ? page.slice(5) : (q.get('area') || 'living_room');
+    cfg.areaName = areas.find(a => a.area_id === cfg.areaId)?.name || cfg.areaId;
+  }
+  return cfg;
+}
+async function mount(page) {
+  const root = document.getElementById('root');
+  root.innerHTML = '';
+  const el = document.createElement('apple-home-view');
+  root.appendChild(el);
+  await el.setConfig(configFor(page));
+  el.hass = hass;
+  window.__view = el;
+}
+// First load uses ?page=; later navigation (pushState + location-changed) uses the last path segment.
+const pageFromPath = () => {
+  const seg = location.pathname.split('/').filter(Boolean);
+  const last = seg[seg.length - 1] || '';
+  return seg.length > 1 && !last.endsWith('.html') ? last : (q.get('page') || 'home');
+};
+const script = document.createElement('script');
+script.src = '../dist/apple-home-dashboard.js';
+script.onload = () => {
+  mount(pageFromPath());
+  window.addEventListener('location-changed', () => mount(pageFromPath()));
+  window.addEventListener('popstate', () => mount(pageFromPath()));
+};
+document.body.appendChild(script);
+</script>
+</body>
+</html>

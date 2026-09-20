@@ -4,11 +4,13 @@ import { localize } from './LocalizationService';
 import { RTLHelper } from './RTLHelper';
 import { injectLiquidGlassStyles, LiquidGlassClasses } from './LiquidGlassStyles';
 import { EnergySection } from '../sections/EnergySection';
+import { BatterySection } from '../sections/BatterySection';
+import { CalendarSection } from '../sections/CalendarSection';
 
 interface SectionItem {
   id: string;
   name: string;
-  type: 'area' | 'scenes' | 'cameras' | 'favorites' | 'weather' | 'energy';
+  type: 'area' | 'scenes' | 'cameras' | 'favorites' | 'weather' | 'energy' | 'battery' | 'calendar';
   visible: boolean;
   order: number;
 }
@@ -70,6 +72,30 @@ export class SectionReorderManager {
       });
     }
 
+    // Add Calendar section if calendars are selected in settings
+    const hasCalendar = await new CalendarSection(this.customizationManager).hasCalendars(hass);
+    if (hasCalendar) {
+      sections.push({
+        id: 'calendar_section',
+        name: localize('section_titles.calendar'),
+        type: 'calendar',
+        visible: !hiddenSections.includes('calendar_section'),
+        order: sectionOrder.indexOf('calendar_section') !== -1 ? sectionOrder.indexOf('calendar_section') : (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0)
+      });
+    }
+
+    // Add Battery section if enabled in settings and battery entities exist
+    const hasBattery = !!(await this.customizationManager.getShowBattery()) && BatterySection.hasBatteries(hass);
+    if (hasBattery) {
+      sections.push({
+        id: 'battery_section',
+        name: localize('section_titles.batteries'),
+        type: 'battery',
+        visible: !hiddenSections.includes('battery_section'),
+        order: sectionOrder.indexOf('battery_section') !== -1 ? sectionOrder.indexOf('battery_section') : (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0)
+      });
+    }
+
     // Add Cameras section (first in default order)
     const cameraEntities = Object.values(hass.states).filter((state: any) => {
       if (!state.entity_id.startsWith('camera.')) {
@@ -95,7 +121,7 @@ export class SectionReorderManager {
         name: localize('section_titles.cameras'),
         type: 'cameras',
         visible: !hiddenSections.includes('cameras_section'),
-        order: sectionOrder.indexOf('cameras_section') !== -1 ? sectionOrder.indexOf('cameras_section') : (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0)
+        order: sectionOrder.indexOf('cameras_section') !== -1 ? sectionOrder.indexOf('cameras_section') : (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0) + (hasBattery ? 1 : 0)
       });
     }
 
@@ -120,7 +146,7 @@ export class SectionReorderManager {
     });
     
     if (scenesEntities.length > 0) {
-      const baseOrder = (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0) + (cameraEntities.length > 0 ? 1 : 0);
+      const baseOrder = (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0) + (hasBattery ? 1 : 0) + (cameraEntities.length > 0 ? 1 : 0);
       sections.push({
         id: 'scenes_section',
         name: localize('section_titles.scenes'),
@@ -133,7 +159,7 @@ export class SectionReorderManager {
     // Add Favorites section (third in default order)
     const favoriteAccessories = await this.customizationManager.getFavoriteAccessories();
     if (favoriteAccessories.length > 0) {
-      const baseOrder = (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0) + (cameraEntities.length > 0 ? 1 : 0) + (scenesEntities.length > 0 ? 1 : 0);
+      const baseOrder = (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0) + (hasBattery ? 1 : 0) + (cameraEntities.length > 0 ? 1 : 0) + (scenesEntities.length > 0 ? 1 : 0);
       sections.push({
         id: 'favorites_section',
         name: localize('section_titles.favorites'),
@@ -148,7 +174,7 @@ export class SectionReorderManager {
       const areaId = area.area_id || area.id;
       const areaName = area.name || areaId;
       const baseOrder = (hasWeather ? 1 : 0) +
-                       (hasEnergy ? 1 : 0) +
+                       (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0) + (hasBattery ? 1 : 0) +
                        (cameraEntities.length > 0 ? 1 : 0) +
                        (scenesEntities.length > 0 ? 1 : 0) +
                        (favoriteAccessories.length > 0 ? 1 : 0) +
@@ -185,7 +211,7 @@ export class SectionReorderManager {
     // Add Default Room if it exists
     if (hasDefaultRoom) {
       const defaultRoomOrder = (hasWeather ? 1 : 0) +
-                              (hasEnergy ? 1 : 0) +
+                              (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0) + (hasBattery ? 1 : 0) +
                               (cameraEntities.length > 0 ? 1 : 0) +
                               (scenesEntities.length > 0 ? 1 : 0) +
                               (favoriteAccessories.length > 0 ? 1 : 0) +

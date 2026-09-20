@@ -709,6 +709,24 @@ export class CustomizationManager {
     return homeData.show_energy || false;
   }
 
+  async getShowBattery(): Promise<boolean> {
+    await this.ensureCustomizationsLoaded();
+    const homeData = this.getCustomization('home');
+    return homeData.show_battery || false;
+  }
+
+  async getBatteryThreshold(): Promise<number> {
+    await this.ensureCustomizationsLoaded();
+    const homeData = this.getCustomization('home');
+    return typeof homeData.battery_threshold === 'number' ? homeData.battery_threshold : 20;
+  }
+
+  async getCalendarEntities(): Promise<string[]> {
+    await this.ensureCustomizationsLoaded();
+    const homeData = this.getCustomization('home');
+    return Array.isArray(homeData.calendar_entities) ? homeData.calendar_entities : [];
+  }
+
   async getShowCost(): Promise<boolean> {
     await this.ensureCustomizationsLoaded();
     const homeData = this.getCustomization('home');

@@ -7,6 +7,7 @@ import { AreaSection } from '../sections/AreaSection';
 import { StatusSection } from '../sections/StatusSection';
 import { WeatherSection } from '../sections/WeatherSection';
 import { EnergySection } from '../sections/EnergySection';
+import { BatterySection } from '../sections/BatterySection';
 import { Entity } from '../types/types';
 
 export class GroupPage {
@@ -17,6 +18,7 @@ export class GroupPage {
   private statusSection?: StatusSection;
   private weatherSection?: WeatherSection;
   private energySection?: EnergySection;
+  private batterySection?: BatterySection;
   private _hass?: any;
   private _group?: DeviceGroup;
   private _config?: any;
@@ -58,6 +60,7 @@ export class GroupPage {
       this.statusSection = new StatusSection(this.customizationManager);
       this.weatherSection = new WeatherSection(this.customizationManager);
       this.energySection = new EnergySection(this.customizationManager);
+      this.batterySection = new BatterySection(this.customizationManager);
     }
   }
 
@@ -375,6 +378,13 @@ export class GroupPage {
     if (this._group === DeviceGroup.ENERGY && this.energySection) {
       availableSections.set('energy_section', async () => {
         await this.energySection!.render(container, hass, 'group');
+      });
+    }
+
+    // Add battery summary for battery group
+    if (this._group === DeviceGroup.BATTERY && this.batterySection) {
+      availableSections.set('battery_section', async () => {
+        await this.batterySection!.render(container, hass, 'page');
       });
     }
 

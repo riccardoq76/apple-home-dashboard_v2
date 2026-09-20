@@ -761,7 +761,7 @@ export class EnergySection {
       let gasUnit = 'm³';
       if (gasSource?.stat_energy_from) {
         const gasEntity = gasSource.stat_energy_from;
-        gasUnit = hass.states[gasEntity]?.attributes?.unit_of_measurement || gasUnit;
+        gasUnit = EnergySection.gasDisplayUnit(hass.states[gasEntity]?.attributes?.unit_of_measurement, gasUnit);
         const gasStats = await this.fetchPeriodStatistics(hass, [gasEntity], startOfDay, now, 'hour');
         if (gasStats?.[gasEntity]) {
           gasToday = gasStats[gasEntity].reduce((sum: number, s: any) => sum + (s.change ?? 0), 0);
@@ -949,7 +949,7 @@ export class EnergySection {
       // Gas
       let gasPeriodTotal: number | null = null;
       let gasCostTotal: number | null = null;
-      const gasUnit = (gasEntity && hass.states[gasEntity]?.attributes?.unit_of_measurement) || 'm³';
+      const gasUnit = EnergySection.gasDisplayUnit(gasEntity ? hass.states[gasEntity]?.attributes?.unit_of_measurement : undefined, 'm³');
       if (gasEntity && currentStats?.[gasEntity]) {
         gasPeriodTotal = currentStats[gasEntity].reduce((sum: number, s: any) => sum + (s.change ?? 0), 0);
       }
@@ -1066,7 +1066,10 @@ export class EnergySection {
         end_time: end.toISOString(),
         statistic_ids: entityIds,
         period: period,
-        types: ['change']
+        types: ['change'],
+        // Statistics come back in the unit the sensor was recorded in (often Wh).
+        // Ask the recorder to convert energy to kWh, like the native energy panel does.
+        units: { energy: 'kWh' }
       });
       this.periodStatsCache.set(cacheKey, { data: result, timestamp: Date.now() });
       return result;
@@ -1259,7 +1262,7 @@ export class EnergySection {
         if (state.attributes?.device_class !== 'power') continue;
         if (state.attributes?.state_class === undefined) continue;
 
-        const val = parseFloat(state.state);
+        const val = EnergySection.powerInWatts(state);
         if (!isNaN(val)) {
           totalPower += val;
           found = true;
@@ -1304,6 +1307,23 @@ export class EnergySection {
     return false;
   }
 
+  /** Power sensor value in watts, honoring the sensor's unit (W, kW, MW, mW). */
+  private static powerInWatts(state: any): number {
+    const value = parseFloat(state?.state);
+    switch (state?.attributes?.unit_of_measurement) {
+      case 'kW': return value * 1000;
+      case 'MW': return value * 1000000;
+      case 'mW': return value / 1000;
+      default: return value;
+    }
+  }
+
+  /** Gas totals in an energy unit are requested as kWh (see fetchPeriodStatistics); volumes keep their unit. */
+  private static gasDisplayUnit(entityUnit: string | undefined, fallback: string): string {
+    if (!entityUnit) return fallback;
+    return ['Wh', 'kWh', 'MWh', 'GWh', 'TWh', 'J', 'kJ', 'MJ', 'GJ', 'cal', 'kcal', 'Mcal', 'Gcal'].includes(entityUnit) ? 'kWh' : entityUnit;
+  }
+
   static getTotalPower(hass: any): number | null {
     if (!hass?.states) return null;
 
@@ -1328,7 +1348,7 @@ export class EnergySection {
           if (!state) continue;
           if (state.attributes?.device_class !== 'power') continue;
           if (state.attributes?.state_class === undefined) continue;
-          const val = parseFloat(state.state);
+          const val = EnergySection.powerInWatts(state);
           if (!isNaN(val)) {
             total += val;
             found = true;
@@ -1370,7 +1390,7 @@ export class EnergySection {
             const state = hass.states[eid];
             if (!state || state.attributes?.device_class !== 'power') continue;
             if (!state.attributes?.state_class) continue;
-            const val = parseFloat(state.state);
+            const val = EnergySection.powerInWatts(state);
             if (!isNaN(val) && val >= 0) {
               total += val;
               found = true;
@@ -1395,7 +1415,7 @@ export class EnergySection {
       if (reg?.entity_category === 'config' || reg?.entity_category === 'diagnostic') continue;
       if (reg?.hidden_by || reg?.disabled_by) continue;
 
-      const val = parseFloat(state.state);
+      const val = EnergySection.powerInWatts(state);
       if (!isNaN(val) && val >= 0) {
         total += val;
         found = true;

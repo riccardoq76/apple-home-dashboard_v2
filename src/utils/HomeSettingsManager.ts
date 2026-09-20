@@ -1,4 +1,5 @@
 import { CustomizationManager } from './CustomizationManager';
+import { CalendarSection } from '../sections/CalendarSection';
 import { DashboardConfig } from '../config/DashboardConfig';
 import { localize } from './LocalizationService';
 import { BackgroundManager } from './BackgroundManager';
@@ -21,6 +22,9 @@ export interface HomeSettingsData {
   showEnergy?: boolean;
   showCost?: boolean;
   showGas?: boolean;
+  showBattery?: boolean;
+  batteryThreshold?: number;
+  calendarEntities: string[];
 }
 
 export class HomeSettingsManager {
@@ -41,7 +45,10 @@ export class HomeSettingsManager {
     showSwitches: false,
     showEnergy: false,
     showCost: true,
-    showGas: true
+    showGas: true,
+    showBattery: false,
+    batteryThreshold: 20,
+    calendarEntities: []
   };
   private tempSettings: HomeSettingsData = {
     favoriteAccessories: [],
@@ -55,7 +62,10 @@ export class HomeSettingsManager {
     showSwitches: false,
     showEnergy: false,
     showCost: true,
-    showGas: true
+    showGas: true,
+    showBattery: false,
+    batteryThreshold: 20,
+    calendarEntities: []
   };
   private availableEntities: any[] = [];
   private allEntitiesForInclusion: any[] = [];
@@ -97,7 +107,10 @@ export class HomeSettingsManager {
       showSwitches: customizations.home?.show_switches || false,
       showEnergy: customizations.home?.show_energy || false,
       showCost: customizations.home?.show_cost !== false,
-      showGas: customizations.home?.show_gas !== false
+      showGas: customizations.home?.show_gas !== false,
+      showBattery: customizations.home?.show_battery || false,
+      batteryThreshold: typeof customizations.home?.battery_threshold === 'number' ? customizations.home.battery_threshold : 20,
+      calendarEntities: customizations.home?.calendar_entities || []
     };
 
     // Create a copy for temporary editing
@@ -116,7 +129,10 @@ export class HomeSettingsManager {
       showSwitches: this.settings.showSwitches,
       showEnergy: this.settings.showEnergy,
       showCost: this.settings.showCost,
-      showGas: this.settings.showGas
+      showGas: this.settings.showGas,
+      showBattery: this.settings.showBattery,
+      batteryThreshold: this.settings.batteryThreshold,
+      calendarEntities: [...this.settings.calendarEntities]
     };
 
     }
@@ -315,6 +331,30 @@ export class HomeSettingsManager {
       <div class="settings-section">
         <div class="settings-card switch-card">
           <div class="switch-setting-row">
+            <span class="option-text">${localize('settings.show_battery')}</span>
+            <div class="ui-setting-toggle" id="battery-toggle">
+              <div class="toggle-switch"></div>
+            </div>
+          </div>
+          <div class="switch-setting-row" id="battery-threshold-row">
+            <span class="option-text">${localize('settings.battery_threshold')}</span>
+            <select id="battery-threshold" class="settings-select">
+              ${[10, 15, 20, 30, 40, 50].map(v => `<option value="${v}" ${this.tempSettings.batteryThreshold === v ? 'selected' : ''}>${v}%</option>`).join('')}
+            </select>
+          </div>
+        </div>
+        <p class="settings-section-description">${localize('settings.show_battery_description')}</p>
+      </div>
+
+      <div class="settings-section">
+        <h3 class="settings-section-header">${localize('settings.calendar_entities')}</h3>
+        ${this.renderCalendarSelector()}
+        <p class="settings-section-description">${localize('settings.calendar_entities_description')}</p>
+      </div>
+
+      <div class="settings-section">
+        <div class="settings-card switch-card">
+          <div class="switch-setting-row">
             <span class="option-text">${localize('settings.show_cost')}</span>
             <div class="ui-setting-toggle" id="cost-toggle">
               <div class="toggle-switch"></div>
@@ -471,6 +511,22 @@ export class HomeSettingsManager {
         </div>
       `;
     }).join('');
+  }
+
+  private renderCalendarSelector(): string {
+    const escapeHtml = (value: string) => value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+    const calendars = CalendarSection.getAvailableCalendars(this.hass);
+    if (calendars.length === 0) {
+      return `<div class="settings-card"><div class="switch-setting-row"><span class="option-text">${localize('settings.no_calendars')}</span></div></div>`;
+    }
+    const rows = calendars.map(c => `
+      <div class="switch-setting-row">
+        <span class="option-text">${escapeHtml(c.name)}</span>
+        <div class="ui-setting-toggle calendar-toggle ${this.tempSettings.calendarEntities.includes(c.entityId) ? 'active' : ''}" data-entity="${escapeHtml(c.entityId)}">
+          <div class="toggle-switch"></div>
+        </div>
+      </div>`).join('');
+    return `<div class="settings-card switch-card">${rows}</div>`;
   }
 
   private renderSelectedWeatherEntity(entityId?: string): string {
@@ -640,6 +696,20 @@ export class HomeSettingsManager {
         min-height: 50px;
       }
 
+
+      .switch-setting-row + .switch-setting-row {
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+      }
+
+      .settings-select {
+        background: rgba(120, 120, 128, 0.24);
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 6px 10px;
+        font-size: 15px;
+        font-family: inherit;
+      }
 
       .settings-section-content {
         position: relative;
@@ -1312,6 +1382,9 @@ export class HomeSettingsManager {
       this.settings.showEnergy !== this.tempSettings.showEnergy ||
       this.settings.showCost !== this.tempSettings.showCost ||
       this.settings.showGas !== this.tempSettings.showGas ||
+      this.settings.showBattery !== this.tempSettings.showBattery ||
+      this.settings.batteryThreshold !== this.tempSettings.batteryThreshold ||
+      JSON.stringify(this.settings.calendarEntities) !== JSON.stringify(this.tempSettings.calendarEntities) ||
       this.settings.weatherEntity !== this.tempSettings.weatherEntity;
     
     // Apply temporary settings to actual settings
@@ -1330,6 +1403,9 @@ export class HomeSettingsManager {
     this.settings.showEnergy = this.tempSettings.showEnergy;
     this.settings.showCost = this.tempSettings.showCost;
     this.settings.showGas = this.tempSettings.showGas;
+    this.settings.showBattery = this.tempSettings.showBattery;
+    this.settings.batteryThreshold = this.tempSettings.batteryThreshold;
+    this.settings.calendarEntities = [...this.tempSettings.calendarEntities];
 
     // Start modal fade immediately (while save happens in parallel)
     if (this.modal) {
@@ -1398,6 +1474,9 @@ export class HomeSettingsManager {
     home.show_energy = this.settings.showEnergy;
     home.show_cost = this.settings.showCost;
     home.show_gas = this.settings.showGas;
+    home.show_battery = this.settings.showBattery;
+    home.battery_threshold = this.settings.batteryThreshold;
+    home.calendar_entities = this.settings.calendarEntities;
     
     const ui = this.customizationManager.getCustomization('ui') || {};
     ui.hide_header = this.settings.hideHeader;
@@ -1485,6 +1564,27 @@ export class HomeSettingsManager {
       this.refreshAutocompleteResults();
     });
 
+    this.modal.querySelector('#battery-toggle')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.tempSettings.showBattery = !this.tempSettings.showBattery;
+      this.updateUIToggle('battery-toggle', this.tempSettings.showBattery || false);
+    });
+
+    this.modal.querySelector('#battery-threshold')?.addEventListener('change', (e) => {
+      this.tempSettings.batteryThreshold = parseInt((e.target as HTMLSelectElement).value, 10);
+    });
+
+    this.modal.querySelectorAll('.calendar-toggle').forEach(toggle => {
+      toggle.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const entityId = (toggle as HTMLElement).dataset.entity!;
+        const selected = new Set(this.tempSettings.calendarEntities);
+        if (selected.has(entityId)) selected.delete(entityId); else selected.add(entityId);
+        this.tempSettings.calendarEntities = Array.from(selected);
+        toggle.classList.toggle('active', selected.has(entityId));
+      });
+    });
+
     energyToggle?.addEventListener('click', (e) => {
       e.stopPropagation();
       this.tempSettings.showEnergy = !this.tempSettings.showEnergy;
@@ -1557,6 +1657,7 @@ export class HomeSettingsManager {
     this.updateUIToggle('sidebar-toggle', this.tempSettings.hideSidebar || false);
     this.updateUIToggle('switches-toggle', this.tempSettings.showSwitches || false);
     this.updateUIToggle('energy-toggle', this.tempSettings.showEnergy || false);
+    this.updateUIToggle('battery-toggle', this.tempSettings.showBattery || false);
     this.updateUIToggle('cost-toggle', this.tempSettings.showCost !== false);
     this.updateUIToggle('gas-toggle', this.tempSettings.showGas !== false);
   }

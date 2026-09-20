@@ -3,6 +3,7 @@ import { EntityState } from '../types/types';
 import { localize } from '../utils/LocalizationService';
 import { RTLHelper } from '../utils/RTLHelper';
 import { EnergySection } from './EnergySection';
+import { BatterySection } from './BatterySection';
 
 export interface ChipConfig {
   group: DeviceGroup;
@@ -18,6 +19,7 @@ export interface ChipsConfig {
   media?: ChipConfig;
   water?: ChipConfig;
   energy?: ChipConfig;
+  battery?: ChipConfig;
 }
 
 export interface ChipData {
@@ -138,6 +140,11 @@ export class AppleChips {
         group: DeviceGroup.ENERGY,
         enabled: true,
         show_when_zero: false
+      },
+      battery: {
+        group: DeviceGroup.BATTERY,
+        enabled: true,
+        show_when_zero: false
       }
     };
   }
@@ -179,7 +186,21 @@ export class AppleChips {
     }
   }
 
-  private static readonly RELEVANT_DOMAINS = new Set(['light', 'switch', 'climate', 'alarm_control_panel', 'lock', 'media_player', 'water_heater']);
+  private static readonly RELEVANT_DOMAINS = new Set(['light', 'switch', 'climate', 'alarm_control_panel', 'lock', 'media_player', 'water_heater', 'cover']);
+  private static readonly OPENING_DEVICE_CLASSES = new Set(['door', 'window', 'opening', 'garage_door']);
+
+  /** True for door/window/opening sensors and garage doors/gates that are currently open. */
+  private static isOpenOpening(entity: EntityState): boolean {
+    const domain = entity.entity_id.split('.')[0];
+    if (domain === 'binary_sensor') {
+      return AppleChips.OPENING_DEVICE_CLASSES.has(entity.attributes?.device_class as string) && entity.state === 'on';
+    }
+    if (domain === 'cover') {
+      return DashboardConfig.isGarageDoorOrGate(entity.entity_id, entity.attributes) &&
+        (entity.state === 'open' || entity.state === 'opening' || entity.state === 'closing');
+    }
+    return false;
+  }
   private static readonly WATER_KEYWORDS = ['water', 'leak', 'flood'];
 
   private hasRelevantEntityChanges(newHass: any): boolean {
@@ -197,7 +218,10 @@ export class AppleChips {
         const isWaterEntity = AppleChips.WATER_KEYWORDS.some(kw => entityId.includes(kw)) ||
                              newHass.states[entityId]?.attributes?.device_class === 'moisture';
         const isPowerEntity = domain === 'sensor' && newHass.states[entityId]?.attributes?.device_class === 'power';
-        if (!isWaterEntity && !isPowerEntity) continue;
+        const deviceClass = newHass.states[entityId]?.attributes?.device_class;
+        const isOpeningEntity = domain === 'binary_sensor' && AppleChips.OPENING_DEVICE_CLASSES.has(deviceClass);
+        const isBatteryEntity = deviceClass === 'battery';
+        if (!isWaterEntity && !isPowerEntity && !isOpeningEntity && !isBatteryEntity) continue;
       }
 
       const oldEntity = this._hass.states[entityId];
@@ -350,7 +374,8 @@ export class AppleChips {
       { group: DeviceGroup.SECURITY, config: this.config.security },
       { group: DeviceGroup.MEDIA, config: this.config.media },
       { group: DeviceGroup.WATER, config: this.config.water },
-      { group: DeviceGroup.ENERGY, config: this.config.energy }
+      { group: DeviceGroup.ENERGY, config: this.config.energy },
+      { group: DeviceGroup.BATTERY, config: this.config.battery }
     ];
 
     for (const { group, config } of deviceGroups) {
@@ -398,10 +423,22 @@ export class AppleChips {
       if (group === DeviceGroup.ENERGY) {
         shouldShow = EnergySection.hasEnergySensors(this._hass);
       }
+
+      // Battery chip: shown whenever battery entities exist (like the Energy chip); the Home card is opt-in via settings
+      let batteryStatusText: string | undefined;
+      if (group === DeviceGroup.BATTERY) {
+        const home = this.customizationManager?.getCustomization('home') || {};
+        const threshold = typeof home.battery_threshold === 'number' ? home.battery_threshold : 20;
+        const batteries = BatterySection.getBatteries(this._hass, threshold);
+        shouldShow = batteries.length > 0;
+        const lowCount = batteries.filter(b => b.low).length;
+        // Computed here rather than in getGroupStatusText: that cache is keyed on group entities, which this group has none of
+        batteryStatusText = lowCount > 0 ? `${lowCount} ${localize('batteries.low')}` : localize('batteries.ok_short');
+      }
       
       if (shouldShow) {
         const groupStyle = DashboardConfig.getGroupStyle(group);
-        let statusText = this.getGroupStatusText(group, groupEntities);
+        let statusText = batteryStatusText ?? this.getGroupStatusText(group, groupEntities);
         
         // Get inactive background color from DashboardConfig
         const inactiveStyle = DashboardConfig.getEntityData(
@@ -873,18 +910,15 @@ export class AppleChips {
         const alarmEntities = entities.filter(entity => entity.entity_id.startsWith('alarm_control_panel.'));
         const lockEntities = entities.filter(entity => entity.entity_id.startsWith('lock.'));
         
-        const armed = alarmEntities.filter(entity => entity.state === 'armed_away' || entity.state === 'armed_home');
+        const armed = alarmEntities.filter(entity => entity.state === 'armed_away' || entity.state === 'armed_home' || entity.state === 'armed_night' || entity.state === 'armed_vacation' || entity.state === 'armed_custom_bypass');
         const unlocked = lockEntities.filter(entity => entity.state === 'unlocked');
-        
-        if (armed.length > 0 && unlocked.length > 0) {
-          statusText = `${localize('status.armed')}, ${unlocked.length} ${localize('status.unlocked')}`;
-        } else if (armed.length > 0) {
-          statusText = localize('status.armed');
-        } else if (unlocked.length > 0) {
-          statusText = `${unlocked.length} ${localize('status.unlocked')}`;
-        } else {
-          statusText = localize('chip_status.secure');
-        }
+        const openings = entities.filter(entity => AppleChips.isOpenOpening(entity));
+
+        const securityParts: string[] = [];
+        if (armed.length > 0) securityParts.push(localize('status.armed'));
+        if (openings.length > 0) securityParts.push(`${openings.length} ${localize('status.open')}`);
+        if (unlocked.length > 0) securityParts.push(`${unlocked.length} ${localize('status.unlocked')}`);
+        statusText = securityParts.length > 0 ? securityParts.join(', ') : localize('chip_status.secure');
         break;
         
       case DeviceGroup.MEDIA:
