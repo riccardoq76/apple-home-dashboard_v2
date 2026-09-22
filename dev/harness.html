@@ -73,7 +73,7 @@ const put = (s) => { states[s.entity_id] = s; };
   st('light.living_room_lamp', 'on', { brightness: 180 }),
   st('light.kitchen_ceiling', 'off'),
   st('light.bedroom_lamp', 'on', { brightness: 90 }),
-  st('climate.living_room', 'heat', { current_temperature: 21.5, temperature: 22, hvac_action: 'heating' }),
+  st('climate.living_room', 'heat', { current_temperature: 21.5, temperature: 22, hvac_action: 'heating', hvac_modes: ['off', 'heat', 'cool', 'auto'], min_temp: 16, max_temp: 30, target_temp_step: 0.5 }),
   st('lock.front_door', 'unlocked'),
   st('alarm_control_panel.home', 'disarmed'),
   st('binary_sensor.front_door', 'on', { device_class: 'door' }),

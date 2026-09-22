@@ -47,7 +47,7 @@ export interface GroupStyle {
 // =====================================================================
 
 // Special climate colors based on hvac mode
-const CLIMATE_MODE_COLORS = {
+export const CLIMATE_MODE_COLORS = {
   heat: '#ff8d13',
   heating: '#ff8d13',
   cool: '#48a0ff',

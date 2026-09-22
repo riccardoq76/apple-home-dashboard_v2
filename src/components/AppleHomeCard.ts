@@ -3,6 +3,7 @@ import { SnapshotManager } from '../utils/SnapshotManager';
 import { CardConfig, EntityState } from '../types/types';
 import { localize } from '../utils/LocalizationService';
 import { RTLHelper } from '../utils/RTLHelper';
+import { ClimateDialogManager } from '../utils/ClimateDialogManager';
 
 export class AppleHomeCard extends HTMLElement {
   private config?: CardConfig;
@@ -1086,7 +1087,14 @@ export class AppleHomeCard extends HTMLElement {
     if (target.closest('.info-icon')) {
       return;
     }
-    
+
+    // Climate entities get the custom Apple Home style thermostat dialog instead of the
+    // native Home Assistant more-info dialog.
+    if (this.domain === 'climate' && ClimateDialogManager.isSupported(this.entity)) {
+      ClimateDialogManager.open(this._hass, this.entity);
+      return;
+    }
+
     // Open more-info dialog for card area clicks
     this.dispatchEvent(new CustomEvent('hass-more-info', {
       bubbles: true,
@@ -1128,8 +1136,19 @@ export class AppleHomeCard extends HTMLElement {
         }
         break;
       case 'climate':
+        // Climate gets the custom thermostat dialog, same as tapping the card body.
+        if (ClimateDialogManager.isSupported(entityId)) {
+          ClimateDialogManager.open(this._hass, entityId);
+        } else {
+          this.dispatchEvent(new CustomEvent('hass-more-info', {
+            bubbles: true,
+            composed: true,
+            detail: { entityId }
+          }));
+        }
+        break;
       case 'water_heater':
-        // For climate/water_heater, icon click opens more-info (since it's just showing temperature)
+        // water_heater doesn't have a custom dialog yet, so it still opens native more-info
         this.dispatchEvent(new CustomEvent('hass-more-info', {
           bubbles: true,
           composed: true,
