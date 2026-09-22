@@ -83,7 +83,21 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
-## 🆕 What's New in v1.7.0
+## 🆕 What's New in v1.8.0
+
+### Thermostat
+- Tapping a climate card now opens a custom dialog that matches the real Apple Home app: drag the ring to set the temperature, tap the mode pill to cycle Heat/Cool/Auto/Off. The gear icon still opens Home Assistant's own dialog for anything this doesn't cover (fan/swing modes, presets, history). Entities with two setpoints (e.g. Ecobee-style thermostats) aren't supported by the ring yet
+
+### Calendar
+- Calendar now behaves like Battery and Energy: a **chip** showing today's event count. Tap it for the full 30-day list, tap again to return home - no more back button
+- The Home card is now optional (Home Settings → Show Calendar Section), off by default like Battery and Energy
+
+### Water
+- The Water chip is now enabled by default
+- Leak/moisture sensors now belong exclusively to Water (they used to also show up under Security), matching real Apple Home
+
+---
+## v1.7.0
 
 ### People
 - New **People chip** next to the other chips: shows how many people are home, or where a single person is. Tap it for a page with one card per person (avatar or initials, at home / away / the zone they are in, and how long ago that changed); tap a card to open the person
