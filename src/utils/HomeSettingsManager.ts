@@ -25,9 +25,14 @@ export interface HomeSettingsData {
   showBattery?: boolean;
   batteryThreshold?: number;
   calendarEntities: string[];
+  showCalendar?: boolean;
 }
 
 export class HomeSettingsManager {
+  private static escapeHtml(value: string): string {
+    return value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+  }
+
   private modal?: HTMLElement;
   private customizationManager: CustomizationManager;
   private onSaveCallback: () => void;
@@ -48,7 +53,8 @@ export class HomeSettingsManager {
     showGas: true,
     showBattery: false,
     batteryThreshold: 20,
-    calendarEntities: []
+    calendarEntities: [],
+    showCalendar: false
   };
   private tempSettings: HomeSettingsData = {
     favoriteAccessories: [],
@@ -65,7 +71,8 @@ export class HomeSettingsManager {
     showGas: true,
     showBattery: false,
     batteryThreshold: 20,
-    calendarEntities: []
+    calendarEntities: [],
+    showCalendar: false
   };
   private availableEntities: any[] = [];
   // Sensors that appear in status rows, chips and their lists: selectable only in the exclude lists
@@ -112,7 +119,8 @@ export class HomeSettingsManager {
       showGas: customizations.home?.show_gas !== false,
       showBattery: customizations.home?.show_battery || false,
       batteryThreshold: typeof customizations.home?.battery_threshold === 'number' ? customizations.home.battery_threshold : 20,
-      calendarEntities: customizations.home?.calendar_entities || []
+      calendarEntities: customizations.home?.calendar_entities || [],
+      showCalendar: customizations.home?.show_calendar || false
     };
 
     // Create a copy for temporary editing
@@ -134,7 +142,8 @@ export class HomeSettingsManager {
       showGas: this.settings.showGas,
       showBattery: this.settings.showBattery,
       batteryThreshold: this.settings.batteryThreshold,
-      calendarEntities: [...this.settings.calendarEntities]
+      calendarEntities: [...this.settings.calendarEntities],
+      showCalendar: this.settings.showCalendar
     };
 
     }
@@ -376,6 +385,18 @@ export class HomeSettingsManager {
       </div>
 
       <div class="settings-section">
+        <div class="settings-card switch-card">
+          <div class="switch-setting-row">
+            <span class="option-text">${localize('settings.show_calendar')}</span>
+            <div class="ui-setting-toggle" id="calendar-toggle">
+              <div class="toggle-switch"></div>
+            </div>
+          </div>
+        </div>
+        <p class="settings-section-description">${localize('settings.show_calendar_description')}</p>
+      </div>
+
+      <div class="settings-section">
         <h3 class="settings-section-header">${localize('settings.calendar_entities')}</h3>
         ${this.renderCalendarSelector()}
         <p class="settings-section-description">${localize('settings.calendar_entities_description')}</p>
@@ -510,10 +531,10 @@ export class HomeSettingsManager {
       }
       // A saved id that no longer passes the picker filters (hidden, disabled...) must stay visible so it can be removed
       const name = entity?.friendly_name || this.hass?.states?.[entityId]?.attributes?.friendly_name || entityId;
-      
+
       return `
-        <div class="selected-entity-chip" data-entity-id="${entityId}">
-          <span class="entity-name">${name}</span>
+        <div class="selected-entity-chip" data-entity-id="${HomeSettingsManager.escapeHtml(entityId)}">
+          <span class="entity-name">${HomeSettingsManager.escapeHtml(name)}</span>
           <ha-icon icon="mdi:close" class="remove-entity"></ha-icon>
         </div>
       `;
@@ -530,16 +551,16 @@ export class HomeSettingsManager {
       if (!entity) {
         // Entity might be saved but no longer exists - show entity_id
         return `
-          <div class="selected-entity-chip" data-entity-id="${entityId}">
-            <span class="entity-name">${entityId}</span>
+          <div class="selected-entity-chip" data-entity-id="${HomeSettingsManager.escapeHtml(entityId)}">
+            <span class="entity-name">${HomeSettingsManager.escapeHtml(entityId)}</span>
             <ha-icon icon="mdi:close" class="remove-entity"></ha-icon>
           </div>
         `;
       }
-      
+
       return `
-        <div class="selected-entity-chip" data-entity-id="${entityId}">
-          <span class="entity-name">${entity.friendly_name}</span>
+        <div class="selected-entity-chip" data-entity-id="${HomeSettingsManager.escapeHtml(entityId)}">
+          <span class="entity-name">${HomeSettingsManager.escapeHtml(entity.friendly_name)}</span>
           <ha-icon icon="mdi:close" class="remove-entity"></ha-icon>
         </div>
       `;
@@ -547,7 +568,7 @@ export class HomeSettingsManager {
   }
 
   private renderCalendarSelector(): string {
-    const escapeHtml = (value: string) => value.replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] as string));
+    const escapeHtml = HomeSettingsManager.escapeHtml;
     const calendars = CalendarSection.getAvailableCalendars(this.hass);
     if (calendars.length === 0) {
       return `<div class="settings-card"><div class="switch-setting-row"><span class="option-text">${localize('settings.no_calendars')}</span></div></div>`;
@@ -567,8 +588,8 @@ export class HomeSettingsManager {
     const state = this.hass?.states?.[entityId];
     const friendlyName = state?.attributes?.friendly_name || entityId;
     return `
-      <div class="selected-entity-chip" data-entity-id="${entityId}">
-        <span class="entity-name">${friendlyName}</span>
+      <div class="selected-entity-chip" data-entity-id="${HomeSettingsManager.escapeHtml(entityId)}">
+        <span class="entity-name">${HomeSettingsManager.escapeHtml(friendlyName)}</span>
         <ha-icon icon="mdi:close" class="remove-entity"></ha-icon>
       </div>
     `;
@@ -1249,9 +1270,9 @@ export class HomeSettingsManager {
     }
 
     resultsContainer.innerHTML = filteredEntities.map(entity => `
-      <div class="autocomplete-result" data-entity-id="${entity.entity_id}">
-        <div class="autocomplete-result-name">${entity.friendly_name}</div>
-        <div class="autocomplete-result-id">${entity.entity_id}</div>
+      <div class="autocomplete-result" data-entity-id="${HomeSettingsManager.escapeHtml(entity.entity_id)}">
+        <div class="autocomplete-result-name">${HomeSettingsManager.escapeHtml(entity.friendly_name)}</div>
+        <div class="autocomplete-result-id">${HomeSettingsManager.escapeHtml(entity.entity_id)}</div>
       </div>
     `).join('');
 
@@ -1424,6 +1445,7 @@ export class HomeSettingsManager {
       this.settings.showBattery !== this.tempSettings.showBattery ||
       this.settings.batteryThreshold !== this.tempSettings.batteryThreshold ||
       JSON.stringify(this.settings.calendarEntities) !== JSON.stringify(this.tempSettings.calendarEntities) ||
+      this.settings.showCalendar !== this.tempSettings.showCalendar ||
       this.settings.weatherEntity !== this.tempSettings.weatherEntity;
     
     // Apply temporary settings to actual settings
@@ -1445,6 +1467,7 @@ export class HomeSettingsManager {
     this.settings.showBattery = this.tempSettings.showBattery;
     this.settings.batteryThreshold = this.tempSettings.batteryThreshold;
     this.settings.calendarEntities = [...this.tempSettings.calendarEntities];
+    this.settings.showCalendar = this.tempSettings.showCalendar;
 
     // Start modal fade immediately (while save happens in parallel)
     if (this.modal) {
@@ -1516,7 +1539,8 @@ export class HomeSettingsManager {
     home.show_battery = this.settings.showBattery;
     home.battery_threshold = this.settings.batteryThreshold;
     home.calendar_entities = this.settings.calendarEntities;
-    
+    home.show_calendar = this.settings.showCalendar;
+
     const ui = this.customizationManager.getCustomization('ui') || {};
     ui.hide_header = this.settings.hideHeader;
     ui.hide_sidebar = this.settings.hideSidebar;
@@ -1609,6 +1633,12 @@ export class HomeSettingsManager {
       this.updateUIToggle('battery-toggle', this.tempSettings.showBattery || false);
     });
 
+    this.modal.querySelector('#calendar-toggle')?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      this.tempSettings.showCalendar = !this.tempSettings.showCalendar;
+      this.updateUIToggle('calendar-toggle', this.tempSettings.showCalendar || false);
+    });
+
     this.modal.querySelector('#battery-threshold')?.addEventListener('change', (e) => {
       this.tempSettings.batteryThreshold = parseInt((e.target as HTMLSelectElement).value, 10);
     });
@@ -1697,6 +1727,7 @@ export class HomeSettingsManager {
     this.updateUIToggle('switches-toggle', this.tempSettings.showSwitches || false);
     this.updateUIToggle('energy-toggle', this.tempSettings.showEnergy || false);
     this.updateUIToggle('battery-toggle', this.tempSettings.showBattery || false);
+    this.updateUIToggle('calendar-toggle', this.tempSettings.showCalendar || false);
     this.updateUIToggle('cost-toggle', this.tempSettings.showCost !== false);
     this.updateUIToggle('gas-toggle', this.tempSettings.showGas !== false);
   }

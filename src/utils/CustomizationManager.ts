@@ -715,6 +715,12 @@ export class CustomizationManager {
     return homeData.show_battery || false;
   }
 
+  async getShowCalendar(): Promise<boolean> {
+    await this.ensureCustomizationsLoaded();
+    const homeData = this.getCustomization('home');
+    return homeData.show_calendar || false;
+  }
+
   async getBatteryThreshold(): Promise<number> {
     await this.ensureCustomizationsLoaded();
     const homeData = this.getCustomization('home');

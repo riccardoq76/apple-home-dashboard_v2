@@ -40,6 +40,22 @@ export class CalendarSection {
     return selected.some(id => !!hass.states[id]);
   }
 
+  /**
+   * Count of today's events that haven't ended yet, for the Calendar chip. Fetches with the
+   * same HOME_DAYS window (and cache key) the home card uses, so when both are on screen this
+   * doesn't cost a second API call - it just counts the subset of already-fetched events that
+   * start before midnight tonight.
+   */
+  async getTodayEventCount(hass: any): Promise<number> {
+    const selected = (await this.customizationManager.getCalendarEntities()).filter(id => !!hass.states[id]);
+    if (selected.length === 0) return 0;
+
+    const events = await this.fetchEvents(hass, selected, HOME_DAYS);
+    const endOfToday = new Date();
+    endOfToday.setHours(24, 0, 0, 0);
+    return events.filter(e => e.start.getTime() < endOfToday.getTime()).length;
+  }
+
   async render(container: HTMLElement, hass: any, context: 'home' | 'page' = 'home'): Promise<void> {
     const selected = (await this.customizationManager.getCalendarEntities()).filter(id => !!hass.states[id]);
     if (selected.length === 0) return;

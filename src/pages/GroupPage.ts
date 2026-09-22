@@ -9,6 +9,7 @@ import { WeatherSection } from '../sections/WeatherSection';
 import { EnergySection } from '../sections/EnergySection';
 import { BatterySection } from '../sections/BatterySection';
 import { PeopleSection } from '../sections/PeopleSection';
+import { CalendarSection } from '../sections/CalendarSection';
 import { Entity } from '../types/types';
 
 export class GroupPage {
@@ -21,6 +22,7 @@ export class GroupPage {
   private energySection?: EnergySection;
   private batterySection?: BatterySection;
   private peopleSection?: PeopleSection;
+  private calendarSection?: CalendarSection;
   private _hass?: any;
   private _group?: DeviceGroup;
   private _config?: any;
@@ -64,6 +66,7 @@ export class GroupPage {
       this.energySection = new EnergySection(this.customizationManager);
       this.batterySection = new BatterySection(this.customizationManager);
       this.peopleSection = new PeopleSection(this.customizationManager);
+      this.calendarSection = new CalendarSection(this.customizationManager);
     }
   }
 
@@ -395,6 +398,13 @@ export class GroupPage {
     if (this._group === DeviceGroup.PEOPLE && this.peopleSection) {
       availableSections.set('people_section', async () => {
         await this.peopleSection!.render(container, hass);
+      });
+    }
+
+    // Add the 30-day event list for the calendar group
+    if (this._group === DeviceGroup.CALENDAR && this.calendarSection) {
+      availableSections.set('calendar_section', async () => {
+        await this.calendarSection!.render(container, hass, 'page');
       });
     }
 

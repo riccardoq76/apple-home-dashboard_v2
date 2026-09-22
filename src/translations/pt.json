@@ -303,7 +303,9 @@
     "calendar_entities_description": "Escolha os calendários a mostrar na seção Calendário da tela inicial",
     "no_calendars": "Nenhum calendário encontrado",
     "show_battery": "Mostrar seção de baterias",
-    "show_battery_description": "Mostra na tela inicial um cartão com as baterias fracas. O chip Baterias sempre abre a lista completa"
+    "show_battery_description": "Mostra na tela inicial um cartão com as baterias fracas. O chip Baterias sempre abre a lista completa",
+    "show_calendar": "Mostrar seção de calendário",
+    "show_calendar_description": "Mostra na tela inicial os próximos eventos dos calendários selecionados. O chip Calendário sempre abre a lista completa de 30 dias"
   },
   "status_messages": {
     "unavailable": "Indisponível",
@@ -346,7 +348,9 @@
     "no_events": "Nenhum evento próximo",
     "no_title": "(Sem título)",
     "today": "Hoje",
-    "tomorrow": "Amanhã"
+    "tomorrow": "Amanhã",
+    "chip_events": "eventos",
+    "chip_no_events": "Nenhum evento"
   },
   "climate_dialog": {
     "current": "Atual",

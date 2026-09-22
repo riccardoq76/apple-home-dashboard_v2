@@ -224,8 +224,9 @@ export class HomePage {
       });
     }
 
-    // Add calendar section if at least one calendar is selected in settings
-    if (await this.calendarSection.hasCalendars(hass)) {
+    // Add calendar section if enabled in settings and at least one calendar is selected
+    const showCalendar = await this.customizationManager?.getShowCalendar();
+    if (showCalendar && await this.calendarSection.hasCalendars(hass)) {
       availableSections.set('calendar_section', async (target?: HTMLElement) => {
         await this.calendarSection!.render(target || container, hass, 'home');
       });

@@ -303,7 +303,9 @@
     "calendar_entities_description": "Wähle die Kalender aus, die im Kalenderbereich des Startbildschirms angezeigt werden",
     "no_calendars": "Keine Kalender gefunden",
     "show_battery": "Batterie-Bereich anzeigen",
-    "show_battery_description": "Zeigt auf dem Startbildschirm eine Karte mit den schwachen Batterien. Der Batterien-Chip öffnet immer die vollständige Liste"
+    "show_battery_description": "Zeigt auf dem Startbildschirm eine Karte mit den schwachen Batterien. Der Batterien-Chip öffnet immer die vollständige Liste",
+    "show_calendar": "Kalenderbereich anzeigen",
+    "show_calendar_description": "Zeigt auf dem Startbildschirm die anstehenden Termine der ausgewählten Kalender. Der Kalender-Chip öffnet immer die vollständige 30-Tage-Liste"
   },
   "status_messages": {
     "unavailable": "Nicht verfügbar",
@@ -346,7 +348,9 @@
     "no_events": "Keine anstehenden Termine",
     "no_title": "(Kein Titel)",
     "today": "Heute",
-    "tomorrow": "Morgen"
+    "tomorrow": "Morgen",
+    "chip_events": "Termine",
+    "chip_no_events": "Keine Termine"
   },
   "climate_dialog": {
     "current": "Aktuell",

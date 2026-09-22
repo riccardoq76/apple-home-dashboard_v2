@@ -2,7 +2,7 @@
  * Apple Home Dashboard Strategy - Stateless Implementation
  * Apple Home-like automatic dashboard for Home Assistant
  * 
- * Version: 2.2.0 - Energy Dashboard
+ * Version: 1.7.0
  * Author: Apple Home Dashboard Team
  * 
  * This follows the proven mushroom-strategy pattern of stateless configuration generation.
@@ -164,19 +164,8 @@ async function generateLovelaceDashboard(
     }]
   });
 
-  views.push({
-    title: localize('pages.calendar'),
-    path: 'calendar',
-    icon: 'mdi:calendar-month',
-    panel: true,
-    subview: true,
-    cards: [{
-      type: 'custom:apple-home-view',
-      title: localize('pages.calendar'),
-      pageType: 'calendar',
-      customizations: customizations
-    }]
-  });
+  // Calendar is a device-group page like Battery/People/Energy (see the deviceGroups loop
+  // above) - it gets its 'calendar' path and view from there, not from a dedicated block.
 
   // Add room views for each area
   try {

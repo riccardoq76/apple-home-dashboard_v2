@@ -303,7 +303,9 @@
     "calendar_entities_description": "Choisissez les calendriers à afficher dans la section Calendrier de l'écran d'accueil",
     "no_calendars": "Aucun calendrier trouvé",
     "show_battery": "Afficher la section Batteries",
-    "show_battery_description": "Affiche sur l'écran d'accueil une carte avec les batteries faibles. La pastille Batteries ouvre toujours la liste complète"
+    "show_battery_description": "Affiche sur l'écran d'accueil une carte avec les batteries faibles. La pastille Batteries ouvre toujours la liste complète",
+    "show_calendar": "Afficher la section Calendrier",
+    "show_calendar_description": "Affiche sur l'écran d'accueil les prochains événements des calendriers sélectionnés. La pastille Calendrier ouvre toujours la liste complète de 30 jours"
   },
   "status_messages": {
     "unavailable": "Indisponible",
@@ -346,7 +348,9 @@
     "no_events": "Aucun événement à venir",
     "no_title": "(Sans titre)",
     "today": "Aujourd'hui",
-    "tomorrow": "Demain"
+    "tomorrow": "Demain",
+    "chip_events": "événements",
+    "chip_no_events": "Aucun événement"
   },
   "climate_dialog": {
     "current": "Actuelle",

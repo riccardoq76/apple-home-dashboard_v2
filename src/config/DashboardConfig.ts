@@ -32,6 +32,7 @@ export enum DeviceGroup {
   ENERGY = 'energy',
   BATTERY = 'battery',
   PEOPLE = 'people',
+  CALENDAR = 'calendar',
   OTHER = 'other'
 }
 
@@ -121,6 +122,11 @@ export class DashboardConfig {
       iconColor: '#0a84ff', // Blue for people
       icon: 'mdi:account-multiple',
       name: () => localize('groups.people')
+    },
+    [DeviceGroup.CALENDAR]: {
+      iconColor: '#ff453a', // Red, matching the calendar icon color used elsewhere
+      icon: 'mdi:calendar-month',
+      name: () => localize('pages.calendar') // Reuse the existing "Calendario" string, same as the page title
     },
     [DeviceGroup.OTHER]: {
       iconColor: '#ffcc0f', // Yellow for switches/outlets (same as lights)

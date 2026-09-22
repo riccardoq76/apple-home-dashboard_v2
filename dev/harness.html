@@ -199,7 +199,7 @@ window.__getCustomizations = () => customizations;
 
 // ---- mount ----
 // Emulates HA's router: the strategy views are addressed by path (/dev/security, /dev/room-kitchen, ...).
-const GROUPS = { lights: 'lighting', lighting: 'lighting', climate: 'climate', security: 'security', media: 'media', other: 'other', battery: 'battery', people: 'people' };
+const GROUPS = { lights: 'lighting', lighting: 'lighting', climate: 'climate', security: 'security', media: 'media', water: 'water', energy: 'energy', other: 'other', battery: 'battery', people: 'people', calendar: 'calendar' };
 function configFor(page) {
   const cfg = { type: 'custom:apple-home-view', title: 'Casa', pageType: page, customizations };
   if (GROUPS[page]) { cfg.pageType = 'group'; cfg.deviceGroup = GROUPS[page]; }

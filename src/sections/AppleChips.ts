@@ -5,6 +5,7 @@ import { RTLHelper } from '../utils/RTLHelper';
 import { EnergySection } from './EnergySection';
 import { BatterySection } from './BatterySection';
 import { PeopleSection } from './PeopleSection';
+import { CalendarSection } from './CalendarSection';
 
 export interface ChipConfig {
   group: DeviceGroup;
@@ -22,6 +23,7 @@ export interface ChipsConfig {
   energy?: ChipConfig;
   battery?: ChipConfig;
   people?: ChipConfig;
+  calendar?: ChipConfig;
 }
 
 export interface ChipData {
@@ -50,12 +52,39 @@ export class AppleChips {
   private statusTextCache = new Map<string, string>(); // Cache for status text
   private showSwitches: boolean = false; // Cached value for showSwitches setting
   private includedSwitches: string[] = []; // Cached value for includedSwitches setting
+  private calendarSection?: CalendarSection;
+  private calendarEventCount: number | null = null; // Filled in asynchronously, see refreshCalendarEventCount
+  private calendarCountFetchInFlight = false;
 
   constructor(container: HTMLElement, customizationManager?: any) {
     this.container = container;
     this.customizationManager = customizationManager;
     // Initialize showSwitches and includedSwitches settings
     this.updateSettings();
+    if (this.customizationManager) {
+      this.calendarSection = new CalendarSection(this.customizationManager);
+    }
+  }
+
+  /**
+   * The chip's "N eventi" status text needs today's event count, which - unlike every other
+   * chip - requires an actual API call (fetchEvents), not just a read of hass.states. Chip
+   * generation itself stays synchronous (updateChipData), so this runs in the background and
+   * re-renders once (and only once) a fresher count is known; CalendarSection's own 5-minute
+   * cache keeps repeated calls here cheap.
+   */
+  private refreshCalendarEventCount(): void {
+    if (!this.calendarSection || !this._hass || this.calendarCountFetchInFlight) return;
+    this.calendarCountFetchInFlight = true;
+    this.calendarSection.getTodayEventCount(this._hass)
+      .then(count => {
+        if (count !== this.calendarEventCount) {
+          this.calendarEventCount = count;
+          this.render();
+        }
+      })
+      .catch(() => { /* keep the previous count on failure */ })
+      .finally(() => { this.calendarCountFetchInFlight = false; });
   }
 
   private async updateSettings() {
@@ -150,6 +179,11 @@ export class AppleChips {
       },
       people: {
         group: DeviceGroup.PEOPLE,
+        enabled: true,
+        show_when_zero: false
+      },
+      calendar: {
+        group: DeviceGroup.CALENDAR,
         enabled: true,
         show_when_zero: false
       }
@@ -330,6 +364,7 @@ export class AppleChips {
     }
 
     this.updateChipData();
+    this.refreshCalendarEventCount();
 
     // Only render if we have chips to show
     if (this.chips.length === 0) {
@@ -395,7 +430,8 @@ export class AppleChips {
       { group: DeviceGroup.WATER, config: this.config.water },
       { group: DeviceGroup.ENERGY, config: this.config.energy },
       { group: DeviceGroup.BATTERY, config: this.config.battery },
-      { group: DeviceGroup.PEOPLE, config: this.config.people }
+      { group: DeviceGroup.PEOPLE, config: this.config.people },
+      { group: DeviceGroup.CALENDAR, config: this.config.calendar }
     ];
 
     for (const { group, config } of deviceGroups) {
@@ -467,10 +503,23 @@ export class AppleChips {
         shouldShow = people.length > 0;
         peopleStatusText = PeopleSection.getSummary(people);
       }
-      
+
+      // Calendar chip: shown whenever a selected calendar still exists; the event count itself
+      // needs an API call, so it's filled in asynchronously (see refreshCalendarEventCount) and
+      // read here from the last known value, defaulting to "no events" until the first fetch lands
+      let calendarStatusText: string | undefined;
+      if (group === DeviceGroup.CALENDAR) {
+        const calendarIds: string[] = Array.isArray(home.calendar_entities) ? home.calendar_entities : [];
+        shouldShow = calendarIds.some(id => !!this._hass.states[id]);
+        const count = this.calendarEventCount ?? 0;
+        calendarStatusText = count > 0
+          ? `${count} ${localize('calendar.chip_events')}`
+          : localize('calendar.chip_no_events');
+      }
+
       if (shouldShow) {
         const groupStyle = DashboardConfig.getGroupStyle(group);
-        let statusText = batteryStatusText ?? peopleStatusText ?? this.getGroupStatusText(group, groupEntities);
+        let statusText = batteryStatusText ?? peopleStatusText ?? calendarStatusText ?? this.getGroupStatusText(group, groupEntities);
         
         // Get inactive background color from DashboardConfig
         const inactiveStyle = DashboardConfig.getEntityData(

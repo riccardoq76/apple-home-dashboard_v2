@@ -303,7 +303,9 @@
     "calendar_entities_description": "Kies de agenda's die in de sectie Agenda op het startscherm worden getoond",
     "no_calendars": "Geen agenda's gevonden",
     "show_battery": "Batterijsectie tonen",
-    "show_battery_description": "Toont op het startscherm een kaart met de batterijen die bijna leeg zijn. De chip Batterijen opent altijd de volledige lijst"
+    "show_battery_description": "Toont op het startscherm een kaart met de batterijen die bijna leeg zijn. De chip Batterijen opent altijd de volledige lijst",
+    "show_calendar": "Agenda-sectie tonen",
+    "show_calendar_description": "Toont op het startscherm de aankomende gebeurtenissen van de geselecteerde agenda's. De chip Agenda opent altijd de volledige lijst van 30 dagen"
   },
   "status_messages": {
     "unavailable": "Niet beschikbaar",
@@ -346,7 +348,9 @@
     "no_events": "Geen aankomende afspraken",
     "no_title": "(Geen titel)",
     "today": "Vandaag",
-    "tomorrow": "Morgen"
+    "tomorrow": "Morgen",
+    "chip_events": "gebeurtenissen",
+    "chip_no_events": "Geen gebeurtenissen"
   },
   "climate_dialog": {
     "current": "Huidig",

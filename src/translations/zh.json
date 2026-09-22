@@ -303,7 +303,9 @@
     "calendar_entities_description": "选择要在主屏幕“日历”部分显示的日历",
     "no_calendars": "未找到日历",
     "show_battery": "显示电池部分",
-    "show_battery_description": "在主屏幕上显示一张列出低电量电池的卡片。“电池”标签始终会打开完整列表"
+    "show_battery_description": "在主屏幕上显示一张列出低电量电池的卡片。“电池”标签始终会打开完整列表",
+    "show_calendar": "显示日历部分",
+    "show_calendar_description": "在主屏幕上显示所选日历的即将到来的事件。“日历”标签始终会打开完整的30天列表"
   },
   "status_messages": {
     "unavailable": "不可用",
@@ -346,7 +348,9 @@
     "no_events": "没有即将到来的日程",
     "no_title": "（无标题）",
     "today": "今天",
-    "tomorrow": "明天"
+    "tomorrow": "明天",
+    "chip_events": "个事件",
+    "chip_no_events": "无事件"
   },
   "climate_dialog": {
     "current": "当前",

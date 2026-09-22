@@ -291,7 +291,9 @@
     "show_battery_description": "Mostra nella Home una card con le batterie scariche. Il chip Batterie apre sempre l'elenco completo",
     "calendar_entities": "Calendari",
     "calendar_entities_description": "Scegli i calendari da mostrare nella sezione Calendario della Home",
-    "no_calendars": "Nessun calendario trovato"
+    "no_calendars": "Nessun calendario trovato",
+    "show_calendar": "Mostra sezione Calendario",
+    "show_calendar_description": "Mostra nella Home i prossimi eventi dei calendari selezionati. Il chip Calendario apre sempre l'elenco completo di 30 giorni"
   },
   "status_messages": {
     "unavailable": "Non disponibile",
@@ -346,7 +348,9 @@
     "no_events": "Nessun evento in programma",
     "today": "Oggi",
     "tomorrow": "Domani",
-    "all_day": "Tutto il giorno"
+    "all_day": "Tutto il giorno",
+    "chip_events": "eventi",
+    "chip_no_events": "Nessun evento"
   },
   "climate_dialog": {
     "current": "Attuale",

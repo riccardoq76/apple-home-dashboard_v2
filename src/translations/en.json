@@ -288,7 +288,9 @@
     "show_battery_description": "Show a card on the home screen with the batteries that are low. The Batteries chip always opens the full list",
     "calendar_entities": "Calendars",
     "calendar_entities_description": "Choose the calendars to show in the Calendar section on the home screen",
-    "no_calendars": "No calendar entities found"
+    "no_calendars": "No calendar entities found",
+    "show_calendar": "Show Calendar Section",
+    "show_calendar_description": "Shows upcoming events from the selected calendars on the Home screen. The Calendar chip always opens the full 30-day list"
   },
   "status_messages": {
     "unavailable": "Unavailable",
@@ -343,7 +345,9 @@
     "no_events": "No upcoming events",
     "today": "Today",
     "tomorrow": "Tomorrow",
-    "all_day": "All day"
+    "all_day": "All day",
+    "chip_events": "events",
+    "chip_no_events": "No events"
   },
   "climate_dialog": {
     "current": "Current",
