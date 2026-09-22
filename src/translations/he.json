@@ -80,6 +80,7 @@
   "chip_status": {
     "secure": "מאובטח",
     "active": "פעיל",
+    "all_inactive": "הכל לא פעיל",
     "tv": "טלוויזיה",
     "tvs": "טלוויזיות"
   },
@@ -346,5 +347,15 @@
     "no_title": "(ללא כותרת)",
     "today": "היום",
     "tomorrow": "מחר"
+  },
+  "climate_dialog": {
+    "current": "נוכחי",
+    "threshold": "יעד",
+    "off": "כבוי",
+    "heat": "חימום",
+    "cool": "קירור",
+    "auto": "אוטומטי",
+    "dry": "ייבוש",
+    "fan_only": "מאוורר"
   }
 }

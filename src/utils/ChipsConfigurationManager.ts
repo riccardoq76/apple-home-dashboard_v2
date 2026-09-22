@@ -33,7 +33,7 @@ export class ChipsConfigurationManager {
       },
       water: {
         group: DeviceGroup.WATER,
-        enabled: false, // Disabled by default since water sensors are less common
+        enabled: true,
         show_when_zero: false
       }
     }

@@ -135,7 +135,7 @@ export class AppleChips {
       },
       water: {
         group: DeviceGroup.WATER,
-        enabled: false,
+        enabled: true,
         show_when_zero: false
       },
       energy: {
@@ -427,13 +427,18 @@ export class AppleChips {
         }
       });
 
-      // Special handling for water group since it's not in the domain mapping
+      // Special handling for water group: catches entities named after water/leak/flood that
+      // getDeviceGroup wouldn't otherwise route to Water (e.g. a sensor without device_class 'moisture').
+      // Moisture binary_sensors are already routed to Water by getDeviceGroup, so they're excluded here to avoid double-counting.
       if (group === DeviceGroup.WATER) {
+        const existingIds = new Set(groupEntities.map(e => e.entity_id));
         const waterEntities = allEntities.filter(entity =>
-          entity.entity_id.includes('water') ||
-          entity.entity_id.includes('leak') ||
-          entity.entity_id.includes('flood') ||
-          entity.attributes.device_class === 'moisture'
+          !existingIds.has(entity.entity_id) && (
+            entity.entity_id.includes('water') ||
+            entity.entity_id.includes('leak') ||
+            entity.entity_id.includes('flood') ||
+            entity.attributes.device_class === 'moisture'
+          )
         );
         groupEntities.push(...waterEntities);
       }
@@ -968,7 +973,7 @@ export class AppleChips {
         
       case DeviceGroup.WATER:
         const activeWater = entities.filter(entity => entity.state === 'on' || entity.state === 'detected');
-        statusText = activeWater.length > 0 ? `${activeWater.length} ${localize('chip_status.active')}` : localize('status.off');
+        statusText = activeWater.length > 0 ? `${activeWater.length} ${localize('chip_status.active')}` : localize('chip_status.all_inactive');
         break;
 
       case DeviceGroup.ENERGY:

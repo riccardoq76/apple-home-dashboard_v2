@@ -80,6 +80,7 @@
   "chip_status": {
     "secure": "Seguro",
     "active": "Ativo",
+    "all_inactive": "Tudo inativo",
     "tv": "TV",
     "tvs": "TVs"
   },
@@ -346,5 +347,15 @@
     "no_title": "(Sem título)",
     "today": "Hoje",
     "tomorrow": "Amanhã"
+  },
+  "climate_dialog": {
+    "current": "Atual",
+    "threshold": "Alvo",
+    "off": "Desligado",
+    "heat": "Calor",
+    "cool": "Frio",
+    "auto": "Auto",
+    "dry": "Secar",
+    "fan_only": "Ventilador"
   }
 }

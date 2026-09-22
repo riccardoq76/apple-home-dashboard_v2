@@ -309,6 +309,10 @@ export class DashboardConfig {
       if (deviceClass === 'light') {
         return DeviceGroup.LIGHTING;
       }
+      // Leak/moisture sensors are Water, matching Apple Home's dedicated Water category
+      if (deviceClass === 'moisture') {
+        return DeviceGroup.WATER;
+      }
       // Default binary sensors to Security
       return DeviceGroup.SECURITY;
     }

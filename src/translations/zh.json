@@ -80,6 +80,7 @@
   "chip_status": {
     "secure": "安全",
     "active": "活动",
+    "all_inactive": "全部不活动",
     "tv": "电视",
     "tvs": "电视"
   },
@@ -346,5 +347,15 @@
     "no_title": "（无标题）",
     "today": "今天",
     "tomorrow": "明天"
+  },
+  "climate_dialog": {
+    "current": "当前",
+    "threshold": "目标",
+    "off": "关闭",
+    "heat": "制热",
+    "cool": "制冷",
+    "auto": "自动",
+    "dry": "除湿",
+    "fan_only": "送风"
   }
 }

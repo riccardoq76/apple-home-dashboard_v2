@@ -80,6 +80,7 @@
   "chip_status": {
     "secure": "Beveiligd",
     "active": "Actief",
+    "all_inactive": "Alles inactief",
     "tv": "TV",
     "tvs": "TV's"
   },
@@ -346,5 +347,15 @@
     "no_title": "(Geen titel)",
     "today": "Vandaag",
     "tomorrow": "Morgen"
+  },
+  "climate_dialog": {
+    "current": "Huidig",
+    "threshold": "Doel",
+    "off": "Uit",
+    "heat": "Verwarmen",
+    "cool": "Koelen",
+    "auto": "Auto",
+    "dry": "Drogen",
+    "fan_only": "Ventilator"
   }
 }
