@@ -83,6 +83,14 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
+## 🆕 What's New in v1.9.1
+
+### Media player: sources and speakers
+- The now‑playing dialog has a new button at the right of the controls, like Apple's card. It opens a menu with the player's **sources** (HDMI inputs, or the apps of an Apple TV): tap one to switch
+- For players that support grouping (Sonos, HEOS, Music Assistant, Bluesound and similar), the same menu also lists the **other speakers** you can play on, with multi‑select like Apple's output picker: tick a speaker to add it to the group, untick it to remove it
+- The button only appears when there is something to choose. HomePods and Apple TVs added through Home Assistant's Apple TV integration have no grouping in Home Assistant, so they get the sources only (Apple TV apps) or no button at all (HomePod)
+
+---
 ## 🆕 What's New in v1.9.0
 
 ### Lights, switches and media players
