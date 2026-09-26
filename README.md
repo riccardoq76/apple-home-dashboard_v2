@@ -59,15 +59,15 @@ No manual YAML card definitions required.
 ## 🗂 Supported Domains & Interactions
 | Domain | Behavior (Icon Tap) | Card Tap | Notes |
 |--------|---------------------|----------|-------|
-| light | Toggle | More‑info | Standard lighting behavior |
-| switch (outlet) | Toggle | More‑info | Outlets auto‑included |
-| switch (other) | (If enabled) Toggle | More‑info | Hidden by default; can enable globally or pick specific ones |
+| light | Toggle | Apple‑style dialog | Brightness pill and color circles (the light's favorite colors in Home Assistant) |
+| switch (outlet) | Toggle | Apple‑style dialog | Outlets auto‑included |
+| switch (other) | (If enabled) Toggle | Apple‑style dialog | Hidden by default; can enable globally or pick specific ones |
 | fan | Toggle | More‑info | Styled with climate group color |
 | cover | Open/Close | More‑info | Garage / gate icons auto detected |
 | lock | Lock/Unlock | More‑info | Tall by default |
 | alarm_control_panel | (Arm/Disarm via more‑info) | More‑info | Tall by default |
-| climate | More‑info | More‑info | Shows current temperature / mode (tall by default) |
-| media_player | Play / Pause / Power | More‑info | Active style when playing |
+| climate | Apple‑style dialog | Apple‑style dialog | Shows current temperature / mode (tall by default) |
+| media_player | Play / Pause / Power | Apple‑style dialog | Active style when playing |
 | vacuum | Status display | More‑info | Tall card design with localized states (Cleaning, Docked, Returning, Paused, Idle, Error) |
 | button / input_button | Trigger | Trigger | Press actions with proper icon styling |
 | input_boolean | Toggle | More‑info | Full toggle functionality |
@@ -81,6 +81,16 @@ No manual YAML card definitions required.
 | Extra Accessories | Custom inclusion | More‑info | Manually include any Home Assistant entity not in standard domains |
 
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
+
+---
+## 🆕 What's New in v1.9.0
+
+### Lights, switches and media players
+- Tapping the body of a **light**, **switch** or **media player** card now opens a dialog in the style of the real Apple Home app (same size as the thermostat dialog: a sheet from the bottom on phones, a centered card on iPad and desktop). The icon keeps its quick action (toggle, play/pause) and the gear icon still opens Home Assistant's own dialog for everything else
+- **Lights:** a tall brightness pill (drag it or tap where you want the level, tap the icon to switch on/off) and, for lights that support color, a row of color circles. They are the light's *favorite colors* from Home Assistant's own dialog, so they match what you already set there (or Home Assistant's defaults if you never set any). The full color wheel, effects and editing the favorite colors stay in Home Assistant's dialog behind the gear
+- **Switches** (and lights that can only be switched on/off): a tall on/off toggle like in Apple Home
+- **Media players:** cover art, title and artist, a progress bar you can seek on, previous / play‑pause / next and a volume slider. Each control appears only if the player supports it
+- Not included: Apple's "automatic" light circle, the favorite star and the output picker of the now‑playing screen have no Home Assistant equivalent
 
 ---
 ## 🆕 What's New in v1.8.0
