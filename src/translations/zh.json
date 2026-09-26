@@ -361,5 +361,8 @@
     "auto": "自动",
     "dry": "除湿",
     "fan_only": "送风"
+  },
+  "media_dialog": {
+    "nothing_playing": "未在播放"
   }
 }

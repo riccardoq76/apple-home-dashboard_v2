@@ -361,5 +361,8 @@
     "auto": "Auto",
     "dry": "Déshumidifier",
     "fan_only": "Ventilateur"
+  },
+  "media_dialog": {
+    "nothing_playing": "Aucune lecture"
   }
 }

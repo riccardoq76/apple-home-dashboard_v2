@@ -358,5 +358,8 @@
     "auto": "Auto",
     "dry": "Dry",
     "fan_only": "Fan"
+  },
+  "media_dialog": {
+    "nothing_playing": "Nothing playing"
   }
 }

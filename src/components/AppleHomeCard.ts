@@ -4,6 +4,8 @@ import { CardConfig, EntityState } from '../types/types';
 import { localize } from '../utils/LocalizationService';
 import { RTLHelper } from '../utils/RTLHelper';
 import { ClimateDialogManager } from '../utils/ClimateDialogManager';
+import { ToggleDialogManager } from '../utils/ToggleDialogManager';
+import { MediaDialogManager } from '../utils/MediaDialogManager';
 
 export class AppleHomeCard extends HTMLElement {
   private config?: CardConfig;
@@ -1092,6 +1094,17 @@ export class AppleHomeCard extends HTMLElement {
     // native Home Assistant more-info dialog.
     if (this.domain === 'climate' && ClimateDialogManager.isSupported(this.entity)) {
       ClimateDialogManager.open(this._hass, this.entity);
+      return;
+    }
+
+    // Lights, switches and media players get the Apple Home style dialogs too. The icon keeps
+    // its own quick action (toggle / play-pause), see handleIconClick().
+    if ((this.domain === 'light' || this.domain === 'switch') && ToggleDialogManager.isSupported(this.entity)) {
+      ToggleDialogManager.open(this._hass, this.entity);
+      return;
+    }
+    if (this.domain === 'media_player' && MediaDialogManager.isSupported(this.entity)) {
+      MediaDialogManager.open(this._hass, this.entity);
       return;
     }
 

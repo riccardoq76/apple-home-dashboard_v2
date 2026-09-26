@@ -361,5 +361,8 @@
     "auto": "Auto",
     "dry": "Trocknen",
     "fan_only": "Lüfter"
+  },
+  "media_dialog": {
+    "nothing_playing": "Keine Wiedergabe"
   }
 }

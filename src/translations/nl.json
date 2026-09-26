@@ -361,5 +361,8 @@
     "auto": "Auto",
     "dry": "Drogen",
     "fan_only": "Ventilator"
+  },
+  "media_dialog": {
+    "nothing_playing": "Niets aan het afspelen"
   }
 }

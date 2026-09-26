@@ -361,5 +361,8 @@
     "auto": "Auto",
     "dry": "Deumidificazione",
     "fan_only": "Ventilazione"
+  },
+  "media_dialog": {
+    "nothing_playing": "Nessun contenuto"
   }
 }

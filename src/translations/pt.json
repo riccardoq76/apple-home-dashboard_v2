@@ -361,5 +361,8 @@
     "auto": "Auto",
     "dry": "Secar",
     "fan_only": "Ventilador"
+  },
+  "media_dialog": {
+    "nothing_playing": "Nada a reproduzir"
   }
 }

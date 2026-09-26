@@ -361,5 +361,8 @@
     "auto": "אוטומטי",
     "dry": "ייבוש",
     "fan_only": "מאוורר"
+  },
+  "media_dialog": {
+    "nothing_playing": "אין השמעה"
   }
 }
