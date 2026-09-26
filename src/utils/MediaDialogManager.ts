@@ -7,7 +7,8 @@ import { createHSlider, openDialogShell } from './DialogBase';
  * Artwork, title and artist, a seekable progress bar with elapsed and remaining time,
  * previous / play-pause / next and a volume slider. Every control only shows when the player
  * declares the matching feature, so a speaker without seek or volume simply has no bar.
- * Sources, sound modes, grouping and the like stay in the native dialog behind the gear icon.
+ * The button at the right of the controls opens a menu with the player's sources (HDMI, DVD...). Sound
+ * modes, grouping and the like stay in the native dialog behind the gear icon.
  */
 
 // MediaPlayerEntityFeature bit flags.
@@ -17,6 +18,7 @@ const FEATURE_VOLUME_SET = 4;
 const FEATURE_PREVIOUS_TRACK = 16;
 const FEATURE_NEXT_TRACK = 32;
 const FEATURE_TURN_ON = 128;
+const FEATURE_SELECT_SOURCE = 2048;
 const FEATURE_STOP = 4096;
 const FEATURE_PLAY = 16384;
 
@@ -104,8 +106,9 @@ function injectStyles(): void {
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 36px;
+      gap: 28px;
       margin-top: 12px;
+      position: relative;
     }
 
     .ahd-media-btn {
@@ -125,6 +128,83 @@ function injectStyles(): void {
 
     .ahd-media-btn.main {
       --mdc-icon-size: 64px;
+    }
+
+    .ahd-media-source-btn {
+      position: absolute;
+      right: 0;
+      top: 50%;
+      transform: translateY(-50%);
+      --mdc-icon-size: 28px;
+      color: rgba(255, 255, 255, 0.75);
+    }
+
+    [dir="rtl"] .ahd-media-source-btn {
+      right: auto;
+      left: 0;
+    }
+
+    .ahd-media-source-menu {
+      display: none;
+      position: absolute;
+      right: 0;
+      bottom: calc(100% + 8px);
+      min-width: 220px;
+      max-width: 100%;
+      max-height: 240px;
+      overflow-y: auto;
+      box-sizing: border-box;
+      padding: 6px;
+      border-radius: 16px;
+      background: rgba(62, 62, 68, 0.98);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+      z-index: 2;
+    }
+
+    [dir="rtl"] .ahd-media-source-menu {
+      right: auto;
+      left: 0;
+    }
+
+    .ahd-media-source-menu.open {
+      display: block;
+    }
+
+    .ahd-media-source-title {
+      padding: 8px 12px 4px;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: rgba(255, 255, 255, 0.5);
+    }
+
+    .ahd-media-source-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      width: 100%;
+      padding: 10px 12px;
+      border: none;
+      border-radius: 10px;
+      background: none;
+      color: #ffffff;
+      font-size: 16px;
+      text-align: start;
+      cursor: pointer;
+      --mdc-icon-size: 18px;
+    }
+
+    .ahd-media-source-item:active {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .ahd-media-source-item ha-icon {
+      visibility: hidden;
+    }
+
+    .ahd-media-source-item.current ha-icon {
+      visibility: visible;
     }
 
     [dir="rtl"] .ahd-media-btn ha-icon[icon="mdi:rewind"],
@@ -195,6 +275,11 @@ export class MediaDialogManager {
         <button class="ahd-media-btn prev"><ha-icon icon="mdi:rewind"></ha-icon></button>
         <button class="ahd-media-btn main"><ha-icon icon="mdi:pause"></ha-icon></button>
         <button class="ahd-media-btn next"><ha-icon icon="mdi:fast-forward"></ha-icon></button>
+        <button class="ahd-media-btn ahd-media-source-btn"><ha-icon icon="mdi:cast-audio-variant"></ha-icon></button>
+        <div class="ahd-media-source-menu">
+          <div class="ahd-media-source-title"></div>
+          <div class="ahd-media-source-list"></div>
+        </div>
       </div>
       <div class="ahd-media-volume">
         <ha-icon icon="mdi:volume-low"></ha-icon>
@@ -213,10 +298,20 @@ export class MediaDialogManager {
     const mainBtn = q<HTMLButtonElement>('.ahd-media-btn.main');
     const nextBtn = q<HTMLButtonElement>('.ahd-media-btn.next');
     const volumeRow = q<HTMLElement>('.ahd-media-volume');
+    const sourceBtn = q<HTMLButtonElement>('.ahd-media-source-btn');
+    const sourceMenu = q<HTMLElement>('.ahd-media-source-menu');
+    const sourceList = q<HTMLElement>('.ahd-media-source-list');
+    const sourceTitle = q<HTMLElement>('.ahd-media-source-title');
+    const sourceTitleText = localize('media_dialog.source');
+    // Without translations loaded (a bare card outside the Apple dashboard) localize() echoes the key back.
+    if (sourceTitleText === 'media_dialog.source') sourceTitle.style.display = 'none';
+    else sourceTitle.textContent = sourceTitleText;
 
     let lastArtUrl = '';
     let lastVolumeCall = 0;
     let lastUserVolumeAt = 0;
+    let lastUserSourceAt = 0;
+    let lastSourceSignature = '';
 
     const duration = () => {
       const d = stateObj()?.attributes?.media_duration;
@@ -314,6 +409,32 @@ export class MediaDialogManager {
         isOff ? 'mdi:power' : isPlaying ? 'mdi:pause' : 'mdi:play'
       );
 
+      // Playback source (HDMI 1, Spotify, AirPlay...): a menu on the button at the right of the controls.
+      const sources: string[] = Array.isArray(a.source_list) ? a.source_list.map(String) : [];
+      const showSource = !isOff && supports(FEATURE_SELECT_SOURCE) && sources.length > 0;
+      sourceBtn.style.display = showSource ? '' : 'none';
+      if (!showSource) sourceMenu.classList.remove('open');
+      const signature = `${sources.join('\u0000')}\u0001${a.source ?? ''}`;
+      if (showSource && signature !== lastSourceSignature && Date.now() - lastUserSourceAt > OPTIMISTIC_HOLD_MS) {
+        lastSourceSignature = signature;
+        sourceList.innerHTML = '';
+        sources.forEach(name => {
+          const item = document.createElement('button');
+          item.className = 'ahd-media-source-item' + (name === a.source ? ' current' : '');
+          const label = document.createElement('span');
+          label.textContent = name;
+          item.appendChild(label);
+          item.insertAdjacentHTML('beforeend', '<ha-icon icon="mdi:check"></ha-icon>');
+          item.addEventListener('click', () => {
+            lastUserSourceAt = Date.now();
+            sourceList.querySelectorAll('.ahd-media-source-item').forEach(el => el.classList.toggle('current', el === item));
+            sourceMenu.classList.remove('open');
+            call('select_source', { source: name });
+          });
+          sourceList.appendChild(item);
+        });
+      }
+
       const vol = a.volume_level;
       const showVolume = !isOff && supports(FEATURE_VOLUME_SET) && typeof vol === 'number';
       volumeRow.style.display = showVolume ? '' : 'none';
@@ -322,6 +443,13 @@ export class MediaDialogManager {
       }
     };
 
+    sourceBtn.addEventListener('click', () => sourceMenu.classList.toggle('open'));
+    // Listen on the whole dialog (header included), not just the body, so any tap outside the menu closes it.
+    (shell.body.parentElement ?? shell.body).addEventListener('click', (e) => {
+      if (!(e.target as Element).closest('.ahd-media-source-btn, .ahd-media-source-menu')) {
+        sourceMenu.classList.remove('open');
+      }
+    });
     prevBtn.addEventListener('click', () => call('media_previous_track'));
     nextBtn.addEventListener('click', () => call('media_next_track'));
     mainBtn.addEventListener('click', () => {

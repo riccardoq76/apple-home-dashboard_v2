@@ -363,6 +363,7 @@
     "fan_only": "送风"
   },
   "media_dialog": {
-    "nothing_playing": "未在播放"
+    "nothing_playing": "未在播放",
+    "source": "来源"
   }
 }

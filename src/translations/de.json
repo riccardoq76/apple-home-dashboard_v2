@@ -363,6 +363,7 @@
     "fan_only": "Lüfter"
   },
   "media_dialog": {
-    "nothing_playing": "Keine Wiedergabe"
+    "nothing_playing": "Keine Wiedergabe",
+    "source": "Quelle"
   }
 }

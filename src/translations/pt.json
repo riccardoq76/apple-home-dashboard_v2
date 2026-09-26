@@ -363,6 +363,7 @@
     "fan_only": "Ventilador"
   },
   "media_dialog": {
-    "nothing_playing": "Nada a reproduzir"
+    "nothing_playing": "Nada a reproduzir",
+    "source": "Fonte"
   }
 }

@@ -363,6 +363,7 @@
     "fan_only": "Ventilator"
   },
   "media_dialog": {
-    "nothing_playing": "Niets aan het afspelen"
+    "nothing_playing": "Niets aan het afspelen",
+    "source": "Bron"
   }
 }

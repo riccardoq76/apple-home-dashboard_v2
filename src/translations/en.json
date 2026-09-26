@@ -360,6 +360,7 @@
     "fan_only": "Fan"
   },
   "media_dialog": {
-    "nothing_playing": "Nothing playing"
+    "nothing_playing": "Nothing playing",
+    "source": "Source"
   }
 }

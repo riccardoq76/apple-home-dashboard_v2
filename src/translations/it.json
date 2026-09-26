@@ -363,6 +363,7 @@
     "fan_only": "Ventilazione"
   },
   "media_dialog": {
-    "nothing_playing": "Nessun contenuto"
+    "nothing_playing": "Nessun contenuto",
+    "source": "Sorgente"
   }
 }

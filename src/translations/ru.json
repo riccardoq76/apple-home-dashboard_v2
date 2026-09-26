@@ -363,6 +363,7 @@
     "fan_only": "Вентилятор"
   },
   "media_dialog": {
-    "nothing_playing": "Ничего не воспроизводится"
+    "nothing_playing": "Ничего не воспроизводится",
+    "source": "Источник"
   }
 }

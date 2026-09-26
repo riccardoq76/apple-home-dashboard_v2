@@ -363,6 +363,7 @@
     "fan_only": "מאוורר"
   },
   "media_dialog": {
-    "nothing_playing": "אין השמעה"
+    "nothing_playing": "אין השמעה",
+    "source": "מקור"
   }
 }
