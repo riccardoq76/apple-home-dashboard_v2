@@ -7,8 +7,10 @@ import { createHSlider, openDialogShell } from './DialogBase';
  * Artwork, title and artist, a seekable progress bar with elapsed and remaining time,
  * previous / play-pause / next and a volume slider. Every control only shows when the player
  * declares the matching feature, so a speaker without seek or volume simply has no bar.
- * The button at the right of the controls opens a menu with the player's sources (HDMI, DVD...). Sound
- * modes, grouping and the like stay in the native dialog behind the gear icon.
+ * The button at the right of the controls opens a menu with the player's sources (HDMI, DVD...) and,
+ * like the output picker of Apple's card, the other speakers it can be grouped with (multi-select,
+ * `media_player.join` / `unjoin`; only shown for players that support grouping). Sound modes and the
+ * rest stay in the native dialog behind the gear icon.
  */
 
 // MediaPlayerEntityFeature bit flags.
@@ -20,6 +22,7 @@ const FEATURE_NEXT_TRACK = 32;
 const FEATURE_TURN_ON = 128;
 const FEATURE_SELECT_SOURCE = 2048;
 const FEATURE_STOP = 4096;
+const FEATURE_GROUP_MEDIA = 524288;
 const FEATURE_PLAY = 16384;
 
 const VOLUME_CALL_THROTTLE_MS = 200;
@@ -151,7 +154,7 @@ function injectStyles(): void {
       bottom: calc(100% + 8px);
       min-width: 220px;
       max-width: 100%;
-      max-height: 240px;
+      max-height: 300px;
       overflow-y: auto;
       box-sizing: border-box;
       padding: 6px;
@@ -193,6 +196,15 @@ function injectStyles(): void {
       text-align: start;
       cursor: pointer;
       --mdc-icon-size: 18px;
+    }
+
+    .ahd-media-menu-section + .ahd-media-menu-section {
+      margin-top: 4px;
+    }
+
+    .ahd-media-source-item.self {
+      opacity: 0.6;
+      cursor: default;
     }
 
     .ahd-media-source-item:active {
@@ -277,8 +289,14 @@ export class MediaDialogManager {
         <button class="ahd-media-btn next"><ha-icon icon="mdi:fast-forward"></ha-icon></button>
         <button class="ahd-media-btn ahd-media-source-btn"><ha-icon icon="mdi:cast-audio-variant"></ha-icon></button>
         <div class="ahd-media-source-menu">
-          <div class="ahd-media-source-title"></div>
-          <div class="ahd-media-source-list"></div>
+          <div class="ahd-media-menu-section ahd-media-sources">
+            <div class="ahd-media-source-title"></div>
+            <div class="ahd-media-source-list"></div>
+          </div>
+          <div class="ahd-media-menu-section ahd-media-speakers">
+            <div class="ahd-media-source-title"></div>
+            <div class="ahd-media-speaker-list"></div>
+          </div>
         </div>
       </div>
       <div class="ahd-media-volume">
@@ -301,17 +319,24 @@ export class MediaDialogManager {
     const sourceBtn = q<HTMLButtonElement>('.ahd-media-source-btn');
     const sourceMenu = q<HTMLElement>('.ahd-media-source-menu');
     const sourceList = q<HTMLElement>('.ahd-media-source-list');
-    const sourceTitle = q<HTMLElement>('.ahd-media-source-title');
-    const sourceTitleText = localize('media_dialog.source');
-    // Without translations loaded (a bare card outside the Apple dashboard) localize() echoes the key back.
-    if (sourceTitleText === 'media_dialog.source') sourceTitle.style.display = 'none';
-    else sourceTitle.textContent = sourceTitleText;
+    const sourcesSection = q<HTMLElement>('.ahd-media-sources');
+    const speakersSection = q<HTMLElement>('.ahd-media-speakers');
+    const speakerList = q<HTMLElement>('.ahd-media-speaker-list');
+    const setSectionTitle = (section: HTMLElement, key: string) => {
+      const title = section.querySelector('.ahd-media-source-title') as HTMLElement;
+      const text = localize(key);
+      // Without translations loaded (a bare card outside the Apple dashboard) localize() echoes the key back.
+      if (text === key) title.style.display = 'none';
+      else title.textContent = text;
+    };
+    setSectionTitle(sourcesSection, 'media_dialog.source');
+    setSectionTitle(speakersSection, 'media_dialog.speakers');
 
     let lastArtUrl = '';
     let lastVolumeCall = 0;
     let lastUserVolumeAt = 0;
-    let lastUserSourceAt = 0;
-    let lastSourceSignature = '';
+    let lastUserMenuAt = 0;
+    let lastMenuSignature = '';
 
     const duration = () => {
       const d = stateObj()?.attributes?.media_duration;
@@ -359,6 +384,69 @@ export class MediaDialogManager {
       const url: string = a.entity_picture_local || a.entity_picture || '';
       if (!url) return '';
       return typeof currentHass.hassUrl === 'function' ? currentHass.hassUrl(url) : url;
+    };
+
+    /** Other media players that can be grouped with this one (Sonos, HEOS, Music Assistant...). */
+    const groupableSpeakers = (): { id: string; name: string }[] =>
+      Object.entries((currentHass.states || {}) as Record<string, any>)
+        .filter(([id, s]) =>
+          id.startsWith('media_player.') &&
+          id !== entityId &&
+          s.state !== 'unavailable' &&
+          ((s.attributes?.supported_features || 0) & FEATURE_GROUP_MEDIA) !== 0 &&
+          !currentHass.entities?.[id]?.hidden
+        )
+        .map(([id, s]) => ({ id, name: s.attributes?.friendly_name || id }))
+        .sort((x, y) => x.name.localeCompare(y.name));
+
+    const createMenuItem = (name: string, selected: boolean): HTMLButtonElement => {
+      const item = document.createElement('button');
+      item.className = 'ahd-media-source-item' + (selected ? ' current' : '');
+      const label = document.createElement('span');
+      label.textContent = name;
+      item.appendChild(label);
+      item.insertAdjacentHTML('beforeend', '<ha-icon icon="mdi:check"></ha-icon>');
+      return item;
+    };
+
+    const buildSources = (sources: string[], current: string | undefined) => {
+      sourceList.innerHTML = '';
+      sources.forEach(name => {
+        const item = createMenuItem(name, name === current);
+        item.addEventListener('click', () => {
+          lastUserMenuAt = Date.now();
+          sourceList.querySelectorAll('.ahd-media-source-item').forEach(el => el.classList.toggle('current', el === item));
+          sourceMenu.classList.remove('open');
+          call('select_source', { source: name });
+        });
+        sourceList.appendChild(item);
+      });
+    };
+
+    // Speakers are multi-select like Apple's output picker: the menu stays open, this player is always
+    // in the list (checked, not toggleable) and ticking another one joins it to this player's group.
+    const buildSpeakers = (speakers: { id: string; name: string }[], members: string[]) => {
+      speakerList.innerHTML = '';
+      const self = createMenuItem(stateObj()?.attributes?.friendly_name || entityId, true);
+      self.classList.add('self');
+      speakerList.appendChild(self);
+      speakers.forEach(sp => {
+        const item = createMenuItem(sp.name, members.includes(sp.id));
+        item.dataset.entity = sp.id;
+        item.addEventListener('click', () => {
+          lastUserMenuAt = Date.now();
+          const nowSelected = !item.classList.contains('current');
+          item.classList.toggle('current', nowSelected);
+          if (nowSelected) {
+            const chosen = Array.from(speakerList.querySelectorAll<HTMLElement>('.ahd-media-source-item.current:not(.self)'))
+              .map(el => el.dataset.entity as string);
+            call('join', { group_members: chosen });
+          } else {
+            currentHass.callService('media_player', 'unjoin', { entity_id: sp.id });
+          }
+        });
+        speakerList.appendChild(item);
+      });
     };
 
     refresh = () => {
@@ -409,30 +497,26 @@ export class MediaDialogManager {
         isOff ? 'mdi:power' : isPlaying ? 'mdi:pause' : 'mdi:play'
       );
 
-      // Playback source (HDMI 1, Spotify, AirPlay...): a menu on the button at the right of the controls.
+      // The menu behind the button at the right of the controls: sources and groupable speakers.
       const sources: string[] = Array.isArray(a.source_list) ? a.source_list.map(String) : [];
-      const showSource = !isOff && supports(FEATURE_SELECT_SOURCE) && sources.length > 0;
-      sourceBtn.style.display = showSource ? '' : 'none';
-      if (!showSource) sourceMenu.classList.remove('open');
-      const signature = `${sources.join('\u0000')}\u0001${a.source ?? ''}`;
-      if (showSource && signature !== lastSourceSignature && Date.now() - lastUserSourceAt > OPTIMISTIC_HOLD_MS) {
-        lastSourceSignature = signature;
-        sourceList.innerHTML = '';
-        sources.forEach(name => {
-          const item = document.createElement('button');
-          item.className = 'ahd-media-source-item' + (name === a.source ? ' current' : '');
-          const label = document.createElement('span');
-          label.textContent = name;
-          item.appendChild(label);
-          item.insertAdjacentHTML('beforeend', '<ha-icon icon="mdi:check"></ha-icon>');
-          item.addEventListener('click', () => {
-            lastUserSourceAt = Date.now();
-            sourceList.querySelectorAll('.ahd-media-source-item').forEach(el => el.classList.toggle('current', el === item));
-            sourceMenu.classList.remove('open');
-            call('select_source', { source: name });
-          });
-          sourceList.appendChild(item);
-        });
+      const showSources = !isOff && supports(FEATURE_SELECT_SOURCE) && sources.length > 0;
+      const speakers = !isOff && supports(FEATURE_GROUP_MEDIA) ? groupableSpeakers() : [];
+      const members: string[] = Array.isArray(a.group_members) ? a.group_members : [];
+      const showMenu = showSources || speakers.length > 0;
+      sourceBtn.style.display = showMenu ? '' : 'none';
+      if (!showMenu) sourceMenu.classList.remove('open');
+      sourcesSection.style.display = showSources ? '' : 'none';
+      speakersSection.style.display = speakers.length > 0 ? '' : 'none';
+      const signature = [
+        sources.join('\u0000'),
+        a.source ?? '',
+        speakers.map(s => `${s.id}=${s.name}`).join('\u0000'),
+        members.join('\u0000')
+      ].join('\u0001');
+      if (showMenu && signature !== lastMenuSignature && Date.now() - lastUserMenuAt > OPTIMISTIC_HOLD_MS) {
+        lastMenuSignature = signature;
+        buildSources(sources, a.source);
+        buildSpeakers(speakers, members);
       }
 
       const vol = a.volume_level;

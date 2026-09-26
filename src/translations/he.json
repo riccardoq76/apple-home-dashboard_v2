@@ -364,6 +364,7 @@
   },
   "media_dialog": {
     "nothing_playing": "אין השמעה",
-    "source": "מקור"
+    "source": "מקור",
+    "speakers": "רמקולים"
   }
 }

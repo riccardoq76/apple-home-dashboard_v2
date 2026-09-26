@@ -364,6 +364,7 @@
   },
   "media_dialog": {
     "nothing_playing": "未在播放",
-    "source": "来源"
+    "source": "来源",
+    "speakers": "扬声器"
   }
 }

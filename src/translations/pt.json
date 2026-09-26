@@ -364,6 +364,7 @@
   },
   "media_dialog": {
     "nothing_playing": "Nada a reproduzir",
-    "source": "Fonte"
+    "source": "Fonte",
+    "speakers": "Alto-falantes"
   }
 }

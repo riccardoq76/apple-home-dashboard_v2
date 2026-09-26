@@ -364,6 +364,7 @@
   },
   "media_dialog": {
     "nothing_playing": "Ничего не воспроизводится",
-    "source": "Источник"
+    "source": "Источник",
+    "speakers": "Колонки"
   }
 }

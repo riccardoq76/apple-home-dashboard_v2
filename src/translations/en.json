@@ -361,6 +361,7 @@
   },
   "media_dialog": {
     "nothing_playing": "Nothing playing",
-    "source": "Source"
+    "source": "Source",
+    "speakers": "Speakers"
   }
 }
