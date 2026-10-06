@@ -83,6 +83,12 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
+## 🆕 What's New in v1.11.4
+
+### Camera dialog
+- **The live video now starts.** Home Assistant's stream player asks the elements above it for the connection to Home Assistant, and the camera dialog sat outside of them, so the player drew nothing (a black view or only the snapshot). The dialog now passes those requests on to the camera card, which is inside Home Assistant. Streaming cameras (HLS, WebRTC) show their video, and cameras without a stream play as a moving image
+
+---
 ## 🆕 What's New in v1.11.3
 
 ### Camera dialog
