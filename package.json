@@ -1,6 +1,6 @@
 {
   "name": "apple-home-dashboard",
-  "version": "1.11.2",
+  "version": "1.11.3",
   "description": "Apple Home-inspired dashboard strategy for Home Assistant",
   "main": "apple-home-dashboard.js",
   "scripts": {
