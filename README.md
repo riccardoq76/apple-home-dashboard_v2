@@ -83,6 +83,14 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
+## 🆕 What's New in v1.11.1
+
+### Camera dialog fixes
+- Cameras whose live stream waits for the play button (typical on iPad and with Eufy) stayed black. The dialog now uses Home Assistant's own stream player with its video controls, like the native dialog, so you can press play without leaving it
+- While the stream is not playing you see the latest snapshot (refreshed every few seconds) instead of black, and the status says "Live" only when the video is really playing. Mute and Picture in Picture appear as soon as there is a video
+- The **Nearby accessories** button is now always shown. If the camera has no room in Home Assistant, or the room has no accessories, the sheet says so. The room is also read straight from the entity registry
+
+---
 ## 🆕 What's New in v1.11.0
 
 ### Camera dialog
