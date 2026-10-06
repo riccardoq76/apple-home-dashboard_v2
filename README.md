@@ -83,6 +83,14 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
+## 🆕 What's New in v1.10.0
+
+### Scenes
+- Tapping a **scene**, **script** or **button** card now runs it right away, like in Apple Home. Before, only the icon ran it and tapping the rest of the card opened Home Assistant's dialog with an "Execute" button. A white ring spins around the icon while it activates
+- Scenes are now **highlighted** (white card, orange icon) when every device in the scene is already in the state the scene would set, like in the Home app. A scene with no devices is never highlighted
+- The highlight needs the scene's configuration, which Home Assistant only gives to administrators and only for scenes that have an `id` (created from the UI or in `scenes.yaml`). Scenes from other integrations (HomeKit, Hue, Aqara) and non‑admin users keep the plain look
+
+---
 ## 🆕 What's New in v1.9.1
 
 ### Media player: sources and speakers
