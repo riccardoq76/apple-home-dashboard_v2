@@ -83,6 +83,18 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
+## 🆕 What's New in v1.11.0
+
+### Camera dialog
+- Tapping a **camera** card now opens a dialog in the style of the Home app: a full-screen dark view on phones and a large centered card on iPad and desktop. It shows the camera name and its status ("Live" when the camera has a stream, "Snapshot" otherwise), with the video in the middle. The video is Home Assistant's own live player, so streams (HLS / WebRTC) work as they do in Home Assistant's dialog
+- At the top right: a **mute** button (only when the camera is playing a video) and a **"..." menu** with **Picture in Picture** and **Camera settings** (Home Assistant's own dialog, for history and everything else)
+- At the bottom left, a button opens **Nearby accessories**: a sheet with the lights, switches, locks, covers, fans, thermostats, media players and alarm panels in the same room as the camera, to control them without leaving the video. The button only appears when the camera is assigned to a room in Home Assistant
+- Not included: the recordings timeline, zoom and the clips list of the real app. Home Assistant has no generic way to list recordings (it depends on the camera integration)
+
+### Maintenance
+- Code formatted with Prettier and unused imports removed; no change in behavior
+
+---
 ## 🆕 What's New in v1.10.0
 
 ### Scenes
