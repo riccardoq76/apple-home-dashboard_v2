@@ -22,6 +22,7 @@ import { dispatchNativeMoreInfo, openDialogShell } from './DialogBase';
 const FEATURE_STREAM = 2;
 
 const FALLBACK_REFRESH_TICKS = 3;
+const STREAM_ELEMENT_TIMEOUT_MS = 4000;
 
 /** Domains shown in the "nearby accessories" panel. */
 const NEARBY_DOMAINS = [
@@ -475,6 +476,28 @@ export class CameraDialogManager {
         showFallbackImage();
         view.appendChild(card);
         liveCard = card;
+
+        // Rendering the card above is what makes Home Assistant load `ha-camera-stream`. Streaming
+        // cameras then switch to that element with its own video controls, exactly like the native
+        // dialog: on iOS the stream waits for the play button, and the picture card has none.
+        const supportsStream = (((stateOf()?.attributes?.supported_features as number) || 0) & FEATURE_STREAM) !== 0;
+        if (supportsStream) {
+          await Promise.race([
+            customElements.whenDefined('ha-camera-stream'),
+            new Promise((resolve) => setTimeout(resolve, STREAM_ELEMENT_TIMEOUT_MS)),
+          ]);
+          if (token !== renderToken || !view.isConnected) return;
+          if (customElements.get('ha-camera-stream')) {
+            const stream: any = document.createElement('ha-camera-stream');
+            stream.hass = currentHass;
+            stream.stateObj = stateOf();
+            stream.controls = true;
+            stream.muted = true;
+            card.remove();
+            view.appendChild(stream);
+            liveCard = stream;
+          }
+        }
       } catch {
         if (token === renderToken) showFallbackImage();
       }
@@ -539,12 +562,19 @@ export class CameraDialogManager {
       if (!st) return;
       // The camera went (un)available while the dialog is open: rebuild the view.
       if (isUnavailable(st) !== !!view.querySelector('.ahd-cam-off')) renderView();
-      if (liveCard) liveCard.hass = currentHass;
+      if (liveCard) {
+        liveCard.hass = currentHass;
+        if ('stateObj' in liveCard) liveCard.stateObj = st;
+      }
+      const video = findVideo();
+      const playing = isPlaying();
+      const refreshStill = !playing && ticks % FALLBACK_REFRESH_TICKS === 0;
+      // A paused video (waiting for the play button) shows the latest snapshot as its poster, so the
+      // user sees the room instead of black; with no video yet the still image under the card does.
+      if (video && refreshStill) video.poster = pictureUrl(currentHass, st);
       if (fallbackImg) {
-        // Hide the still once the video plays; keep it fresh while it is what the user sees.
-        const playing = liveCard ? isPlaying() : false;
-        fallbackImg.style.display = playing ? 'none' : '';
-        if (!playing && ticks % FALLBACK_REFRESH_TICKS === 0) fallbackImg.src = pictureUrl(currentHass, st);
+        fallbackImg.style.display = playing || video ? 'none' : '';
+        if (refreshStill) fallbackImg.src = pictureUrl(currentHass, st);
       }
       nearbyCards.forEach((c) => {
         c.hass = currentHass;
