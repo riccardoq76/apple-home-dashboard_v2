@@ -229,7 +229,7 @@ export class SectionReorderManager {
         }
         return !entity.area_id;
       });
-    } catch (error) {
+    } catch {
       // If we can't determine, assume there might be a default room
       hasDefaultRoom = true;
     }

@@ -798,7 +798,7 @@ export class StatusSection {
       areas = await DataService.getAreas(this._hass);
       devices = await DataService.getDevices(this._hass);
       entities = await DataService.getEntities(this._hass);
-    } catch (error) {
+    } catch {
       // Silently handle error
     }
 
@@ -885,7 +885,7 @@ export class StatusSection {
           const areas = await DataService.getAreas(this._hass);
           const area = areas.find((a: Area) => a.area_id === roomAreaId);
           areaName = area?.name || roomAreaId;
-        } catch (error) {
+        } catch {
           // Silently handle error
         }
       } else {

@@ -99,7 +99,7 @@ export class RegistrySubscriptionManager {
           (event: any) => this.handleEntityRegistryEvent(event),
           'entity_registry_updated'
         );
-      } catch (e) {
+      } catch {
         // Event subscription not available
       }
 
@@ -109,7 +109,7 @@ export class RegistrySubscriptionManager {
           (event: any) => this.handleDeviceRegistryEvent(event),
           'device_registry_updated'
         );
-      } catch (e) {
+      } catch {
         // Event subscription not available
       }
 
@@ -119,7 +119,7 @@ export class RegistrySubscriptionManager {
           (event: any) => this.handleAreaRegistryEvent(event),
           'area_registry_updated'
         );
-      } catch (e) {
+      } catch {
         // Event subscription not available
       }
 
@@ -127,7 +127,7 @@ export class RegistrySubscriptionManager {
 
       // Initialize hashes with current state
       await this.initializeHashes();
-    } catch (error) {
+    } catch {
       // WebSocket subscriptions not available - changes will be picked up on next navigation
     }
   }
@@ -148,7 +148,7 @@ export class RegistrySubscriptionManager {
       this.lastEntityHash = this.createEntityHash(entities);
       this.lastDeviceHash = this.createDeviceHash(devices);
       this.lastAreaHash = this.createAreaHash(areas);
-    } catch (error) {
+    } catch {
       // Silent fail - will be initialized on first change check
     }
   }
@@ -237,7 +237,7 @@ export class RegistrySubscriptionManager {
       if (changeType) {
         this.scheduleUpdate({ type: changeType as any, action: 'update' });
       }
-    } catch (error) {
+    } catch {
       // Silently fail - will retry on next poll
     }
   }
@@ -329,7 +329,7 @@ export class RegistrySubscriptionManager {
     if (this.entityRegistryUnsubscribe) {
       try {
         this.entityRegistryUnsubscribe();
-      } catch (e) {
+      } catch {
         // Ignore errors during cleanup
       }
       this.entityRegistryUnsubscribe = null;
@@ -338,7 +338,7 @@ export class RegistrySubscriptionManager {
     if (this.deviceRegistryUnsubscribe) {
       try {
         this.deviceRegistryUnsubscribe();
-      } catch (e) {
+      } catch {
         // Ignore errors during cleanup
       }
       this.deviceRegistryUnsubscribe = null;
@@ -347,7 +347,7 @@ export class RegistrySubscriptionManager {
     if (this.areaRegistryUnsubscribe) {
       try {
         this.areaRegistryUnsubscribe();
-      } catch (e) {
+      } catch {
         // Ignore errors during cleanup
       }
       this.areaRegistryUnsubscribe = null;

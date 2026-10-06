@@ -3,9 +3,7 @@ import { SectionReorderManager } from '../utils/SectionReorderManager';
 import { CustomizationManager } from '../utils/CustomizationManager';
 import { EditModeManager } from '../utils/EditModeManager';
 import { HomeSettingsManager } from '../utils/HomeSettingsManager';
-import { AppleChips, ChipsConfig } from './AppleChips';
-import { DeviceGroup } from '../config/DashboardConfig';
-import { EntityState } from '../types/types';
+import { AppleChips } from './AppleChips';
 import { localize } from '../utils/LocalizationService';
 import { RTLHelper } from '../utils/RTLHelper';
 import { injectLiquidGlassStyles, LiquidGlassClasses, liquidGlassCSS } from '../utils/LiquidGlassStyles';
@@ -360,7 +358,7 @@ export class AppleHeader {
 
       const rect = header.getBoundingClientRect();
       return rect.height;
-    } catch (error) {
+    } catch {
       // Silently handle errors during DOM traversal
       return 0;
     }
@@ -652,7 +650,7 @@ export class AppleHeader {
           }
           return !entity.area_id;
         });
-      } catch (error) {
+      } catch {
         // If we can't determine, assume there might be a default room
         hasDefaultRoom = true;
       }

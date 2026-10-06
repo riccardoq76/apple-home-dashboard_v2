@@ -1,6 +1,6 @@
 import { DashboardConfig } from '../config/DashboardConfig';
 import { SnapshotManager } from '../utils/SnapshotManager';
-import { CardConfig, EntityState } from '../types/types';
+import { CardConfig } from '../types/types';
 import { localize } from '../utils/LocalizationService';
 import { RTLHelper } from '../utils/RTLHelper';
 import { ClimateDialogManager } from '../utils/ClimateDialogManager';

@@ -4,7 +4,7 @@ export class DataService {
   static async getDevices(hass: any): Promise<Device[]> {
     try {
       return await hass.callWS({ type: 'config/device_registry/list' });
-    } catch (error) {
+    } catch {
       return [];
     }
   }
@@ -12,7 +12,7 @@ export class DataService {
   static async getAreas(hass: any): Promise<Area[]> {
     try {
       return await hass.callWS({ type: 'config/area_registry/list' });
-    } catch (error) {
+    } catch {
       return [];
     }
   }
@@ -32,7 +32,7 @@ export class DataService {
         }
         return true;
       });
-    } catch (error) {
+    } catch {
       return [];
     }
   }

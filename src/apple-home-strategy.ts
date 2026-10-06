@@ -40,7 +40,7 @@ import { DashboardStateManager } from './utils/DashboardStateManager';
  */
 function getCurrentDashboardKey(): string {
   const path = window.location.pathname;
-  const match = path.match(/^\/([^\/]+)/);
+  const match = path.match(/^\/([^/]+)/);
   return match ? match[1] : 'lovelace';
 }
 

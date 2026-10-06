@@ -55,7 +55,7 @@ export class AppleHomeView extends HTMLElement {
   private getDashboardKey(): string {
     // Extract dashboard key directly from URL (independent method)
     const currentPath = window.location.pathname;
-    const dashboardMatch = currentPath.match(/\/([^\/]+)/);
+    const dashboardMatch = currentPath.match(/\/([^/]+)/);
     return dashboardMatch && dashboardMatch[1] ? dashboardMatch[1] : 'default';
   }
 

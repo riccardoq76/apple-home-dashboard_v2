@@ -1,4 +1,3 @@
-import { CustomizationManager } from './CustomizationManager';
 import { DashboardStateManager } from './DashboardStateManager';
 
 interface SnapshotData {
@@ -219,7 +218,7 @@ export class SnapshotManager {
       } else {
         snapshotData.hasError = true;
       }
-    } catch (error) {
+    } catch {
       snapshotData.hasError = true;
     } finally {
       snapshotData.isLoading = false;
@@ -279,7 +278,7 @@ export class SnapshotManager {
         reader.onerror = reject;
         reader.readAsDataURL(blob);
       });
-    } catch (error) {
+    } catch {
       return null;
     }
   }

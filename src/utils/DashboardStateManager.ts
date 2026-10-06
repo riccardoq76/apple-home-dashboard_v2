@@ -104,7 +104,7 @@ export class DashboardStateManager {
    */
   private extractDashboardKey(path: string): string | null {
     // Match first path segment
-    const match = path.match(/^\/([^\/]+)/);
+    const match = path.match(/^\/([^/]+)/);
     if (!match) {
       return null;
     }

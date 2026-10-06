@@ -1,6 +1,5 @@
 import { CustomizationManager } from '../utils/CustomizationManager';
 import { CardManager } from '../utils/CardManager';
-import { DataService } from '../utils/DataService';
 import { Entity, CardConfig } from '../types/types';
 import { DashboardConfig } from '../config/DashboardConfig';
 import { localize } from '../utils/LocalizationService';
@@ -158,7 +157,7 @@ export class ScenesSection {
       });
 
       return entitiesWithLastUsed.map((item) => item.entity);
-    } catch (error) {
+    } catch {
       // Fallback to alphabetical sorting
       const sortedEntities = [...scenesEntities].sort((a, b) => {
         const aState = hass.states[a.entity_id];

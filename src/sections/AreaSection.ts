@@ -45,7 +45,7 @@ export class AreaSection {
         const areas = await this.getCachedAreas(hass);
         const area = areas.find((a: Area) => a.area_id === areaId);
         areaName = area?.name || areaId;
-      } catch (error) {
+      } catch {
         // Silently handle error
       }
     } else {

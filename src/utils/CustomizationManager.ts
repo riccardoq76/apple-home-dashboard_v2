@@ -1,4 +1,3 @@
-import { DashboardConfig } from '../config/DashboardConfig';
 import { localize } from './LocalizationService';
 import { DashboardStateManager } from './DashboardStateManager';
 
@@ -477,7 +476,7 @@ export class CustomizationManager {
       // /dashboard-test/home -> 'dashboard-test'
       // /apple-home/home -> 'apple-home'
 
-      const dashboardMatch = currentPath.match(/\/([^\/]+)/);
+      const dashboardMatch = currentPath.match(/\/([^/]+)/);
       if (dashboardMatch && dashboardMatch[1]) {
         const dashboardKey = dashboardMatch[1];
 
@@ -504,7 +503,7 @@ export class CustomizationManager {
    */
   getComponentDashboardKey(): string {
     const currentPath = window.location.pathname;
-    const dashboardMatch = currentPath.match(/\/([^\/]+)/);
+    const dashboardMatch = currentPath.match(/\/([^/]+)/);
 
     if (dashboardMatch && dashboardMatch[1]) {
       return dashboardMatch[1]; // Always return the actual path segment (including 'lovelace')
@@ -767,7 +766,7 @@ export class CustomizationManager {
 
   private extractDashboardKeyFromUrl(): string | null {
     const path = window.location.pathname;
-    const match = path.match(/^\/([^\/]+)/);
+    const match = path.match(/^\/([^/]+)/);
     return match ? match[1] : null;
   }
 

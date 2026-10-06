@@ -9,7 +9,7 @@ import { WeatherSection } from '../sections/WeatherSection';
 import { EnergySection } from '../sections/EnergySection';
 import { BatterySection } from '../sections/BatterySection';
 import { CalendarSection } from '../sections/CalendarSection';
-import { Entity, Area } from '../types/types';
+import { Entity } from '../types/types';
 
 export class HomePage {
   private customizationManager?: CustomizationManager;

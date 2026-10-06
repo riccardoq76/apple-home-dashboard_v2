@@ -8,7 +8,6 @@ import * as pt from '../translations/pt.json';
 import * as ru from '../translations/ru.json';
 import * as zh from '../translations/zh.json';
 import * as he from '../translations/he.json';
-import { RTLHelper } from './RTLHelper';
 
 /** Registry of currently supported languages */
 const languages: Record<string, any> = {
