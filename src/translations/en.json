@@ -370,6 +370,8 @@
     "unavailable": "Camera unavailable",
     "pip": "Picture in Picture",
     "settings": "Camera settings",
-    "nearby_accessories": "Nearby accessories"
+    "nearby_accessories": "Nearby accessories",
+    "no_nearby": "No accessories in this room.",
+    "no_area": "Assign a room to this camera in Home Assistant to see the nearby accessories here."
   }
 }

@@ -373,6 +373,8 @@
     "unavailable": "Telecamera non disponibile",
     "pip": "Picture in Picture",
     "settings": "Impostazioni videocamera",
-    "nearby_accessories": "Accessori nelle vicinanze"
+    "nearby_accessories": "Accessori nelle vicinanze",
+    "no_nearby": "Nessun accessorio in questa stanza.",
+    "no_area": "Assegna una stanza a questa telecamera in Home Assistant per vedere qui gli accessori vicini."
   }
 }

@@ -373,6 +373,8 @@
     "unavailable": "Camera niet beschikbaar",
     "pip": "Beeld-in-beeld",
     "settings": "Camera-instellingen",
-    "nearby_accessories": "Accessoires in de buurt"
+    "nearby_accessories": "Accessoires in de buurt",
+    "no_nearby": "Geen accessoires in deze kamer.",
+    "no_area": "Wijs deze camera in Home Assistant een kamer toe om hier de accessoires in de buurt te zien."
   }
 }

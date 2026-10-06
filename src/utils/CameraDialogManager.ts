@@ -173,6 +173,14 @@ function injectStyles(): void {
       justify-content: center;
     }
 
+    .ahd-cam-nearby-empty {
+      grid-column: 1 / -1;
+      margin: 8px 0;
+      color: rgba(255, 255, 255, 0.65);
+      font-size: 15px;
+      line-height: 1.4;
+    }
+
     .ahd-cam-nearby-title {
       margin: 0;
       font-size: 20px;
@@ -296,10 +304,20 @@ export class CameraDialogManager {
     return entry?.area_id || hass?.devices?.[entry?.device_id]?.area_id || undefined;
   }
 
-  /** Controllable, visible entities in the same area as the camera. */
-  private static nearbyEntities(hass: any, cameraId: string): string[] {
-    const area = CameraDialogManager.areaOf(hass, cameraId);
-    if (!area) return [];
+  /** Area of the camera: from the display registry, else asking the entity registry directly. */
+  private static async resolveArea(hass: any, entityId: string): Promise<string | undefined> {
+    const known = CameraDialogManager.areaOf(hass, entityId);
+    if (known) return known;
+    try {
+      const entry = await hass.callWS({ type: 'config/entity_registry/get', entity_id: entityId });
+      return entry?.area_id || hass?.devices?.[entry?.device_id]?.area_id || undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
+  /** Controllable, visible entities in an area. */
+  private static nearbyEntities(hass: any, area: string): string[] {
     return Object.keys(hass.entities || {}).filter((id) => {
       const entry = hass.entities[id];
       return (
@@ -463,25 +481,38 @@ export class CameraDialogManager {
     };
 
     // --- Nearby accessories --------------------------------------------------------------------
-    const nearbyIds = CameraDialogManager.nearbyEntities(hass, entityId);
-    if (nearbyIds.length === 0) {
-      nearbyBtn.style.display = 'none';
-    } else {
-      const grid = shell.body.querySelector('.ahd-cam-nearby-grid') as HTMLElement;
-      nearbyIds.forEach((id) => {
+    // The button is always there, like in the real app; the panel explains when there is nothing to show.
+    const grid = shell.body.querySelector('.ahd-cam-nearby-grid') as HTMLElement;
+    let nearbyBuilt = false;
+    const buildNearby = async () => {
+      if (nearbyBuilt) return;
+      nearbyBuilt = true;
+      const area = await CameraDialogManager.resolveArea(hass, entityId);
+      const ids = area ? CameraDialogManager.nearbyEntities(hass, area) : [];
+      if (ids.length === 0) {
+        grid.innerHTML = '<p class="ahd-cam-nearby-empty"></p>';
+        (grid.firstElementChild as HTMLElement).textContent = localize(
+          area ? 'camera_dialog.no_nearby' : 'camera_dialog.no_area'
+        );
+        return;
+      }
+      ids.forEach((id) => {
         const card: any = document.createElement('apple-home-card');
         card.setConfig({
           type: 'custom:apple-home-card',
           entity: id,
           name: hass.states[id].attributes?.friendly_name || id,
         });
-        card.hass = hass;
+        card.hass = currentHass;
         nearbyCards.push(card);
         grid.appendChild(card);
       });
-      nearbyBtn.addEventListener('click', () => nearby.classList.toggle('open'));
-      shell.body.querySelector('.ahd-cam-done')!.addEventListener('click', () => nearby.classList.remove('open'));
-    }
+    };
+    nearbyBtn.addEventListener('click', () => {
+      nearby.classList.toggle('open');
+      buildNearby();
+    });
+    shell.body.querySelector('.ahd-cam-done')!.addEventListener('click', () => nearby.classList.remove('open'));
 
     // --- Status line ---------------------------------------------------------------------------
     /** True once a `<video>` is really playing (the stream started). */
