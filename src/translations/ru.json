@@ -366,5 +366,13 @@
     "nothing_playing": "Ничего не воспроизводится",
     "source": "Источник",
     "speakers": "Колонки"
+  },
+  "camera_dialog": {
+    "live": "Прямой эфир",
+    "snapshot": "Снимок",
+    "unavailable": "Камера недоступна",
+    "pip": "Картинка в картинке",
+    "settings": "Настройки камеры",
+    "nearby_accessories": "Аксессуары поблизости"
   }
 }

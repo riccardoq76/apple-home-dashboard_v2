@@ -366,5 +366,13 @@
     "nothing_playing": "Aucune lecture",
     "source": "Source",
     "speakers": "Enceintes"
+  },
+  "camera_dialog": {
+    "live": "En direct",
+    "snapshot": "Image",
+    "unavailable": "Caméra indisponible",
+    "pip": "Image dans l’image",
+    "settings": "Réglages de la caméra",
+    "nearby_accessories": "Accessoires à proximité"
   }
 }

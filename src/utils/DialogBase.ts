@@ -19,6 +19,12 @@ export interface DialogShell {
   /** Container for the dialog specific controls, below the header. */
   body: HTMLElement;
   setSubtitle(text: string): void;
+  /** Adds a round button in the header, left of the settings button. */
+  addHeaderButton(icon: string, onClick: () => void): HTMLElement;
+  /** The settings (gear / dots) button, e.g. to anchor a menu to it. */
+  settingsButton: HTMLElement;
+  /** The dialog card, e.g. to anchor overlays. */
+  content: HTMLElement;
   close(): void;
 }
 
@@ -26,6 +32,12 @@ export interface DialogShellOptions {
   /** Called once a second with the freshest `hass` available. */
   onTick?: (hass: any) => void;
   onClose?: () => void;
+  /** Full-screen dark layout (camera view) instead of the bottom sheet / centered card. */
+  fullscreen?: boolean;
+  /** Icon of the top-right button that opens the native dialog (default: cog). */
+  settingsIcon?: string;
+  /** Replaces the default behaviour of the settings button (opening the native dialog). */
+  onSettings?: () => void;
 }
 
 let stylesInjected = false;
@@ -83,6 +95,50 @@ function injectStyles(): void {
       .ahd-content {
         border-radius: 28px;
       }
+
+    }
+
+    .ahd-content.ahd-full {
+      max-width: none;
+      height: 100%;
+      max-height: none;
+      border-radius: 0;
+      background: linear-gradient(180deg, #2b2b2e 0%, #131314 100%);
+      padding: calc(env(safe-area-inset-top, 0px) + 16px) 16px calc(env(safe-area-inset-bottom, 0px) + 16px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    @media (min-width: 600px) {
+      .ahd-content.ahd-full {
+        max-width: 880px;
+        height: auto;
+        max-height: 92vh;
+        border-radius: 28px;
+        padding: 20px 24px 24px;
+      }
+
+      .ahd-content.ahd-full .ahd-header {
+        margin-bottom: 16px;
+      }
+    }
+
+    .ahd-content.ahd-full .ahd-header {
+      margin-bottom: 0;
+    }
+
+    .ahd-content.ahd-full .ahd-titles {
+      text-align: start;
+    }
+
+    .ahd-content.ahd-full .ahd-body {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
     }
 
     .ahd-backdrop.show .ahd-content {
@@ -94,6 +150,12 @@ function injectStyles(): void {
       align-items: flex-start;
       justify-content: space-between;
       margin-bottom: 20px;
+    }
+
+    .ahd-actions {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
     }
 
     .ahd-titles {
@@ -166,7 +228,7 @@ export function openDialogShell(hass: any, entityId: string, options: DialogShel
   backdrop.className = 'ahd-backdrop';
 
   const content = document.createElement('div');
-  content.className = 'ahd-content';
+  content.className = options.fullscreen ? 'ahd-content ahd-full' : 'ahd-content';
 
   const header = document.createElement('div');
   header.className = 'ahd-header';
@@ -178,9 +240,11 @@ export function openDialogShell(hass: any, entityId: string, options: DialogShel
       <p class="ahd-name"></p>
       <p class="ahd-subtitle"></p>
     </div>
-    <button class="ahd-settings ${LiquidGlassClasses.modalCancel}">
-      <ha-icon icon="mdi:cog-outline"></ha-icon>
-    </button>
+    <div class="ahd-actions">
+      <button class="ahd-settings ${LiquidGlassClasses.modalCancel}">
+        <ha-icon icon="${options.settingsIcon || 'mdi:cog-outline'}"></ha-icon>
+      </button>
+    </div>
   `;
   (header.querySelector('.ahd-name') as HTMLElement).textContent = stateObj.attributes?.friendly_name || entityId;
   const subtitleEl = header.querySelector('.ahd-subtitle') as HTMLElement;
@@ -205,6 +269,16 @@ export function openDialogShell(hass: any, entityId: string, options: DialogShel
     setSubtitle(text: string) {
       subtitleEl.textContent = text;
     },
+    addHeaderButton(icon: string, onClick: () => void) {
+      const btn = document.createElement('button');
+      btn.className = `ahd-action ${LiquidGlassClasses.modalCancel}`;
+      btn.innerHTML = `<ha-icon icon="${icon}"></ha-icon>`;
+      btn.addEventListener('click', onClick);
+      actions.insertBefore(btn, settingsBtn);
+      return btn;
+    },
+    settingsButton: undefined as unknown as HTMLElement,
+    content,
     close() {
       if (closed) return;
       closed = true;
@@ -220,7 +294,14 @@ export function openDialogShell(hass: any, entityId: string, options: DialogShel
   backdrop.addEventListener('click', (e) => {
     if (e.target === backdrop) shell.close();
   });
-  header.querySelector('.ahd-settings')?.addEventListener('click', () => {
+  const actions = header.querySelector('.ahd-actions') as HTMLElement;
+  const settingsBtn = header.querySelector('.ahd-settings') as HTMLElement;
+  shell.settingsButton = settingsBtn;
+  settingsBtn.addEventListener('click', () => {
+    if (options.onSettings) {
+      options.onSettings();
+      return;
+    }
     shell.close();
     dispatchNativeMoreInfo(entityId);
   });

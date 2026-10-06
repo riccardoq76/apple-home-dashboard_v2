@@ -366,5 +366,13 @@
     "nothing_playing": "未在播放",
     "source": "来源",
     "speakers": "扬声器"
+  },
+  "camera_dialog": {
+    "live": "直播",
+    "snapshot": "快照",
+    "unavailable": "摄像头不可用",
+    "pip": "画中画",
+    "settings": "摄像头设置",
+    "nearby_accessories": "附近的配件"
   }
 }

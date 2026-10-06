@@ -366,5 +366,13 @@
     "nothing_playing": "אין השמעה",
     "source": "מקור",
     "speakers": "רמקולים"
+  },
+  "camera_dialog": {
+    "live": "שידור חי",
+    "snapshot": "תמונה",
+    "unavailable": "המצלמה אינה זמינה",
+    "pip": "תמונה בתמונה",
+    "settings": "הגדרות מצלמה",
+    "nearby_accessories": "אביזרים בקרבת מקום"
   }
 }

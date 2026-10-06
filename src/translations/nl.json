@@ -366,5 +366,13 @@
     "nothing_playing": "Niets aan het afspelen",
     "source": "Bron",
     "speakers": "Luidsprekers"
+  },
+  "camera_dialog": {
+    "live": "Live",
+    "snapshot": "Momentopname",
+    "unavailable": "Camera niet beschikbaar",
+    "pip": "Beeld-in-beeld",
+    "settings": "Camera-instellingen",
+    "nearby_accessories": "Accessoires in de buurt"
   }
 }

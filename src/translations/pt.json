@@ -366,5 +366,13 @@
     "nothing_playing": "Nada a reproduzir",
     "source": "Fonte",
     "speakers": "Alto-falantes"
+  },
+  "camera_dialog": {
+    "live": "Ao vivo",
+    "snapshot": "Imagem",
+    "unavailable": "Câmara indisponível",
+    "pip": "Imagem em imagem",
+    "settings": "Definições da câmara",
+    "nearby_accessories": "Acessórios próximos"
   }
 }

@@ -363,5 +363,13 @@
     "nothing_playing": "Nothing playing",
     "source": "Source",
     "speakers": "Speakers"
+  },
+  "camera_dialog": {
+    "live": "Live",
+    "snapshot": "Snapshot",
+    "unavailable": "Camera unavailable",
+    "pip": "Picture in Picture",
+    "settings": "Camera settings",
+    "nearby_accessories": "Nearby accessories"
   }
 }

@@ -366,5 +366,13 @@
     "nothing_playing": "Nessun contenuto",
     "source": "Sorgente",
     "speakers": "Altoparlanti"
+  },
+  "camera_dialog": {
+    "live": "In tempo reale",
+    "snapshot": "Immagine",
+    "unavailable": "Telecamera non disponibile",
+    "pip": "Picture in Picture",
+    "settings": "Impostazioni videocamera",
+    "nearby_accessories": "Accessori nelle vicinanze"
   }
 }
