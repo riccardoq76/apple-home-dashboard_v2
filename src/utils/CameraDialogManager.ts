@@ -295,6 +295,26 @@ function deepFind(root: ParentNode, selector: string): HTMLElement | null {
   return null;
 }
 
+/** Every element matching `selector`, looking through nested shadow roots. */
+function deepFindAll(root: ParentNode, selector: string, out: HTMLElement[] = []): HTMLElement[] {
+  root.querySelectorAll(selector).forEach((el) => out.push(el as HTMLElement));
+  root.querySelectorAll('*').forEach((el) => {
+    if (el.shadowRoot) deepFindAll(el.shadowRoot, selector, out);
+  });
+  return out;
+}
+
+/** Tag names of everything under `root`, shadow roots included, for the debug panel. */
+function describeTree(root: ParentNode, depth = 0): string[] {
+  const lines: string[] = [];
+  root.querySelectorAll('*').forEach((el) => {
+    const t = el.tagName.toLowerCase();
+    if (t.includes('-') || t === 'video' || t === 'img') lines.push(`${'.'.repeat(depth)}${t}`);
+    if (el.shadowRoot) lines.push(...describeTree(el.shadowRoot, depth + 1));
+  });
+  return lines;
+}
+
 export class CameraDialogManager {
   static isSupported(entityId: string): boolean {
     return entityId.startsWith('camera.');
@@ -387,7 +407,14 @@ export class CameraDialogManager {
       if (!menu.contains(t) && !shell.settingsButton.contains(t)) menu.classList.remove('open');
     });
 
-    const findVideo = () => deepFind(view, 'video') as HTMLVideoElement | null;
+    const findVideos = () => deepFindAll(view, 'video') as HTMLVideoElement[];
+    const isVideoPlaying = (v: HTMLVideoElement) => !v.paused && !v.ended && (v.currentTime > 0 || v.readyState >= 3);
+    // ha-camera-stream can render several players and hide the ones it does not use, so prefer a
+    // video that is actually playing over the first one in the tree.
+    const findVideo = () => {
+      const all = findVideos();
+      return all.find(isVideoPlaying) || all[0] || null;
+    };
 
     menu.querySelector('.pip')!.addEventListener('click', async () => {
       menu.classList.remove('open');
@@ -544,14 +571,16 @@ export class CameraDialogManager {
     let playing = false;
     let lastVideoTime = -1;
     const sampleLive = () => {
-      const v = findVideo();
-      if (v) {
-        const advancing = v.currentTime !== lastVideoTime;
-        lastVideoTime = v.currentTime;
-        playing = !v.paused && !v.ended && (advancing || v.readyState >= 3);
-        return;
+      const videos = findVideos();
+      if (videos.length > 0) {
+        const time = videos.reduce((sum, v) => sum + v.currentTime, 0);
+        const advancing = time !== lastVideoTime;
+        lastVideoTime = time;
+        playing = videos.some((v) => !v.paused && !v.ended && (advancing || v.readyState >= 3));
+        if (playing) return;
       }
-      playing = !!deepFind(view, 'img[src*="camera_proxy_stream"]');
+      // MJPEG fallback: only a visible image counts (the player keeps hidden ones around).
+      playing = deepFindAll(view, 'img[src*="camera_proxy_stream"]').some((img) => img.offsetWidth > 0);
     };
 
     const updateSubtitle = () => {
@@ -563,6 +592,33 @@ export class CameraDialogManager {
       } else {
         shell.setSubtitle(localize('camera_dialog.snapshot'));
       }
+    };
+
+    // Diagnostics for cameras that do not behave: open the dashboard with ?ahd_debug=1.
+    const debugEl = document.createElement('pre');
+    const showDebug = /[?&]ahd_debug\b/.test(window.location.search);
+    if (showDebug) {
+      debugEl.style.cssText =
+        'position:absolute;z-index:10;top:0;left:0;margin:0;padding:6px;max-width:100%;overflow:auto;' +
+        'font:11px/1.3 monospace;color:#0f0;background:rgba(0,0,0,.75);pointer-events:none;white-space:pre-wrap';
+      shell.body.appendChild(debugEl);
+    }
+    const updateDebug = () => {
+      if (!showDebug) return;
+      const videos = findVideos().map(
+        (v, i) =>
+          `video${i}: paused=${v.paused} rs=${v.readyState} t=${v.currentTime.toFixed(1)} muted=${v.muted} ` +
+          `size=${v.videoWidth}x${v.videoHeight} hidden=${v.offsetWidth === 0} src=${!!(v.src || v.srcObject)}`
+      );
+      const imgs = deepFindAll(view, 'img').map(
+        (i) => `img: ${i.getAttribute('src')?.slice(0, 60)} w=${i.offsetWidth}`
+      );
+      debugEl.textContent = [
+        `playing=${playing} live=${liveCard?.tagName?.toLowerCase()} feat=${stateOf()?.attributes?.supported_features}`,
+        ...videos,
+        ...imgs,
+        describeTree(view).join(' > '),
+      ].join('\n');
     };
 
     refresh = () => {
@@ -589,6 +645,7 @@ export class CameraDialogManager {
       });
       updateSubtitle();
       updateMute();
+      updateDebug();
     };
 
     updateSubtitle();
