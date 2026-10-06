@@ -83,6 +83,13 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
+## 🆕 What's New in v1.11.3
+
+### Camera dialog
+- The dialog now looks at every video the stream player creates, not just the first one: Home Assistant can keep several players and hide the unused ones, which could hide a stream that was actually playing from the status and the mute button
+- **Debug panel for cameras that do not start:** open the dashboard with `?ahd_debug=1` at the end of the address (for example `/apple-home/home?ahd_debug=1`) and the camera dialog shows, in green over the video, the players Home Assistant created and the state of each video. Useful to report a problem; it is off by default
+
+---
 ## 🆕 What's New in v1.11.2
 
 ### Camera dialog
