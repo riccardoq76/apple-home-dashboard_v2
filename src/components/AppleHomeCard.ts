@@ -796,6 +796,26 @@ export class AppleHomeCard extends HTMLElement {
         --mdc-icon-size: clamp(24px, 6vw, 32px);
         color: white !important;
       }
+
+      /* Activation ring (Apple Home style) shown while a scene/script runs */
+      .info-icon.scene-icon {
+        position: relative;
+      }
+
+      .info-icon.scene-icon.activating::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border-radius: 50%;
+        border: 2px solid rgba(255, 255, 255, 0.25);
+        border-top-color: white;
+        animation: scene-activating 0.8s linear infinite;
+        pointer-events: none;
+      }
+
+      @keyframes scene-activating {
+        to { transform: rotate(360deg); }
+      }
       
       /* Regular Design - Small temperature display */
       :host(.regular-design) .info-icon .temperature-text {
@@ -1081,12 +1101,35 @@ export class AppleHomeCard extends HTMLElement {
     `;
   }
 
+  private isActionDomain(): boolean {
+    return !!this.domain && ['scene', 'script', 'button', 'input_button'].includes(this.domain);
+  }
+
+  // Run a scene/script/button and show a white ring around the icon while it activates
+  private runAction() {
+    if (!this._hass || !this.entity) return;
+    const entityId = this.entity;
+    const service = this.domain === 'scene' || this.domain === 'script' ? 'turn_on' : 'press';
+    this._hass.callService(this.domain, service, { entity_id: entityId });
+
+    const icon = this.shadowRoot?.querySelector('.info-icon.scene-icon');
+    if (!icon) return;
+    icon.classList.add('activating');
+    window.setTimeout(() => icon.classList.remove('activating'), 1500);
+  }
+
   private handleCardClick(event: Event) {
     if (!this._hass || !this.entity) return;
     
     // Check if the click was on the icon - if so, don't handle it here
     const target = event.target as HTMLElement;
     if (target.closest('.info-icon')) {
+      return;
+    }
+
+    // Scenes, scripts and buttons run immediately like in Apple Home (no more-info dialog)
+    if (this.isActionDomain()) {
+      this.runAction();
       return;
     }
 
@@ -1179,16 +1222,10 @@ export class AppleHomeCard extends HTMLElement {
         }
         break;
       case 'scene':
-        this._hass.callService('scene', 'turn_on', { entity_id: entityId });
-        break;
       case 'script':
-        this._hass.callService('script', 'turn_on', { entity_id: entityId });
-        break;
       case 'button':
-        this._hass.callService('button', 'press', { entity_id: entityId });
-        break;
       case 'input_button':
-        this._hass.callService('input_button', 'press', { entity_id: entityId });
+        this.runAction();
         break;
       case 'input_boolean':
         this._hass.callService('input_boolean', 'toggle', { entity_id: entityId });
