@@ -351,7 +351,28 @@ export class CameraDialogManager {
     });
   }
 
-  static open(hass: any, entityId: string): void {
+  /**
+   * Home Assistant's own components (ha-camera-stream and friends) get the connection, localization
+   * and so on through Lit context: they ask the elements above them. The dialog lives on
+   * `document.body`, outside Home Assistant, so nobody answers and the player renders nothing.
+   * The requests are forwarded to `origin` (the card that opened the dialog, which is inside
+   * Home Assistant) so that the providers up its tree can answer.
+   */
+  private static forwardContextRequests(container: HTMLElement, origin?: Element): void {
+    const target = origin?.isConnected ? origin : document.querySelector('home-assistant');
+    if (!target) return;
+    container.addEventListener('context-request', (e: any) => {
+      e.stopPropagation();
+      const forwarded: any = new Event('context-request', { bubbles: true, composed: true });
+      forwarded.context = e.context;
+      forwarded.contextTarget = e.contextTarget;
+      forwarded.callback = e.callback;
+      forwarded.subscribe = e.subscribe;
+      target.dispatchEvent(forwarded);
+    });
+  }
+
+  static open(hass: any, entityId: string, origin?: Element): void {
     if (!hass?.states?.[entityId]) return;
     injectStyles();
 
@@ -385,6 +406,7 @@ export class CameraDialogManager {
         <button class="ahd-cam-round-btn ahd-cam-nearby-btn"><ha-icon icon="mdi:view-grid"></ha-icon></button>
       </div>
     `;
+    CameraDialogManager.forwardContextRequests(shell.content, origin);
     const view = shell.body.querySelector('.ahd-cam-view') as HTMLElement;
     const nearby = shell.body.querySelector('.ahd-cam-nearby') as HTMLElement;
     const nearbyBtn = shell.body.querySelector('.ahd-cam-nearby-btn') as HTMLElement;

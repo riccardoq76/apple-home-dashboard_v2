@@ -1218,7 +1218,7 @@ export class AppleHomeCard extends HTMLElement {
       return;
     }
     if (this.domain === 'camera' && CameraDialogManager.isSupported(this.entity)) {
-      CameraDialogManager.open(this._hass, this.entity);
+      CameraDialogManager.open(this._hass, this.entity, this);
       return;
     }
 
@@ -1265,7 +1265,7 @@ export class AppleHomeCard extends HTMLElement {
         }
         break;
       case 'camera':
-        CameraDialogManager.open(this._hass, entityId);
+        CameraDialogManager.open(this._hass, entityId, this);
         break;
       case 'climate':
         // Climate gets the custom thermostat dialog, same as tapping the card body.
