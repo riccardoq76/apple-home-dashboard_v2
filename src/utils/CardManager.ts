@@ -11,7 +11,7 @@ export class CardManager {
   // Synchronous version - use when customizations are already loaded
   shouldCardBeTall(entityId: string, areaId: string, context: string = 'home'): boolean {
     let tallCards: string[] = [];
-    
+
     if (context === 'home') {
       const homeData = this.customizationManager.getCustomization('home');
       tallCards = homeData.tall_cards || [];
@@ -19,10 +19,10 @@ export class CardManager {
       const pagesData = this.customizationManager.getCustomization('pages');
       tallCards = pagesData[areaId]?.tall_cards || [];
     }
-    
+
     const isTall = tallCards.includes(entityId);
     const isNotTall = tallCards.includes(`!${entityId}`);
-    
+
     if (isTall) {
       return true;
     } else if (isNotTall) {
@@ -42,7 +42,7 @@ export class CardManager {
 
   async toggleTallCard(entityId: string, areaId: string, context: string = 'home'): Promise<boolean> {
     let tallCards: string[] = [];
-    
+
     if (context === 'home') {
       const homeData = this.customizationManager.getCustomization('home');
       tallCards = homeData.tall_cards || [];
@@ -53,12 +53,12 @@ export class CardManager {
       }
       tallCards = pagesData[areaId].tall_cards || [];
     }
-    
+
     const index = tallCards.indexOf(entityId);
     const inverseIndex = tallCards.indexOf(`!${entityId}`);
-    
+
     let newTallState = false;
-    
+
     if (index !== -1) {
       // Currently set as tall, remove it
       tallCards.splice(index, 1);
@@ -73,7 +73,7 @@ export class CardManager {
       // Not set, toggle based on default behavior
       const domain = entityId.split('.')[0];
       const defaultTall = DashboardConfig.isDefaultTallDomain(domain);
-      
+
       if (defaultTall) {
         tallCards.push(`!${entityId}`); // Make it not tall
         newTallState = false;
@@ -82,7 +82,7 @@ export class CardManager {
         newTallState = true;
       }
     }
-    
+
     // Save back to the correct location
     if (context === 'home') {
       const homeData = this.customizationManager.getCustomization('home');
@@ -93,7 +93,7 @@ export class CardManager {
       pagesData[areaId].tall_cards = tallCards;
       await this.customizationManager.setCustomization('pages', pagesData);
     }
-    
+
     return newTallState;
   }
 
@@ -122,7 +122,7 @@ export class CardManager {
 
     // Create a map for quick lookup
     const cardMap = new Map();
-    cards.forEach(card => {
+    cards.forEach((card) => {
       const entityId = card.entity || card.entityId;
       if (entityId) {
         cardMap.set(entityId, card);
@@ -134,7 +134,7 @@ export class CardManager {
     const usedEntityIds = new Set<string>();
 
     // First, add cards in the saved order
-    savedOrder.forEach(entityId => {
+    savedOrder.forEach((entityId) => {
       if (cardMap.has(entityId)) {
         orderedCards.push(cardMap.get(entityId));
         usedEntityIds.add(entityId);
@@ -142,7 +142,7 @@ export class CardManager {
     });
 
     // Then, add any cards that weren't in the saved order (new entities)
-    cards.forEach(card => {
+    cards.forEach((card) => {
       const entityId = card.entity || card.entityId;
       if (entityId && !usedEntityIds.has(entityId)) {
         orderedCards.push(card);
@@ -156,18 +156,23 @@ export class CardManager {
     await this.updateCarouselOrderWithContext(areaId, sectionType, entityOrder, 'home');
   }
 
-  async updateCarouselOrderWithContext(areaId: string, sectionType: string, entityOrder: string[], context: string = 'home') {
+  async updateCarouselOrderWithContext(
+    areaId: string,
+    sectionType: string,
+    entityOrder: string[],
+    context: string = 'home'
+  ) {
     const entities = this.customizationManager.getCustomization('entities');
-    
+
     if (!entities[areaId]) {
       entities[areaId] = {};
     }
-    
+
     // Store carousel orders under section-specific keys with context
     const contextSuffix = context === 'home' ? '' : `_${context}`;
     const carouselOrderKey = `${sectionType}Order${contextSuffix}`;
     entities[areaId][carouselOrderKey] = entityOrder;
-    
+
     await this.customizationManager.setCustomization('entities', entities);
   }
 

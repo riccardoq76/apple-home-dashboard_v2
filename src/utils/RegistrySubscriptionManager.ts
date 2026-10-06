@@ -1,6 +1,6 @@
 /**
  * RegistrySubscriptionManager - Manages subscriptions to Home Assistant registries
- * 
+ *
  * Provides real-time updates when:
  * - Entity areas change
  * - Devices are moved between areas
@@ -19,24 +19,24 @@ export type RegistryChangeCallback = (event: RegistryChangeEvent) => void;
 
 export class RegistrySubscriptionManager {
   private static instance: RegistrySubscriptionManager | null = null;
-  
+
   private hass: any = null;
   private entityRegistryUnsubscribe: (() => void) | null = null;
   private deviceRegistryUnsubscribe: (() => void) | null = null;
   private areaRegistryUnsubscribe: (() => void) | null = null;
-  
+
   private listeners: Set<RegistryChangeCallback> = new Set();
   private isSubscribed = false;
-  
+
   // Debounce mechanism to prevent rapid-fire updates
   private pendingUpdate: ReturnType<typeof setTimeout> | null = null;
   private debounceMs = 500;
-  
+
   // Cache for detecting meaningful changes
   private lastEntityHash: string = '';
   private lastDeviceHash: string = '';
   private lastAreaHash: string = '';
-  
+
   // Polling fallback
   private pollingInterval: ReturnType<typeof setInterval> | null = null;
   private pollingIntervalMs = 3000; // Check every 3 seconds
@@ -56,7 +56,7 @@ export class RegistrySubscriptionManager {
   setHass(hass: any): void {
     const hassChanged = this.hass !== hass;
     this.hass = hass;
-    
+
     // Re-subscribe if hass instance changed
     if (hassChanged && hass?.connection) {
       this.subscribe();
@@ -92,7 +92,7 @@ export class RegistrySubscriptionManager {
       // Try to subscribe to registry events using the new API
       // Home Assistant 2023.4+ uses config/entity_registry/list for full list
       // and state_changed events for real-time updates
-      
+
       // Subscribe to entity registry updates
       try {
         this.entityRegistryUnsubscribe = await this.hass.connection.subscribeEvents(
@@ -103,7 +103,7 @@ export class RegistrySubscriptionManager {
         // Event subscription not available
       }
 
-      // Subscribe to device registry updates  
+      // Subscribe to device registry updates
       try {
         this.deviceRegistryUnsubscribe = await this.hass.connection.subscribeEvents(
           (event: any) => this.handleDeviceRegistryEvent(event),
@@ -127,7 +127,6 @@ export class RegistrySubscriptionManager {
 
       // Initialize hashes with current state
       await this.initializeHashes();
-      
     } catch (error) {
       // WebSocket subscriptions not available - changes will be picked up on next navigation
     }
@@ -138,12 +137,12 @@ export class RegistrySubscriptionManager {
    */
   private async initializeHashes(): Promise<void> {
     if (!this.hass) return;
-    
+
     try {
       const [entities, devices, areas] = await Promise.all([
         this.hass.callWS({ type: 'config/entity_registry/list' }),
         this.hass.callWS({ type: 'config/device_registry/list' }),
-        this.hass.callWS({ type: 'config/area_registry/list' })
+        this.hass.callWS({ type: 'config/area_registry/list' }),
       ]);
 
       this.lastEntityHash = this.createEntityHash(entities);
@@ -161,7 +160,7 @@ export class RegistrySubscriptionManager {
     this.scheduleUpdate({
       type: 'entity',
       action: event.data?.action || 'update',
-      data: event.data
+      data: event.data,
     });
   }
 
@@ -169,10 +168,10 @@ export class RegistrySubscriptionManager {
    * Handle device registry update events
    */
   private handleDeviceRegistryEvent(event: any): void {
-    this.scheduleUpdate({ 
-      type: 'device', 
+    this.scheduleUpdate({
+      type: 'device',
       action: event.data?.action || 'update',
-      data: event.data 
+      data: event.data,
     });
   }
 
@@ -180,10 +179,10 @@ export class RegistrySubscriptionManager {
    * Handle area registry update events
    */
   private handleAreaRegistryEvent(event: any): void {
-    this.scheduleUpdate({ 
-      type: 'area', 
+    this.scheduleUpdate({
+      type: 'area',
       action: event.data?.action || 'update',
-      data: event.data 
+      data: event.data,
     });
   }
 
@@ -192,7 +191,7 @@ export class RegistrySubscriptionManager {
    */
   private startPollingFallback(): void {
     if (this.pollingInterval) return;
-    
+
     this.pollingInterval = setInterval(() => {
       this.checkForChanges();
     }, this.pollingIntervalMs);
@@ -209,7 +208,7 @@ export class RegistrySubscriptionManager {
       const [entities, devices, areas] = await Promise.all([
         this.hass.callWS({ type: 'config/entity_registry/list' }),
         this.hass.callWS({ type: 'config/device_registry/list' }),
-        this.hass.callWS({ type: 'config/area_registry/list' })
+        this.hass.callWS({ type: 'config/area_registry/list' }),
       ]);
 
       // Create hashes of relevant properties
@@ -248,16 +247,16 @@ export class RegistrySubscriptionManager {
    */
   private createEntityHash(entities: any[]): string {
     if (!entities || !Array.isArray(entities)) return '';
-    
+
     // Only include properties that affect the dashboard
-    const relevantData = entities.map(e => ({
+    const relevantData = entities.map((e) => ({
       id: e.entity_id,
       area: e.area_id || '',
       device: e.device_id || '',
       hidden: e.hidden_by || '',
-      disabled: e.disabled_by || ''
+      disabled: e.disabled_by || '',
     }));
-    
+
     return JSON.stringify(relevantData.sort((a, b) => a.id.localeCompare(b.id)));
   }
 
@@ -266,12 +265,12 @@ export class RegistrySubscriptionManager {
    */
   private createDeviceHash(devices: any[]): string {
     if (!devices || !Array.isArray(devices)) return '';
-    
-    const relevantData = devices.map(d => ({
+
+    const relevantData = devices.map((d) => ({
       id: d.id,
-      area: d.area_id || ''
+      area: d.area_id || '',
     }));
-    
+
     return JSON.stringify(relevantData.sort((a, b) => a.id.localeCompare(b.id)));
   }
 
@@ -280,12 +279,12 @@ export class RegistrySubscriptionManager {
    */
   private createAreaHash(areas: any[]): string {
     if (!areas || !Array.isArray(areas)) return '';
-    
-    const relevantData = areas.map(a => ({
+
+    const relevantData = areas.map((a) => ({
       id: a.area_id,
-      name: a.name
+      name: a.name,
     }));
-    
+
     return JSON.stringify(relevantData.sort((a, b) => a.id.localeCompare(b.id)));
   }
 
@@ -307,7 +306,7 @@ export class RegistrySubscriptionManager {
    * Notify all listeners of a registry change
    */
   private notifyListeners(event: RegistryChangeEvent): void {
-    this.listeners.forEach(callback => {
+    this.listeners.forEach((callback) => {
       try {
         callback(event);
       } catch (error) {
@@ -335,7 +334,7 @@ export class RegistrySubscriptionManager {
       }
       this.entityRegistryUnsubscribe = null;
     }
-    
+
     if (this.deviceRegistryUnsubscribe) {
       try {
         this.deviceRegistryUnsubscribe();
@@ -344,7 +343,7 @@ export class RegistrySubscriptionManager {
       }
       this.deviceRegistryUnsubscribe = null;
     }
-    
+
     if (this.areaRegistryUnsubscribe) {
       try {
         this.areaRegistryUnsubscribe();

@@ -20,7 +20,7 @@ const DEFAULT_COLORED_COLORS: LightColor[] = [
   { rgb_color: [127, 172, 255] },
   { rgb_color: [215, 150, 255] },
   { rgb_color: [255, 158, 243] },
-  { rgb_color: [255, 110, 84] }
+  { rgb_color: [255, 110, 84] },
 ];
 const COLOR_MODES_WITH_COLOR = ['hs', 'xy', 'rgb', 'rgbw', 'rgbww'];
 const SERVICE_CALL_THROTTLE_MS = 250;
@@ -197,9 +197,7 @@ const clamp255 = (v: number) => Math.round(Math.min(255, Math.max(0, v)));
 function kelvinToRgb(kelvin: number): [number, number, number] {
   const t = kelvin / 100;
   const r = t <= 66 ? 255 : 329.698727446 * Math.pow(t - 60, -0.1332047592);
-  const g = t <= 66
-    ? 99.4708025861 * Math.log(t) - 161.1195681661
-    : 288.1221695283 * Math.pow(t - 60, -0.0755148492);
+  const g = t <= 66 ? 99.4708025861 * Math.log(t) - 161.1195681661 : 288.1221695283 * Math.pow(t - 60, -0.0755148492);
   const b = t >= 66 ? 255 : t <= 19 ? 0 : 138.5177312231 * Math.log(t - 10) - 305.0447927307;
   return [clamp255(r), clamp255(g), clamp255(b)];
 }
@@ -207,7 +205,7 @@ function kelvinToRgb(kelvin: number): [number, number, number] {
 /** Hue (0-360) and saturation (0-100) at full value to RGB. */
 function hsToRgb(hue: number, sat: number): [number, number, number] {
   const s = sat / 100;
-  const h = ((hue % 360) + 360) % 360 / 60;
+  const h = (((hue % 360) + 360) % 360) / 60;
   const c = s;
   const x = c * (1 - Math.abs((h % 2) - 1));
   const m = 1 - c;
@@ -219,7 +217,7 @@ function hsToRgb(hue: number, sat: number): [number, number, number] {
 function favoriteToRgb(color: LightColor): [number, number, number] {
   if ('color_temp_kelvin' in color) return kelvinToRgb(color.color_temp_kelvin);
   if ('hs_color' in color) return hsToRgb(color.hs_color[0], color.hs_color[1]);
-  const c = (color as { rgb_color?: number[]; rgbw_color?: number[]; rgbww_color?: number[] });
+  const c = color as { rgb_color?: number[]; rgbw_color?: number[]; rgbww_color?: number[] };
   const rgb = c.rgb_color || c.rgbw_color || c.rgbww_color || [255, 255, 255];
   return [rgb[0], rgb[1], rgb[2]];
 }
@@ -252,7 +250,7 @@ export class ToggleDialogManager {
 
     const domain = entityId.startsWith('light.') ? 'light' : 'switch';
     const modes: string[] = stateObj.attributes?.supported_color_modes || [];
-    const dimmable = domain === 'light' && modes.some(m => m !== 'onoff');
+    const dimmable = domain === 'light' && modes.some((m) => m !== 'onoff');
 
     const s: ToggleState = {
       hass,
@@ -263,7 +261,7 @@ export class ToggleDialogManager {
       unavailable: false,
       brightnessPct: 0,
       lastUserActionAt: 0,
-      lastServiceCallAt: 0
+      lastServiceCallAt: 0,
     };
 
     let refresh: () => void = () => {};
@@ -273,7 +271,7 @@ export class ToggleDialogManager {
         if (Date.now() - s.lastUserActionAt < OPTIMISTIC_HOLD_MS) return;
         this.readState(s);
         refresh();
-      }
+      },
     });
     if (!shell) return;
 
@@ -287,7 +285,7 @@ export class ToggleDialogManager {
       refresh = this.buildSwitch(wrap, shell, s);
     }
 
-    if (domain === 'light' && modes.some(m => m === 'color_temp' || COLOR_MODES_WITH_COLOR.includes(m))) {
+    if (domain === 'light' && modes.some((m) => m === 'color_temp' || COLOR_MODES_WITH_COLOR.includes(m))) {
       this.buildSwatches(shell, s);
     }
 
@@ -448,9 +446,13 @@ export class ToggleDialogManager {
     const attrs = s.hass?.states?.[s.entityId]?.attributes || {};
     const modes: string[] = attrs.supported_color_modes || [];
     const supportsTemp = modes.includes('color_temp');
-    const supportsColor = modes.some(m => COLOR_MODES_WITH_COLOR.includes(m));
+    const supportsColor = modes.some((m) => COLOR_MODES_WITH_COLOR.includes(m));
     const colors: LightColor[] = [];
-    if (supportsTemp && typeof attrs.min_color_temp_kelvin === 'number' && typeof attrs.max_color_temp_kelvin === 'number') {
+    if (
+      supportsTemp &&
+      typeof attrs.min_color_temp_kelvin === 'number' &&
+      typeof attrs.max_color_temp_kelvin === 'number'
+    ) {
       const min = attrs.min_color_temp_kelvin;
       const step = (attrs.max_color_temp_kelvin - min) / (COLOR_TEMP_COUNT - 1);
       for (let i = 0; i < COLOR_TEMP_COUNT; i++) {
@@ -488,7 +490,7 @@ export class ToggleDialogManager {
 
     const row = document.createElement('div');
     row.className = 'ahd-swatches';
-    const buttons = colors.map(color => {
+    const buttons = colors.map((color) => {
       const btn = document.createElement('button');
       btn.className = 'ahd-swatch';
       btn.style.background = cssRgb(favoriteToRgb(color));
@@ -496,7 +498,7 @@ export class ToggleDialogManager {
         s.on = true;
         s.lastUserActionAt = Date.now();
         s.hass.callService('light', 'turn_on', { entity_id: s.entityId, ...color });
-        buttons.forEach(b => b.classList.remove('selected'));
+        buttons.forEach((b) => b.classList.remove('selected'));
         btn.classList.add('selected');
       });
       row.appendChild(btn);

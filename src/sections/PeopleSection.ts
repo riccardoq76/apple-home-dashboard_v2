@@ -44,7 +44,7 @@ export class PeopleSection {
         home,
         location: PeopleSection.getLocation(hass, state.state),
         picture: state.attributes?.entity_picture,
-        lastChanged: state.last_changed
+        lastChanged: state.last_changed,
       });
     }
 
@@ -57,7 +57,7 @@ export class PeopleSection {
 
   /** Short text for the chip: "2 Home", "Nobody home", or the state of a single person */
   static getSummary(people: PersonInfo[]): string {
-    const homeCount = people.filter(p => p.home).length;
+    const homeCount = people.filter((p) => p.home).length;
     if (people.length === 1) return people[0].location;
     if (homeCount > 0) return `${homeCount} ${localize('people.home')}`;
     return localize('people.nobody_home');
@@ -68,8 +68,9 @@ export class PeopleSection {
     if (state === 'not_home') return localize('people.away');
     if (state === 'unknown' || state === 'unavailable') return localize('people.unknown');
     // Any other state is the name of a zone the person is in
-    const zone = Object.values(hass.states).find((s: any) =>
-      s.entity_id.startsWith('zone.') && s.attributes?.friendly_name === state) as any;
+    const zone = Object.values(hass.states).find(
+      (s: any) => s.entity_id.startsWith('zone.') && s.attributes?.friendly_name === state
+    ) as any;
     return zone?.attributes?.friendly_name || state;
   }
 
@@ -89,12 +90,18 @@ export class PeopleSection {
 
       const grid = document.createElement('div');
       grid.className = 'apple-people-grid';
-      items.forEach(p => grid.appendChild(this.createCard(p)));
+      items.forEach((p) => grid.appendChild(this.createCard(p)));
       container.appendChild(grid);
     };
 
-    addGroup(localize('people.home_group'), people.filter(p => p.home));
-    addGroup(localize('people.away_group'), people.filter(p => !p.home));
+    addGroup(
+      localize('people.home_group'),
+      people.filter((p) => p.home)
+    );
+    addGroup(
+      localize('people.away_group'),
+      people.filter((p) => !p.home)
+    );
   }
 
   private createCard(person: PersonInfo): HTMLElement {
@@ -130,9 +137,13 @@ export class PeopleSection {
 
     card.append(avatar, info);
     card.addEventListener('click', () => {
-      card.dispatchEvent(new CustomEvent('hass-more-info', {
-        detail: { entityId: person.entityId }, bubbles: true, composed: true
-      }));
+      card.dispatchEvent(
+        new CustomEvent('hass-more-info', {
+          detail: { entityId: person.entityId },
+          bubbles: true,
+          composed: true,
+        })
+      );
     });
     return card;
   }

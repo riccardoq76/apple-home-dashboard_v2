@@ -6,33 +6,40 @@ const METEOCONS_BASE = 'https://basmilius.github.io/weather-icons/production/fil
 
 // Map HA conditions to Meteocons filenames and gradient themes
 const CONDITION_MAP: Record<string, { icon: string; iconNight?: string; gradient: [string, string] }> = {
-  'sunny':           { icon: 'clear-day',              iconNight: 'clear-night',              gradient: ['#1565C0', '#42A5F5'] },
-  'clear-night':     { icon: 'clear-night',                                                    gradient: ['#0D1B2A', '#1B3A5C'] },
-  'cloudy':          { icon: 'overcast',                                                       gradient: ['#546E7A', '#78909C'] },
-  'partlycloudy':    { icon: 'partly-cloudy-day',      iconNight: 'partly-cloudy-night',      gradient: ['#37474F', '#607D8B'] },
-  'rainy':           { icon: 'rain',                                                           gradient: ['#263238', '#455A64'] },
-  'pouring':         { icon: 'extreme-rain',                                                   gradient: ['#1A237E', '#37474F'] },
-  'snowy':           { icon: 'snow',                                                           gradient: ['#546E7A', '#90A4AE'] },
-  'snowy-rainy':     { icon: 'sleet',                                                          gradient: ['#455A64', '#78909C'] },
-  'fog':             { icon: 'fog',                                                            gradient: ['#616161', '#9E9E9E'] },
-  'hail':            { icon: 'hail',                                                           gradient: ['#37474F', '#78909C'] },
-  'lightning':       { icon: 'thunderstorms',                                                  gradient: ['#1A1A2E', '#3D3D6B'] },
-  'lightning-rainy': { icon: 'thunderstorms-rain',                                             gradient: ['#1A1A2E', '#37474F'] },
-  'windy':           { icon: 'wind',                                                           gradient: ['#455A64', '#78909C'] },
-  'windy-variant':   { icon: 'wind',                                                           gradient: ['#455A64', '#78909C'] },
-  'exceptional':     { icon: 'extreme',                                                        gradient: ['#4A148C', '#7B1FA2'] },
+  sunny: { icon: 'clear-day', iconNight: 'clear-night', gradient: ['#1565C0', '#42A5F5'] },
+  'clear-night': { icon: 'clear-night', gradient: ['#0D1B2A', '#1B3A5C'] },
+  cloudy: { icon: 'overcast', gradient: ['#546E7A', '#78909C'] },
+  partlycloudy: { icon: 'partly-cloudy-day', iconNight: 'partly-cloudy-night', gradient: ['#37474F', '#607D8B'] },
+  rainy: { icon: 'rain', gradient: ['#263238', '#455A64'] },
+  pouring: { icon: 'extreme-rain', gradient: ['#1A237E', '#37474F'] },
+  snowy: { icon: 'snow', gradient: ['#546E7A', '#90A4AE'] },
+  'snowy-rainy': { icon: 'sleet', gradient: ['#455A64', '#78909C'] },
+  fog: { icon: 'fog', gradient: ['#616161', '#9E9E9E'] },
+  hail: { icon: 'hail', gradient: ['#37474F', '#78909C'] },
+  lightning: { icon: 'thunderstorms', gradient: ['#1A1A2E', '#3D3D6B'] },
+  'lightning-rainy': { icon: 'thunderstorms-rain', gradient: ['#1A1A2E', '#37474F'] },
+  windy: { icon: 'wind', gradient: ['#455A64', '#78909C'] },
+  'windy-variant': { icon: 'wind', gradient: ['#455A64', '#78909C'] },
+  exceptional: { icon: 'extreme', gradient: ['#4A148C', '#7B1FA2'] },
 };
 
 // MDI fallback icons (when Meteocons can't load)
 const MDI_ICONS: Record<string, string> = {
-  'sunny': 'mdi:weather-sunny', 'clear-night': 'mdi:weather-night',
-  'cloudy': 'mdi:weather-cloudy', 'partlycloudy': 'mdi:weather-partly-cloudy',
-  'rainy': 'mdi:weather-rainy', 'pouring': 'mdi:weather-pouring',
-  'snowy': 'mdi:weather-snowy', 'snowy-rainy': 'mdi:weather-snowy-rainy',
-  'fog': 'mdi:weather-fog', 'hail': 'mdi:weather-hail',
-  'lightning': 'mdi:weather-lightning', 'lightning-rainy': 'mdi:weather-lightning-rainy',
-  'windy': 'mdi:weather-windy', 'windy-variant': 'mdi:weather-windy-variant',
-  'exceptional': 'mdi:alert-circle-outline',
+  sunny: 'mdi:weather-sunny',
+  'clear-night': 'mdi:weather-night',
+  cloudy: 'mdi:weather-cloudy',
+  partlycloudy: 'mdi:weather-partly-cloudy',
+  rainy: 'mdi:weather-rainy',
+  pouring: 'mdi:weather-pouring',
+  snowy: 'mdi:weather-snowy',
+  'snowy-rainy': 'mdi:weather-snowy-rainy',
+  fog: 'mdi:weather-fog',
+  hail: 'mdi:weather-hail',
+  lightning: 'mdi:weather-lightning',
+  'lightning-rainy': 'mdi:weather-lightning-rainy',
+  windy: 'mdi:weather-windy',
+  'windy-variant': 'mdi:weather-windy-variant',
+  exceptional: 'mdi:alert-circle-outline',
 };
 
 interface ForecastDay {
@@ -44,14 +51,14 @@ interface ForecastDay {
 
 // Temperature-to-color mapping for forecast bars (Apple Weather style)
 function tempToColor(temp: number): string {
-  if (temp <= 0)  return '#4FC3F7'; // freezing - light blue
+  if (temp <= 0) return '#4FC3F7'; // freezing - light blue
   if (temp <= 10) return '#29B6F6'; // cold - blue
   if (temp <= 15) return '#26C6DA'; // cool - teal
   if (temp <= 20) return '#66BB6A'; // mild - green
   if (temp <= 25) return '#FFEE58'; // warm - yellow
   if (temp <= 30) return '#FFA726'; // hot - orange
   if (temp <= 35) return '#EF5350'; // very hot - red
-  return '#D32F2F';                 // extreme - dark red
+  return '#D32F2F'; // extreme - dark red
 }
 
 function isNightTime(hass: any): boolean {
@@ -100,22 +107,24 @@ export class WeatherSection {
     const timeFormat = hass.locale?.time_format ?? 'language';
 
     // Pick icon (night variant if available and it's night)
-    const iconName = (night && condInfo.iconNight) ? condInfo.iconNight : condInfo.icon;
+    const iconName = night && condInfo.iconNight ? condInfo.iconNight : condInfo.icon;
     const iconUrl = `${METEOCONS_BASE}/${iconName}.svg`;
 
     // Pick gradient (use night gradient for night conditions)
-    const gradient = (night && condition !== 'clear-night')
-      ? ['#0D1B2A', '#1B3A5C']
-      : condInfo.gradient;
+    const gradient = night && condition !== 'clear-night' ? ['#0D1B2A', '#1B3A5C'] : condInfo.gradient;
 
     // === OUTER CARD ===
     const card = document.createElement('div');
     card.className = 'apple-weather-card';
     card.style.setProperty('--weather-tint', gradient[0]);
     card.addEventListener('click', () => {
-      card.dispatchEvent(new CustomEvent('hass-more-info', {
-        detail: { entityId: weatherEntity }, bubbles: true, composed: true,
-      }));
+      card.dispatchEvent(
+        new CustomEvent('hass-more-info', {
+          detail: { entityId: weatherEntity },
+          bubbles: true,
+          composed: true,
+        })
+      );
     });
 
     // === INNER LAYOUT: two-column on desktop, stacked on mobile ===

@@ -10,10 +10,10 @@ export class DragAndDropManager {
   private context: string;
   private sortableInstances: Map<HTMLElement, Sortable> = new Map();
   private static globalStylesInjected: boolean = false;
-  
+
   // Global flag to indicate reordering is in progress (used by other components to disable conflicting behaviors)
   public static isReordering: boolean = false;
-  
+
   // Custom drag visual element
   private dragVisual: HTMLElement | null = null;
 
@@ -21,7 +21,7 @@ export class DragAndDropManager {
     this.saveOrderCallback = saveOrderCallback;
     this.customizationManager = customizationManager;
     this.context = context;
-    
+
     this.injectGlobalStyles();
   }
 
@@ -30,7 +30,7 @@ export class DragAndDropManager {
    */
   private injectGlobalStyles(): void {
     if (DragAndDropManager.globalStylesInjected) return;
-    
+
     const style = document.createElement('style');
     style.id = 'sortable-drag-styles';
     style.textContent = `
@@ -101,16 +101,16 @@ export class DragAndDropManager {
    */
   private createDragVisual(element: HTMLElement, x: number, y: number, isChip: boolean = false): void {
     this.removeDragVisual();
-    
+
     const rect = element.getBoundingClientRect();
-    
+
     this.dragVisual = document.createElement('div');
     this.dragVisual.className = 'drag-visual-clone' + (isChip ? ' chip' : '');
     this.dragVisual.style.width = rect.width + 'px';
     this.dragVisual.style.height = rect.height + 'px';
-    this.dragVisual.style.left = (x - rect.width / 2) + 'px';
-    this.dragVisual.style.top = (y - rect.height / 2) + 'px';
-    
+    this.dragVisual.style.left = x - rect.width / 2 + 'px';
+    this.dragVisual.style.top = y - rect.height / 2 + 'px';
+
     const card = element.querySelector('apple-home-card');
     if (card && card.shadowRoot) {
       const innerCard = card.shadowRoot.querySelector('.apple-home-card') as HTMLElement;
@@ -121,12 +121,12 @@ export class DragAndDropManager {
         this.dragVisual.style.backdropFilter = cardStyle.backdropFilter;
         (this.dragVisual.style as any).webkitBackdropFilter = (cardStyle as any).webkitBackdropFilter;
         this.dragVisual.style.borderRadius = cardStyle.borderRadius;
-        
+
         // Check if this is a camera card - look for camera-specific elements
         const cameraContainer = innerCard.querySelector('.camera-container') as HTMLElement;
         const cameraIconUnavailable = innerCard.querySelector('.camera-icon-unavailable') as HTMLElement;
         const cameraIconNoSnapshot = innerCard.querySelector('.camera-icon-no-snapshot') as HTMLElement;
-        
+
         if (cameraContainer || cameraIconUnavailable || cameraIconNoSnapshot) {
           // This is a camera card - handle specially
           this.createCameraDragVisual(innerCard, cameraContainer, cameraIconUnavailable, cameraIconNoSnapshot);
@@ -147,7 +147,7 @@ export class DragAndDropManager {
         this.dragVisual.style.backdropFilter = chipStyle.backdropFilter || 'blur(20px)';
         (this.dragVisual.style as any).webkitBackdropFilter = (chipStyle as any).webkitBackdropFilter || 'blur(20px)';
         this.dragVisual.style.borderRadius = chipStyle.borderRadius || '20px';
-        
+
         // Clone the chip content
         const clone = this.cloneWithStyles(chipElement);
         clone.style.width = '100%';
@@ -164,7 +164,7 @@ export class DragAndDropManager {
     } else {
       this.dragVisual.style.background = 'rgba(128, 128, 128, 0.5)';
     }
-    
+
     document.body.appendChild(this.dragVisual);
   }
 
@@ -172,13 +172,13 @@ export class DragAndDropManager {
    * Create drag visual specifically for camera cards
    */
   private createCameraDragVisual(
-    innerCard: HTMLElement, 
+    innerCard: HTMLElement,
     cameraContainer: HTMLElement | null,
     cameraIconUnavailable: HTMLElement | null,
     cameraIconNoSnapshot: HTMLElement | null
   ): void {
     const cardStyle = window.getComputedStyle(innerCard);
-    
+
     // Create a container that matches the card layout
     const container = document.createElement('div');
     container.style.cssText = `
@@ -190,12 +190,12 @@ export class DragAndDropManager {
       overflow: hidden;
       border-radius: ${cardStyle.borderRadius};
     `;
-    
+
     if (cameraContainer) {
       // Working camera - find the visible snapshot image
       const images = Array.from(cameraContainer.querySelectorAll('img')) as HTMLImageElement[];
       let visibleImgSrc: string | null = null;
-      
+
       for (const img of images) {
         const imgStyle = window.getComputedStyle(img);
         if (imgStyle.opacity !== '0' && img.src) {
@@ -203,7 +203,7 @@ export class DragAndDropManager {
           break;
         }
       }
-      
+
       if (visibleImgSrc) {
         const imgClone = document.createElement('img');
         imgClone.src = visibleImgSrc;
@@ -240,7 +240,7 @@ export class DragAndDropManager {
         </div>
       `;
     }
-    
+
     // Add the entity name at bottom if present
     const entityName = innerCard.querySelector('.entity-name');
     if (entityName) {
@@ -262,7 +262,7 @@ export class DragAndDropManager {
       `;
       container.appendChild(nameClone);
     }
-    
+
     this.dragVisual!.appendChild(container);
   }
 
@@ -272,22 +272,39 @@ export class DragAndDropManager {
   private cloneWithStyles(element: HTMLElement): HTMLElement {
     const clone = element.cloneNode(false) as HTMLElement;
     const style = window.getComputedStyle(element);
-    
+
     // Copy key styles inline
     const stylesToCopy = [
-      'display', 'flexDirection', 'alignItems', 'justifyContent', 'gap',
-      'padding', 'margin', 'width', 'height', 'minWidth', 'minHeight',
-      'color', 'fontSize', 'fontWeight', 'fontFamily', 'textAlign',
-      'background', 'backgroundColor', 'borderRadius',
-      'overflow', 'whiteSpace', 'textOverflow'
+      'display',
+      'flexDirection',
+      'alignItems',
+      'justifyContent',
+      'gap',
+      'padding',
+      'margin',
+      'width',
+      'height',
+      'minWidth',
+      'minHeight',
+      'color',
+      'fontSize',
+      'fontWeight',
+      'fontFamily',
+      'textAlign',
+      'background',
+      'backgroundColor',
+      'borderRadius',
+      'overflow',
+      'whiteSpace',
+      'textOverflow',
     ];
-    
-    stylesToCopy.forEach(prop => {
+
+    stylesToCopy.forEach((prop) => {
       (clone.style as any)[prop] = (style as any)[prop];
     });
-    
+
     // Handle children
-    element.childNodes.forEach(child => {
+    element.childNodes.forEach((child) => {
       if (child.nodeType === Node.TEXT_NODE) {
         clone.appendChild(child.cloneNode(true));
       } else if (child.nodeType === Node.ELEMENT_NODE) {
@@ -316,7 +333,9 @@ export class DragAndDropManager {
           clone.appendChild(imgClone);
         } else if (childEl.classList.contains('camera-container')) {
           // For camera containers, try to find and clone the visible image
-          const visibleImg = childEl.querySelector('img[style*="opacity: 1"], img:not([style*="opacity: 0"])') as HTMLImageElement;
+          const visibleImg = childEl.querySelector(
+            'img[style*="opacity: 1"], img:not([style*="opacity: 0"])'
+          ) as HTMLImageElement;
           if (visibleImg && visibleImg.src) {
             const cameraClone = document.createElement('div');
             cameraClone.style.cssText = `
@@ -347,7 +366,8 @@ export class DragAndDropManager {
               justify-content: center;
               background: rgba(0,0,0,0.3);
             `;
-            placeholder.innerHTML = '<ha-icon icon="mdi:camera" style="color: white; --mdc-icon-size: 32px;"></ha-icon>';
+            placeholder.innerHTML =
+              '<ha-icon icon="mdi:camera" style="color: white; --mdc-icon-size: 32px;"></ha-icon>';
             clone.appendChild(placeholder);
           }
         } else {
@@ -355,7 +375,7 @@ export class DragAndDropManager {
         }
       }
     });
-    
+
     return clone;
   }
 
@@ -364,12 +384,12 @@ export class DragAndDropManager {
    */
   private updateDragVisual(x: number, y: number): void {
     if (!this.dragVisual) return;
-    
+
     const width = this.dragVisual.offsetWidth;
     const height = this.dragVisual.offsetHeight;
-    
-    this.dragVisual.style.left = (x - width / 2) + 'px';
-    this.dragVisual.style.top = (y - height / 2) + 'px';
+
+    this.dragVisual.style.left = x - width / 2 + 'px';
+    this.dragVisual.style.top = y - height / 2 + 'px';
   }
 
   /**
@@ -389,40 +409,40 @@ export class DragAndDropManager {
     return {
       animation: 150,
       easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-      
+
       // Touch settings
       delay: 150,
       delayOnTouchOnly: true,
       touchStartThreshold: 5,
-      
+
       // Scroll settings - enable for carousels with edge scrolling
       scroll: true,
       scrollSensitivity: 100,
       scrollSpeed: 15,
       bubbleScroll: true,
-      
+
       // Visual classes
       ghostClass: 'sortable-ghost',
-      chosenClass: 'sortable-chosen', 
+      chosenClass: 'sortable-chosen',
       dragClass: 'sortable-drag',
-      
+
       // Use fallback for touch support, but we'll handle the visual ourselves
       forceFallback: true,
       fallbackClass: 'sortable-fallback-hidden',
       fallbackOnBody: false, // Keep it in container, we handle visual
       fallbackTolerance: 3,
-      
+
       swapThreshold: 0.65,
-      
+
       // Filter out control buttons only - NOT images (they're in shadow DOM anyway)
       filter: '.entity-controls, .entity-control-btn',
       preventOnFilter: false,
-      
+
       // Handle filtered elements
       onFilter: () => {
         // Filtering handled by SortableJS
       },
-      
+
       onMove: () => {
         return true; // Allow all moves
       },
@@ -432,13 +452,13 @@ export class DragAndDropManager {
   enableDragAndDrop(container: HTMLElement): void {
     // Handle grid containers
     const gridContainers = container.querySelectorAll('.area-entities, .room-group-grid');
-    gridContainers.forEach(gridContainer => {
+    gridContainers.forEach((gridContainer) => {
       this.setupGridSortable(gridContainer as HTMLElement);
     });
-    
+
     // Handle carousel containers - exclude chips
     const carouselContainers = container.querySelectorAll('.carousel-grid:not(.chips)');
-    carouselContainers.forEach(carouselGrid => {
+    carouselContainers.forEach((carouselGrid) => {
       this.setupCarouselSortable(carouselGrid as HTMLElement);
     });
 
@@ -455,10 +475,11 @@ export class DragAndDropManager {
     }
 
     const areaId = gridContainer.dataset.areaId;
-    
+
     // Track touch/mouse position for visual
-    let lastX = 0, lastY = 0;
-    
+    let lastX = 0,
+      lastY = 0;
+
     const onMove = (e: MouseEvent | TouchEvent) => {
       if (e instanceof TouchEvent) {
         lastX = e.touches[0].clientX;
@@ -469,66 +490,66 @@ export class DragAndDropManager {
       }
       this.updateDragVisual(lastX, lastY);
     };
-    
+
     const sortable = new Sortable(gridContainer, {
       ...this.getBaseSortableOptions(false),
       draggable: '.entity-card-wrapper',
-      
+
       onStart: (evt) => {
         DragAndDropManager.isReordering = true;
         evt.item.classList.add('dragging');
-        
+
         // Hide ALL entity-controls in the grid during drag
         // (SortableJS creates multiple elements including a fallback clone)
         gridContainer.querySelectorAll('.entity-controls').forEach((ctrl) => {
           (ctrl as HTMLElement).style.visibility = 'hidden';
         });
-        
+
         // Get initial position from the event
         const originalEvent = (evt as any).originalEvent;
         const touch = (originalEvent as TouchEvent)?.touches?.[0];
         const mouse = originalEvent as MouseEvent;
         lastX = touch?.clientX ?? mouse?.clientX ?? 0;
         lastY = touch?.clientY ?? mouse?.clientY ?? 0;
-        
+
         // Create our custom visual
         this.createDragVisual(evt.item, lastX, lastY);
-        
+
         // Listen for moves
         document.addEventListener('mousemove', onMove);
         document.addEventListener('touchmove', onMove, { passive: true });
-        
+
         if ('vibrate' in navigator) navigator.vibrate(50);
         document.body.style.userSelect = 'none';
       },
-      
+
       onEnd: (evt) => {
         DragAndDropManager.isReordering = false;
         evt.item.classList.remove('dragging');
-        
+
         // Show ALL entity-controls again
         gridContainer.querySelectorAll('.entity-controls').forEach((ctrl) => {
           (ctrl as HTMLElement).style.visibility = '';
         });
-        
+
         // Remove our custom visual
         this.removeDragVisual();
-        
+
         // Remove listeners
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('touchmove', onMove);
-        
+
         document.body.style.userSelect = '';
         if ('vibrate' in navigator) navigator.vibrate(30);
-        
+
         this.reconnectSingleCameraManager(evt.item);
-        
+
         if (areaId) {
           this.saveOrderCallback(areaId);
         }
-      }
+      },
     });
-    
+
     this.sortableInstances.set(gridContainer, sortable);
   }
 
@@ -541,69 +562,69 @@ export class DragAndDropManager {
     // Get the scrollable container (parent of carousel-grid)
     const scrollContainer = carouselGrid.closest('.carousel-container') as HTMLElement;
 
-    let lastX = 0, lastY = 0;
+    let lastX = 0,
+      lastY = 0;
     let currentScrollSpeed = 0; // The actual speed used by animation
     let scrollAnimationId: number | null = null;
-    
+
     // Smooth scroll animation loop - reads currentScrollSpeed each frame
     const animateScroll = () => {
       if (!scrollContainer || currentScrollSpeed === 0) {
         scrollAnimationId = null;
         return;
       }
-      
+
       const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
       const currentScroll = scrollContainer.scrollLeft;
-      
+
       // Stop if we've hit the bounds
-      if ((currentScrollSpeed < 0 && currentScroll <= 0) || 
-          (currentScrollSpeed > 0 && currentScroll >= maxScroll)) {
+      if ((currentScrollSpeed < 0 && currentScroll <= 0) || (currentScrollSpeed > 0 && currentScroll >= maxScroll)) {
         currentScrollSpeed = 0;
         scrollAnimationId = null;
         return;
       }
-      
+
       scrollContainer.scrollLeft += currentScrollSpeed;
       scrollAnimationId = requestAnimationFrame(animateScroll);
     };
-    
+
     const updateScrollSpeed = (x: number) => {
       if (!scrollContainer) return;
-      
+
       const containerRect = scrollContainer.getBoundingClientRect();
       const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
       const currentScroll = scrollContainer.scrollLeft;
       const scrollZone = 100;
       const maxSpeed = 15;
       const minSpeed = 3;
-      
+
       const distFromLeft = x - containerRect.left;
       const distFromRight = containerRect.right - x;
-      
+
       const canScrollLeft = currentScroll > 0;
       const canScrollRight = currentScroll < maxScroll;
-      
+
       let newSpeed = 0;
-      
+
       if (distFromLeft < scrollZone && distFromLeft >= 0 && canScrollLeft) {
-        const ratio = 1 - (distFromLeft / scrollZone);
+        const ratio = 1 - distFromLeft / scrollZone;
         newSpeed = -(minSpeed + ratio * (maxSpeed - minSpeed));
       } else if (distFromRight < scrollZone && distFromRight >= 0 && canScrollRight) {
-        const ratio = 1 - (distFromRight / scrollZone);
+        const ratio = 1 - distFromRight / scrollZone;
         newSpeed = minSpeed + ratio * (maxSpeed - minSpeed);
       }
-      
+
       // Only update if speed changed significantly (prevents jitter)
       if (Math.abs(newSpeed - currentScrollSpeed) > 0.5 || (newSpeed === 0 && currentScrollSpeed !== 0)) {
         currentScrollSpeed = newSpeed;
-        
+
         // Start animation if needed and not already running
         if (currentScrollSpeed !== 0 && scrollAnimationId === null) {
           scrollAnimationId = requestAnimationFrame(animateScroll);
         }
       }
     };
-    
+
     const stopScrolling = () => {
       currentScrollSpeed = 0;
       if (scrollAnimationId) {
@@ -611,7 +632,7 @@ export class DragAndDropManager {
         scrollAnimationId = null;
       }
     };
-    
+
     const onMove = (e: MouseEvent | TouchEvent) => {
       if (e instanceof TouchEvent) {
         lastX = e.touches[0].clientX;
@@ -628,74 +649,74 @@ export class DragAndDropManager {
       ...this.getBaseSortableOptions(true),
       draggable: '.entity-card-wrapper',
       direction: 'horizontal',
-      
+
       // Disable SortableJS built-in scroll - we handle it manually
       scroll: false,
-      
+
       onChoose: () => {
         // Item chosen for drag
       },
-      
+
       onStart: (evt) => {
         DragAndDropManager.isReordering = true;
         evt.item.classList.add('dragging');
-        
+
         // Hide ALL entity-controls in the carousel during drag
         carouselGrid.querySelectorAll('.entity-controls').forEach((ctrl) => {
           (ctrl as HTMLElement).style.visibility = 'hidden';
         });
-        
+
         const originalEvent = (evt as any).originalEvent;
         const touch = (originalEvent as TouchEvent)?.touches?.[0];
         const mouse = originalEvent as MouseEvent;
         lastX = touch?.clientX ?? mouse?.clientX ?? 0;
         lastY = touch?.clientY ?? mouse?.clientY ?? 0;
-        
+
         this.createDragVisual(evt.item, lastX, lastY);
-        
+
         document.addEventListener('mousemove', onMove);
         document.addEventListener('touchmove', onMove, { passive: true });
-        
+
         if ('vibrate' in navigator) navigator.vibrate(50);
         document.body.style.userSelect = 'none';
       },
-      
+
       onEnd: (evt) => {
         DragAndDropManager.isReordering = false;
         evt.item.classList.remove('dragging');
 
         // Stop smooth scrolling
         stopScrolling();
-        
+
         // Show ALL entity-controls again
         carouselGrid.querySelectorAll('.entity-controls').forEach((ctrl) => {
           (ctrl as HTMLElement).style.visibility = '';
         });
-        
+
         this.removeDragVisual();
-        
+
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('touchmove', onMove);
-        
+
         document.body.style.userSelect = '';
         if ('vibrate' in navigator) navigator.vibrate(30);
-        
+
         this.reconnectSingleCameraManager(evt.item);
-        
+
         const carousel = evt.item.closest('.carousel-grid') as HTMLElement;
         if (carousel) {
           this.updateCarouselConfiguration(carousel);
         }
-      }
+      },
     });
-    
+
     this.sortableInstances.set(carouselGrid, sortable);
   }
 
   enableChipsCarousel(container: HTMLElement): void {
     const chipsCarousel = container.querySelector('.chips-grid') as HTMLElement;
     if (!chipsCarousel) return;
-    
+
     const existingInstance = this.sortableInstances.get(chipsCarousel);
     if (existingInstance) {
       existingInstance.destroy();
@@ -704,60 +725,60 @@ export class DragAndDropManager {
     // Get the scrollable container
     const scrollContainer = chipsCarousel.closest('.carousel-container, .chips-carousel-container') as HTMLElement;
 
-    let lastX = 0, lastY = 0;
+    let lastX = 0,
+      lastY = 0;
     let scrollSpeed = 0;
     let scrollAnimationId: number | null = null;
-    
+
     const smoothScroll = () => {
       if (scrollContainer && scrollSpeed !== 0) {
         const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
         const currentScroll = scrollContainer.scrollLeft;
-        
-        if ((scrollSpeed < 0 && currentScroll <= 0) || 
-            (scrollSpeed > 0 && currentScroll >= maxScroll)) {
+
+        if ((scrollSpeed < 0 && currentScroll <= 0) || (scrollSpeed > 0 && currentScroll >= maxScroll)) {
           scrollSpeed = 0;
           scrollAnimationId = null;
           return;
         }
-        
+
         scrollContainer.scrollLeft += scrollSpeed;
         scrollAnimationId = requestAnimationFrame(smoothScroll);
       } else {
         scrollAnimationId = null;
       }
     };
-    
+
     const updateScrollSpeed = (x: number) => {
       if (!scrollContainer) return;
-      
+
       const containerRect = scrollContainer.getBoundingClientRect();
       const maxScroll = scrollContainer.scrollWidth - scrollContainer.clientWidth;
       const currentScroll = scrollContainer.scrollLeft;
       const scrollZone = 80;
       const maxSpeed = 12;
       const minSpeed = 2;
-      
+
       const distFromLeft = x - containerRect.left;
       const distFromRight = containerRect.right - x;
-      
+
       const canScrollLeft = currentScroll > 0;
       const canScrollRight = currentScroll < maxScroll;
-      
+
       if (distFromLeft < scrollZone && distFromLeft >= 0 && canScrollLeft) {
-        const ratio = 1 - (distFromLeft / scrollZone);
+        const ratio = 1 - distFromLeft / scrollZone;
         scrollSpeed = -(minSpeed + ratio * (maxSpeed - minSpeed));
       } else if (distFromRight < scrollZone && distFromRight >= 0 && canScrollRight) {
-        const ratio = 1 - (distFromRight / scrollZone);
+        const ratio = 1 - distFromRight / scrollZone;
         scrollSpeed = minSpeed + ratio * (maxSpeed - minSpeed);
       } else {
         scrollSpeed = 0;
       }
-      
+
       if (scrollSpeed !== 0 && !scrollAnimationId) {
         scrollAnimationId = requestAnimationFrame(smoothScroll);
       }
     };
-    
+
     const stopScrolling = () => {
       scrollSpeed = 0;
       if (scrollAnimationId) {
@@ -765,7 +786,7 @@ export class DragAndDropManager {
         scrollAnimationId = null;
       }
     };
-    
+
     const onMove = (e: MouseEvent | TouchEvent) => {
       if (e instanceof TouchEvent) {
         lastX = e.touches[0].clientX;
@@ -783,57 +804,57 @@ export class DragAndDropManager {
       draggable: '.chip-wrapper',
       direction: 'horizontal',
       scroll: false,
-      
+
       onStart: (evt) => {
         DragAndDropManager.isReordering = true;
         evt.item.classList.add('dragging');
-        
+
         const originalEvent = (evt as any).originalEvent;
         const touch = (originalEvent as TouchEvent)?.touches?.[0];
         const mouse = originalEvent as MouseEvent;
         lastX = touch?.clientX ?? mouse?.clientX ?? 0;
         lastY = touch?.clientY ?? mouse?.clientY ?? 0;
-        
+
         this.createDragVisual(evt.item, lastX, lastY, true);
-        
+
         document.addEventListener('mousemove', onMove);
         document.addEventListener('touchmove', onMove, { passive: true });
-        
+
         if ('vibrate' in navigator) navigator.vibrate(50);
         document.body.style.userSelect = 'none';
       },
-      
+
       onEnd: (evt) => {
         DragAndDropManager.isReordering = false;
         evt.item.classList.remove('dragging');
         stopScrolling();
         this.removeDragVisual();
-        
+
         document.removeEventListener('mousemove', onMove);
         document.removeEventListener('touchmove', onMove);
-        
+
         document.body.style.userSelect = '';
         if ('vibrate' in navigator) navigator.vibrate(30);
-        
+
         const chipsGrid = evt.item.closest('.chips-grid') as HTMLElement;
         if (chipsGrid) {
           this.updateChipsOrder(chipsGrid);
         }
-      }
+      },
     });
-    
+
     this.sortableInstances.set(chipsCarousel, sortable);
   }
 
   private updateChipsOrder(chipsGrid: HTMLElement): void {
     const chipWrappers = Array.from(chipsGrid.querySelectorAll('.chip-wrapper'));
     const newOrder: string[] = [];
-    
+
     chipWrappers.forEach((wrapper) => {
       const chipId = (wrapper as HTMLElement).dataset.chipId || (wrapper as HTMLElement).dataset.entityId;
       if (chipId) newOrder.push(chipId);
     });
-    
+
     if (this.customizationManager) {
       ChipsConfigurationManager.saveChipsOrder(this.customizationManager, newOrder);
     }
@@ -842,12 +863,12 @@ export class DragAndDropManager {
   private updateCarouselConfiguration(carousel: HTMLElement): void {
     const areaId = carousel.dataset.areaId;
     const sectionType = carousel.dataset.sectionType;
-    
+
     if (!areaId || !sectionType) return;
-    
+
     const entityWrappers = Array.from(carousel.querySelectorAll('.entity-card-wrapper'));
     const newOrder: string[] = [];
-    
+
     entityWrappers.forEach((wrapper) => {
       let entityId = (wrapper as HTMLElement).dataset.entityId;
       if (!entityId) {
@@ -858,7 +879,7 @@ export class DragAndDropManager {
       }
       if (entityId) newOrder.push(entityId);
     });
-    
+
     if (this.customizationManager) {
       this.customizationManager.updateCarouselOrderWithContext(areaId, sectionType, newOrder, this.context);
     }
@@ -873,16 +894,16 @@ export class DragAndDropManager {
 
   disableDragAndDrop(container: HTMLElement): void {
     const gridContainers = container.querySelectorAll('.area-entities, .room-group-grid');
-    gridContainers.forEach(gridContainer => {
+    gridContainers.forEach((gridContainer) => {
       const instance = this.sortableInstances.get(gridContainer as HTMLElement);
       if (instance) {
         instance.destroy();
         this.sortableInstances.delete(gridContainer as HTMLElement);
       }
     });
-    
+
     const carouselContainers = container.querySelectorAll('.carousel-grid');
-    carouselContainers.forEach(carouselGrid => {
+    carouselContainers.forEach((carouselGrid) => {
       const instance = this.sortableInstances.get(carouselGrid as HTMLElement);
       if (instance) {
         instance.destroy();

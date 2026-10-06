@@ -30,14 +30,14 @@ export class CalendarSection {
 
   static getAvailableCalendars(hass: any): { entityId: string; name: string }[] {
     return Object.keys(hass?.states || {})
-      .filter(id => id.startsWith('calendar.'))
-      .map(id => ({ entityId: id, name: hass.states[id].attributes?.friendly_name || id }))
+      .filter((id) => id.startsWith('calendar.'))
+      .map((id) => ({ entityId: id, name: hass.states[id].attributes?.friendly_name || id }))
       .sort((a, b) => a.name.localeCompare(b.name));
   }
 
   async hasCalendars(hass: any): Promise<boolean> {
     const selected = await this.customizationManager.getCalendarEntities();
-    return selected.some(id => !!hass.states[id]);
+    return selected.some((id) => !!hass.states[id]);
   }
 
   /**
@@ -47,17 +47,17 @@ export class CalendarSection {
    * start before midnight tonight.
    */
   async getTodayEventCount(hass: any): Promise<number> {
-    const selected = (await this.customizationManager.getCalendarEntities()).filter(id => !!hass.states[id]);
+    const selected = (await this.customizationManager.getCalendarEntities()).filter((id) => !!hass.states[id]);
     if (selected.length === 0) return 0;
 
     const events = await this.fetchEvents(hass, selected, HOME_DAYS);
     const endOfToday = new Date();
     endOfToday.setHours(24, 0, 0, 0);
-    return events.filter(e => e.start.getTime() < endOfToday.getTime()).length;
+    return events.filter((e) => e.start.getTime() < endOfToday.getTime()).length;
   }
 
   async render(container: HTMLElement, hass: any, context: 'home' | 'page' = 'home'): Promise<void> {
-    const selected = (await this.customizationManager.getCalendarEntities()).filter(id => !!hass.states[id]);
+    const selected = (await this.customizationManager.getCalendarEntities()).filter((id) => !!hass.states[id]);
     if (selected.length === 0) return;
 
     this.injectStyles(container);
@@ -99,29 +99,35 @@ export class CalendarSection {
     const end = new Date(start.getTime() + days * 24 * 3600 * 1000);
     const now = Date.now();
 
-    const perCalendar = await Promise.all(calendarIds.map(async (id, index) => {
-      const cacheKey = `${id}|${days}`;
-      const cached = this.cache.get(cacheKey);
-      let raw: any[];
-      if (cached && now - cached.timestamp < CACHE_TTL) {
-        raw = cached.events;
-      } else {
-        try {
-          raw = await hass.callApi('GET', `calendars/${id}?start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`);
-          this.cache.set(cacheKey, { events: raw, timestamp: now });
-        } catch (error) {
-          console.error(`🏠 APPLE HOME: Failed to load calendar ${id}:`, error);
-          raw = cached?.events || [];
+    const perCalendar = await Promise.all(
+      calendarIds.map(async (id, index) => {
+        const cacheKey = `${id}|${days}`;
+        const cached = this.cache.get(cacheKey);
+        let raw: any[];
+        if (cached && now - cached.timestamp < CACHE_TTL) {
+          raw = cached.events;
+        } else {
+          try {
+            raw = await hass.callApi(
+              'GET',
+              `calendars/${id}?start=${encodeURIComponent(start.toISOString())}&end=${encodeURIComponent(end.toISOString())}`
+            );
+            this.cache.set(cacheKey, { events: raw, timestamp: now });
+          } catch (error) {
+            console.error(`🏠 APPLE HOME: Failed to load calendar ${id}:`, error);
+            raw = cached?.events || [];
+          }
         }
-      }
-      const name = hass.states[id]?.attributes?.friendly_name || id;
-      const color = CALENDAR_COLORS[index % CALENDAR_COLORS.length];
-      return (raw || []).map(e => this.toEvent(e, id, name, color)).filter((e): e is CalendarEvent => !!e);
-    }));
+        const name = hass.states[id]?.attributes?.friendly_name || id;
+        const color = CALENDAR_COLORS[index % CALENDAR_COLORS.length];
+        return (raw || []).map((e) => this.toEvent(e, id, name, color)).filter((e): e is CalendarEvent => !!e);
+      })
+    );
 
     // Drop events that already ended, then sort by start (all-day first within a day)
-    return perCalendar.flat()
-      .filter(e => e.end.getTime() > now)
+    return perCalendar
+      .flat()
+      .filter((e) => e.end.getTime() > now)
       .sort((a, b) => a.start.getTime() - b.start.getTime() || Number(b.allDay) - Number(a.allDay));
   }
 
@@ -132,9 +138,11 @@ export class CalendarSection {
 
     const allDay = !raw.start.dateTime;
     // Date-only values are local days; `new Date('2026-09-21')` would parse them as UTC
-    const parse = (value: string, dateOnly: boolean) => dateOnly ? new Date(`${value}T00:00:00`) : new Date(value);
+    const parse = (value: string, dateOnly: boolean) => (dateOnly ? new Date(`${value}T00:00:00`) : new Date(value));
     return {
-      calendarId, calendarName, color,
+      calendarId,
+      calendarName,
+      color,
       title: raw.summary || localize('calendar.no_title'),
       location: raw.location || undefined,
       start: parse(startValue, allDay),
@@ -156,7 +164,11 @@ export class CalendarSection {
     }
 
     const visible = context === 'home' ? events.slice(0, MAX_HOME_EVENTS) : events;
-    const timeFormat = new Intl.DateTimeFormat(locale, { hour: '2-digit', minute: '2-digit', hour12: hass.locale?.time_format === '12' });
+    const timeFormat = new Intl.DateTimeFormat(locale, {
+      hour: '2-digit',
+      minute: '2-digit',
+      hour12: hass.locale?.time_format === '12',
+    });
 
     let lastDay = '';
     for (const event of visible) {
@@ -183,7 +195,9 @@ export class CalendarSection {
         <span class="calendar-event-time"></span>`;
       // textContent: event titles come from external calendars and must never be parsed as markup
       row.querySelector('.calendar-event-title')!.textContent = event.title;
-      row.querySelector('.calendar-event-sub')!.textContent = [event.location, event.calendarName].filter(Boolean).join(' · ');
+      row.querySelector('.calendar-event-sub')!.textContent = [event.location, event.calendarName]
+        .filter(Boolean)
+        .join(' · ');
       row.querySelector('.calendar-event-time')!.textContent = event.allDay
         ? localize('calendar.all_day')
         : `${timeFormat.format(event.start)}`;

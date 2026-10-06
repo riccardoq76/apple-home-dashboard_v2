@@ -40,23 +40,18 @@ export class StatusSection {
   /**
    * Render status section for a specific area or group
    */
-  async render(
-    container: HTMLElement,
-    entities: Entity[],
-    hass: any,
-    areaId?: string
-  ): Promise<void> {
+  async render(container: HTMLElement, entities: Entity[], hass: any, areaId?: string): Promise<void> {
     this._hass = hass;
     this._entities = entities;
     this._areaId = areaId;
     this._container = container;
-    
+
     // Generate status data
     this.statusItems = this.generateStatusData(entities, hass);
-    
+
     // Filter out items with no entities
-    const visibleItems = this.statusItems.filter(item => item.isVisible);
-    
+    const visibleItems = this.statusItems.filter((item) => item.isVisible);
+
     if (visibleItems.length === 0) {
       return; // Don't render empty section
     }
@@ -64,12 +59,12 @@ export class StatusSection {
     // Create status section container
     const statusSection = document.createElement('div');
     statusSection.className = 'apple-status-section';
-    
+
     // Generate HTML with embedded styles (like AppleChips)
     statusSection.innerHTML = this.generateHTML(visibleItems, areaId);
-    
+
     container.appendChild(statusSection);
-    
+
     // Attach event listeners after DOM is created
     this.attachEventListeners(statusSection, areaId);
   }
@@ -86,7 +81,7 @@ export class StatusSection {
 
     // Generate new status data
     const newStatusItems = this.generateStatusData(entities, hass);
-    const newVisibleItems = newStatusItems.filter(item => item.isVisible);
+    const newVisibleItems = newStatusItems.filter((item) => item.isVisible);
 
     // If no visible items, remove the section
     if (newVisibleItems.length === 0) {
@@ -95,7 +90,7 @@ export class StatusSection {
     }
 
     // Update only the values in the existing DOM elements
-    newVisibleItems.forEach(item => {
+    newVisibleItems.forEach((item) => {
       const chipElement = existingStatusSection.querySelector(`[data-domain="${item.domain}"]`);
       if (chipElement) {
         const valueElement = chipElement.querySelector('.status-chip-value');
@@ -136,42 +131,42 @@ export class StatusSection {
       { domain: 'windows', icon: 'mdi:window-open', label: localize('status_section.windows') },
       { domain: 'contact', icon: 'mdi:door-open', label: localize('contact.contact_sensors') },
       { domain: 'tvs', icon: 'mdi:television', label: localize('status_section.tvs') },
-      { domain: 'speakers', icon: 'mdi:speaker', label: localize('status_section.speakers') }
+      { domain: 'speakers', icon: 'mdi:speaker', label: localize('status_section.speakers') },
     ];
 
     // Initialize status map
-    statusTypes.forEach(type => {
+    statusTypes.forEach((type) => {
       statusMap.set(type.domain, {
         domain: type.domain,
         icon: type.icon,
         label: type.label,
         value: '',
         entityIds: [],
-        isVisible: false
+        isVisible: false,
       });
     });
 
     // Process entities and categorize them (including unavailable/unknown entities)
-    entities.forEach(entity => {
+    entities.forEach((entity) => {
       const state = hass.states[entity.entity_id];
       if (!state) return; // Only skip entities with no state object at all
 
       const entityDomain = entity.entity_id.split('.')[0];
       const deviceClass = state.attributes?.device_class;
-      
+
       this.categorizeEntity(entity.entity_id, entityDomain, deviceClass, state, statusMap);
     });
 
     // Calculate status values for each category
-    statusTypes.forEach(type => {
+    statusTypes.forEach((type) => {
       const status = statusMap.get(type.domain);
       if (status && status.entityIds.length > 0) {
         // Check if there's at least one available entity (not unavailable/unknown)
-        const hasAvailableEntities = status.entityIds.some(entityId => {
+        const hasAvailableEntities = status.entityIds.some((entityId) => {
           const state = hass.states[entityId];
           return state && state.state !== 'unavailable' && state.state !== 'unknown';
         });
-        
+
         // Only show status if there are available entities
         if (hasAvailableEntities) {
           status.value = this.calculateStatusValue(type.domain, status.entityIds, hass);
@@ -184,18 +179,17 @@ export class StatusSection {
   }
 
   private categorizeEntity(
-    entityId: string, 
-    domain: string, 
-    deviceClass: string | undefined, 
-    state: any, 
+    entityId: string,
+    domain: string,
+    deviceClass: string | undefined,
+    state: any,
     statusMap: Map<string, StatusData>
   ): void {
-    
     // Lights
     if (domain === 'light') {
       statusMap.get('lights')?.entityIds.push(entityId);
     }
-    
+
     // Switches and Outlets
     else if (domain === 'switch') {
       // Check if this switch is an outlet
@@ -205,20 +199,24 @@ export class StatusSection {
         statusMap.get('switches')?.entityIds.push(entityId);
       }
     }
-    
+
     // Temperature sensors
-    else if (domain === 'sensor' && (deviceClass === 'temperature' || state.attributes?.unit_of_measurement === '°C' || state.attributes?.unit_of_measurement === '°F')) {
+    else if (
+      domain === 'sensor' &&
+      (deviceClass === 'temperature' ||
+        state.attributes?.unit_of_measurement === '°C' ||
+        state.attributes?.unit_of_measurement === '°F')
+    ) {
+      statusMap.get('temperature')?.entityIds.push(entityId);
+    } else if (domain === 'climate' || domain === 'water_heater') {
       statusMap.get('temperature')?.entityIds.push(entityId);
     }
-    else if (domain === 'climate' || domain === 'water_heater') {
-      statusMap.get('temperature')?.entityIds.push(entityId);
-    }
-    
+
     // Humidity sensors
     else if (domain === 'sensor' && deviceClass === 'humidity') {
       statusMap.get('humidity')?.entityIds.push(entityId);
     }
-    
+
     // Covers - separate gates/garage doors from regular covers
     else if (domain === 'cover') {
       if (DashboardConfig.isGarageDoorOrGate(entityId, state.attributes)) {
@@ -227,72 +225,76 @@ export class StatusSection {
         statusMap.get('covers')?.entityIds.push(entityId);
       }
     }
-    
+
     // Security systems
     else if (domain === 'alarm_control_panel') {
       statusMap.get('security')?.entityIds.push(entityId);
     }
-    
+
     // Locks
     else if (domain === 'lock') {
       statusMap.get('locks')?.entityIds.push(entityId);
     }
-    
+
     // Motion sensors
     else if (domain === 'binary_sensor' && deviceClass === 'motion') {
       statusMap.get('motion')?.entityIds.push(entityId);
     }
-    
+
     // Occupancy sensors
     else if (domain === 'binary_sensor' && deviceClass === 'occupancy') {
       statusMap.get('occupancy')?.entityIds.push(entityId);
     }
-    
+
     // Light sensors (illuminance)
     else if (domain === 'sensor' && (deviceClass === 'illuminance' || state.attributes?.unit_of_measurement === 'lx')) {
       statusMap.get('light_sensor')?.entityIds.push(entityId);
     }
-    
+
     // Smoke detectors
     else if (domain === 'binary_sensor' && deviceClass === 'smoke') {
       statusMap.get('smoke')?.entityIds.push(entityId);
     }
-    
+
     // Gas sensors
     else if (domain === 'binary_sensor' && deviceClass === 'gas') {
       statusMap.get('gas')?.entityIds.push(entityId);
     }
-    
+
     // Flood/moisture sensors
     else if (domain === 'binary_sensor' && (deviceClass === 'moisture' || deviceClass === 'water_leak')) {
       statusMap.get('flood')?.entityIds.push(entityId);
     }
-    
+
     // Battery sensors (only low battery ones)
     else if (domain === 'sensor' && deviceClass === 'battery' && parseFloat(state.state) < 20) {
       statusMap.get('battery')?.entityIds.push(entityId);
     }
-    
+
     // Door sensors
     else if (domain === 'binary_sensor' && deviceClass === 'door') {
       statusMap.get('doors')?.entityIds.push(entityId);
     }
-    
+
     // Window sensors
     else if (domain === 'binary_sensor' && deviceClass === 'window') {
       statusMap.get('windows')?.entityIds.push(entityId);
     }
-    
+
     // General contact sensors (not doors or windows)
-    else if (domain === 'binary_sensor' && (deviceClass === 'opening' && !['door', 'window'].includes(deviceClass || ''))) {
+    else if (
+      domain === 'binary_sensor' &&
+      deviceClass === 'opening' &&
+      !['door', 'window'].includes(deviceClass || '')
+    ) {
       statusMap.get('contact')?.entityIds.push(entityId);
     }
-    
+
     // TVs (media players with TV device class)
     else if (domain === 'media_player' && (deviceClass === 'tv' || entityId.includes('tv'))) {
       statusMap.get('tvs')?.entityIds.push(entityId);
     }
-    
+
     // Speakers (other media players)
     else if (domain === 'media_player' && deviceClass !== 'tv' && !entityId.includes('tv')) {
       statusMap.get('speakers')?.entityIds.push(entityId);
@@ -305,64 +307,66 @@ export class StatusSection {
       case 'switches':
       case 'outlets':
         return this.calculateOnOffStatus(entityIds, hass);
-      
+
       case 'temperature':
         return this.calculateTemperatureRange(entityIds, hass);
-      
+
       case 'humidity':
         return this.calculateHumidityRange(entityIds, hass);
-      
+
       case 'covers':
       case 'gates':
         return this.calculateCoverStatus(entityIds, hass);
-      
+
       case 'security':
         return this.calculateSecurityStatus(entityIds, hass);
-      
+
       case 'locks':
         return this.calculateLockStatus(entityIds, hass);
-      
+
       case 'motion':
         return this.calculateMotionStatus(entityIds, hass);
-      
+
       case 'occupancy':
         return this.calculateOccupancyStatus(entityIds, hass);
-      
+
       case 'light_sensor':
         return this.calculateLightSensorRange(entityIds, hass);
-      
+
       case 'smoke':
         return this.calculateSmokeStatus(entityIds, hass);
-      
+
       case 'gas':
         return this.calculateGasStatus(entityIds, hass);
-      
+
       case 'flood':
         return this.calculateFloodStatus(entityIds, hass);
-      
+
       case 'battery':
-        return entityIds.length === 1 ? localize('battery.low_battery') : localize('battery.low_battery_count').replace('{count}', entityIds.length.toString());
-      
+        return entityIds.length === 1
+          ? localize('battery.low_battery')
+          : localize('battery.low_battery_count').replace('{count}', entityIds.length.toString());
+
       case 'doors':
       case 'windows':
       case 'contact':
         return this.calculateContactStatus(entityIds, hass);
-      
+
       case 'tvs':
       case 'speakers':
         return this.calculateMediaStatus(entityIds, hass);
-      
+
       default:
         return '';
     }
   }
 
   private calculateOnOffStatus(entityIds: string[], hass: any): string {
-    const onCount = entityIds.filter(id => {
+    const onCount = entityIds.filter((id) => {
       const state = hass.states[id];
       return state && (state.state === 'on' || state.state === 'playing');
     }).length;
-    
+
     if (onCount === 0) {
       return localize('lights.all_off');
     } else if (onCount === entityIds.length) {
@@ -374,61 +378,65 @@ export class StatusSection {
 
   private calculateTemperatureRange(entityIds: string[], hass: any): string {
     const temperatures: number[] = [];
-    
-    entityIds.forEach(id => {
+
+    entityIds.forEach((id) => {
       const state = hass.states[id];
       if (!state) return;
-      
+
       let temp: number | undefined;
-      
+
       const domain = id.split('.')[0];
       if (domain === 'climate') {
         temp = state.attributes?.current_temperature;
       } else {
         temp = parseFloat(state.state);
       }
-      
-      if (typeof temp === 'number' && !isNaN(temp) && temp > -100 && temp < 200) { // Reasonable temperature range
+
+      if (typeof temp === 'number' && !isNaN(temp) && temp > -100 && temp < 200) {
+        // Reasonable temperature range
         temperatures.push(temp);
       }
     });
-    
+
     if (temperatures.length === 0) return '';
     if (temperatures.length === 1) return `${temperatures[0].toFixed(1)}°`;
-    
+
     const min = Math.min(...temperatures);
     const max = Math.max(...temperatures);
-    
-    if (Math.abs(min - max) < 0.1) { // If temperatures are essentially the same
+
+    if (Math.abs(min - max) < 0.1) {
+      // If temperatures are essentially the same
       return `${min.toFixed(1)}°`;
     }
-    
+
     return `${min.toFixed(1)}°-${max.toFixed(1)}°`;
   }
 
   private calculateHumidityRange(entityIds: string[], hass: any): string {
     const humidities: number[] = [];
-    
-    entityIds.forEach(id => {
+
+    entityIds.forEach((id) => {
       const state = hass.states[id];
       if (state) {
         const humidity = parseFloat(state.state);
-        if (!isNaN(humidity) && humidity >= 0 && humidity <= 100) { // Valid humidity range
+        if (!isNaN(humidity) && humidity >= 0 && humidity <= 100) {
+          // Valid humidity range
           humidities.push(Math.round(humidity)); // Round to whole numbers for better display
         }
       }
     });
-    
+
     if (humidities.length === 0) return '';
     if (humidities.length === 1) return `${humidities[0]}%`;
-    
+
     const min = Math.min(...humidities);
     const max = Math.max(...humidities);
-    
-    if (min === max) { // If all humidity values are the same
+
+    if (min === max) {
+      // If all humidity values are the same
       return `${min}%`;
     }
-    
+
     return `${min}%-${max}%`;
   }
 
@@ -524,7 +532,9 @@ export class StatusSection {
       <div class="apple-status-section">
         <div class="status-carousel-container">
           <div class="status-chips-grid">
-            ${statusItems.map(item => `
+            ${statusItems
+              .map(
+                (item) => `
               <div class="status-chip" data-domain="${item.domain}" data-entity-ids="${item.entityIds.join(',')}">
                 <div class="status-chip-icon">
                   <ha-icon icon="${item.icon}"></ha-icon>
@@ -534,7 +544,9 @@ export class StatusSection {
                   <span class="status-chip-value">${item.value}</span>
                 </div>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
         </div>
       </div>
@@ -543,22 +555,22 @@ export class StatusSection {
 
   private attachEventListeners(statusSection: HTMLElement, areaId?: string): void {
     const chips = statusSection.querySelectorAll('.status-chip');
-    chips.forEach(chip => {
+    chips.forEach((chip) => {
       chip.addEventListener('click', () => {
         const domain = chip.getAttribute('data-domain');
         const entityIds = chip.getAttribute('data-entity-ids')?.split(',') || [];
-        
+
         const statusData: StatusData = {
           domain: domain || '',
           icon: '',
           label: domain || '',
           value: '',
           entityIds,
-          isVisible: true
+          isVisible: true,
         };
-        
+
         // Find the full status data
-        const fullStatusData = this.statusItems.find(item => item.domain === domain);
+        const fullStatusData = this.statusItems.find((item) => item.domain === domain);
         if (fullStatusData) {
           this.handleStatusChipClick(fullStatusData, areaId);
         }
@@ -567,11 +579,11 @@ export class StatusSection {
   }
 
   private calculateCoverStatus(entityIds: string[], hass: any): string {
-    const openCount = entityIds.filter(id => {
+    const openCount = entityIds.filter((id) => {
       const state = hass.states[id];
       return state && state.state === 'open';
     }).length;
-    
+
     if (openCount === 0) {
       return localize('covers.all_closed');
     } else if (openCount === entityIds.length) {
@@ -586,21 +598,21 @@ export class StatusSection {
       const state = hass.states[entityIds[0]];
       return state?.state?.replace(/_/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()) || 'Unknown';
     }
-    
-    const armed = entityIds.filter(id => {
+
+    const armed = entityIds.filter((id) => {
       const state = hass.states[id];
-      return state && state.state !== "disarmed" && state.state.includes('armed');
+      return state && state.state !== 'disarmed' && state.state.includes('armed');
     }).length;
-    
+
     return armed === 0 ? localize('status.disarmed') : `${armed} ${localize('status.armed')}`;
   }
 
   private calculateLockStatus(entityIds: string[], hass: any): string {
-    const unlockedCount = entityIds.filter(id => {
+    const unlockedCount = entityIds.filter((id) => {
       const state = hass.states[id];
       return state && state.state === 'unlocked';
     }).length;
-    
+
     if (unlockedCount === 0) {
       return localize('status_section.all_locked');
     } else if (unlockedCount === entityIds.length) {
@@ -611,11 +623,11 @@ export class StatusSection {
   }
 
   private calculateMotionStatus(entityIds: string[], hass: any): string {
-    const activeCount = entityIds.filter(id => {
+    const activeCount = entityIds.filter((id) => {
       const state = hass.states[id];
       return state && state.state === 'on';
     }).length;
-    
+
     if (activeCount === 0) {
       return localize('motion.not_detected');
     } else if (activeCount === 1) {
@@ -626,11 +638,11 @@ export class StatusSection {
   }
 
   private calculateOccupancyStatus(entityIds: string[], hass: any): string {
-    const activeCount = entityIds.filter(id => {
+    const activeCount = entityIds.filter((id) => {
       const state = hass.states[id];
       return state && state.state === 'on';
     }).length;
-    
+
     if (activeCount === 0) {
       return localize('occupancy.not_detected');
     } else if (activeCount === 1) {
@@ -642,8 +654,8 @@ export class StatusSection {
 
   private calculateLightSensorRange(entityIds: string[], hass: any): string {
     const luxValues: number[] = [];
-    
-    entityIds.forEach(id => {
+
+    entityIds.forEach((id) => {
       const state = hass.states[id];
       if (state) {
         const lux = parseFloat(state.state);
@@ -652,53 +664,53 @@ export class StatusSection {
         }
       }
     });
-    
+
     if (luxValues.length === 0) return '';
     if (luxValues.length === 1) return `${luxValues[0]} lx`;
-    
+
     const min = Math.min(...luxValues);
     const max = Math.max(...luxValues);
-    
+
     if (min === max) {
       return `${min} lx`;
     }
-    
+
     return `${min}-${max} lx`;
   }
 
   private calculateSmokeStatus(entityIds: string[], hass: any): string {
-    const detectedCount = entityIds.filter(id => {
+    const detectedCount = entityIds.filter((id) => {
       const state = hass.states[id];
       return state && state.state === 'on';
     }).length;
-    
+
     return detectedCount === 0 ? localize('smoke.not_detected') : localize('smoke.detected');
   }
 
   private calculateGasStatus(entityIds: string[], hass: any): string {
-    const detectedCount = entityIds.filter(id => {
+    const detectedCount = entityIds.filter((id) => {
       const state = hass.states[id];
       return state && state.state === 'on';
     }).length;
-    
+
     return detectedCount === 0 ? localize('gas.not_detected') : localize('gas.detected');
   }
 
   private calculateFloodStatus(entityIds: string[], hass: any): string {
-    const detectedCount = entityIds.filter(id => {
+    const detectedCount = entityIds.filter((id) => {
       const state = hass.states[id];
       return state && state.state === 'on';
     }).length;
-    
+
     return detectedCount === 0 ? localize('flood.not_detected') : localize('flood.detected');
   }
 
   private calculateContactStatus(entityIds: string[], hass: any): string {
-    const openCount = entityIds.filter(id => {
+    const openCount = entityIds.filter((id) => {
       const state = hass.states[id];
       return state && state.state === 'on';
     }).length;
-    
+
     if (openCount === 0) {
       return localize('contact.all_closed');
     } else if (openCount === 1) {
@@ -709,20 +721,20 @@ export class StatusSection {
   }
 
   private calculateMediaStatus(entityIds: string[], hass: any): string {
-    const playingCount = entityIds.filter(id => {
+    const playingCount = entityIds.filter((id) => {
       const state = hass.states[id];
       return state && state.state === 'playing';
     }).length;
-    
+
     if (playingCount > 0) {
       return playingCount === 1 ? localize('media.playing') : `${playingCount} ${localize('media.multiple_playing')}`;
     }
-    
-    const onCount = entityIds.filter(id => {
+
+    const onCount = entityIds.filter((id) => {
       const state = hass.states[id];
       return state && state.state !== 'off' && state.state !== 'unavailable' && state.state !== 'standby';
     }).length;
-    
+
     if (onCount === 0) {
       return localize('lights.all_off');
     } else if (onCount === entityIds.length) {
@@ -748,17 +760,17 @@ export class StatusSection {
       const event = new CustomEvent('hass-more-info', {
         detail: { entityId },
         bubbles: true,
-        composed: true
+        composed: true,
       });
-      
+
       // Try to dispatch from the main Home Assistant app elements
       const targets = [
         document.querySelector('ha-app'),
-        document.querySelector('home-assistant'), 
+        document.querySelector('home-assistant'),
         document.querySelector('hui-root'),
-        document.querySelector('ha-panel-lovelace')
+        document.querySelector('ha-panel-lovelace'),
       ].filter(Boolean);
-      
+
       let dispatched = false;
       for (const target of targets) {
         if (target) {
@@ -767,7 +779,7 @@ export class StatusSection {
           break; // Only need to dispatch from one target
         }
       }
-      
+
       // Fallback to document body if no Home Assistant elements found
       if (!dispatched) {
         document.body.dispatchEvent(event);
@@ -777,7 +789,7 @@ export class StatusSection {
 
   private async groupEntitiesByArea(entityIds: string[]): Promise<{ [areaId: string]: string[] }> {
     const entitiesByArea: { [areaId: string]: string[] } = {};
-    
+
     // Get areas, devices, and entities from Home Assistant
     let areas: Area[] = [];
     let devices: any[] = [];
@@ -789,50 +801,50 @@ export class StatusSection {
     } catch (error) {
       // Silently handle error
     }
-    
+
     // Initialize areas
-    areas.forEach(area => {
+    areas.forEach((area) => {
       entitiesByArea[area.area_id] = [];
     });
-    
+
     // Add entities without area to 'no_area'
     entitiesByArea['no_area'] = [];
-    
+
     // Group entities by area
     for (const entityId of entityIds) {
       // Find the entity in the registry
-      const entityRegistry = entities.find(e => e.entity_id === entityId);
-      
+      const entityRegistry = entities.find((e) => e.entity_id === entityId);
+
       let entityAreaId = entityRegistry?.area_id;
-      
+
       // If entity doesn't have an area but has a device, check device's area
       if (!entityAreaId && entityRegistry?.device_id) {
-        const device = devices.find(d => d.id === entityRegistry.device_id);
+        const device = devices.find((d) => d.id === entityRegistry.device_id);
         if (device?.area_id) {
           entityAreaId = device.area_id;
         }
       }
-      
+
       // If still no area, put in 'no_area'
       if (!entityAreaId) {
         entityAreaId = 'no_area';
       }
-      
+
       // Initialize area if it doesn't exist (shouldn't happen, but just in case)
       if (!entitiesByArea[entityAreaId]) {
         entitiesByArea[entityAreaId] = [];
       }
-      
+
       entitiesByArea[entityAreaId].push(entityId);
     }
-    
+
     // Remove empty areas
-    Object.keys(entitiesByArea).forEach(areaId => {
+    Object.keys(entitiesByArea).forEach((areaId) => {
       if (entitiesByArea[areaId].length === 0) {
         delete entitiesByArea[areaId];
       }
     });
-    
+
     return entitiesByArea;
   }
 
@@ -840,11 +852,11 @@ export class StatusSection {
     // Create modal backdrop
     const modal = document.createElement('div');
     modal.className = 'status-modal-backdrop';
-    
+
     // Create modal content
     const modalContent = document.createElement('div');
     modalContent.className = 'status-modal-content';
-    
+
     // Modal header
     const header = document.createElement('div');
     header.className = 'status-modal-header';
@@ -854,18 +866,18 @@ export class StatusSection {
       </button>
       <h2>${statusData.label}</h2>
     `;
-    
+
     // Modal body
     const body = document.createElement('div');
     body.className = 'status-modal-body';
-    
+
     // Group entities by room
     const entitiesByArea = await this.groupEntitiesByArea(statusData.entityIds);
-    
+
     // Create sections for each room
     for (const [roomAreaId, roomEntityIds] of Object.entries(entitiesByArea) as [string, string[]][]) {
       if (roomEntityIds.length === 0) continue;
-      
+
       // Get area name (capitalized like home screen titles)
       let areaName = roomAreaId;
       if (roomAreaId !== 'no_area') {
@@ -879,18 +891,18 @@ export class StatusSection {
       } else {
         areaName = localize('pages.default_room');
       }
-      
+
       // Create room title
       const roomTitle = document.createElement('div');
       roomTitle.className = 'status-modal-room-title';
       roomTitle.innerHTML = `<span>${areaName}</span>`;
       body.appendChild(roomTitle);
-      
+
       // Create cards grid for this room
       const cardsGrid = document.createElement('div');
       cardsGrid.className = 'status-modal-cards';
       cardsGrid.dataset.areaId = roomAreaId;
-      
+
       // Create cards for entities in this room
       for (const entityId of roomEntityIds) {
         const cardConfig = this.createEntityCard(entityId, this._hass);
@@ -898,14 +910,14 @@ export class StatusSection {
           await this.createAndAppendCard(cardConfig, cardsGrid, this._hass, roomAreaId);
         }
       }
-      
+
       body.appendChild(cardsGrid);
     }
-    
+
     modalContent.appendChild(header);
     modalContent.appendChild(body);
     modal.appendChild(modalContent);
-    
+
     // Add event listeners
     const closeBtn = header.querySelector('.modal-close');
 
@@ -918,15 +930,15 @@ export class StatusSection {
     modal.addEventListener('click', (e) => {
       if (e.target === modal) closeModal();
     });
-    
+
     // Forward hass-more-info events from cards to main app
     modal.addEventListener('hass-more-info', (e: Event) => {
       e.stopPropagation(); // Stop the event from bubbling further
       const event = e as CustomEvent;
-      
+
       // Close the modal first
       closeModal();
-      
+
       // Then dispatch the more-info event to the main app
       setTimeout(() => {
         // Try multiple Home Assistant app selectors
@@ -934,38 +946,38 @@ export class StatusSection {
           document.querySelector('ha-app'),
           document.querySelector('home-assistant'),
           document.querySelector('hui-root'),
-          document.querySelector('ha-panel-lovelace')
+          document.querySelector('ha-panel-lovelace'),
         ].filter(Boolean);
-        
-        targets.forEach(target => {
+
+        targets.forEach((target) => {
           if (target) {
             const forwardedEvent = new CustomEvent('hass-more-info', {
               detail: event.detail,
               bubbles: true,
-              composed: true
+              composed: true,
             });
             target.dispatchEvent(forwardedEvent);
           }
         });
-        
+
         // Also try dispatching from document body as fallback
         if (targets.length === 0) {
           const fallbackEvent = new CustomEvent('hass-more-info', {
             detail: event.detail,
             bubbles: true,
-            composed: true
+            composed: true,
           });
           document.body.dispatchEvent(fallbackEvent);
         }
       }, 100);
     });
-    
+
     // Add to DOM and show
     document.body.appendChild(modal);
-    
+
     // Add styles for modal
     this.addModalStyles();
-    
+
     // Trigger animation
     requestAnimationFrame(() => {
       modal.classList.add('show');
@@ -977,31 +989,31 @@ export class StatusSection {
     if (!state) {
       return null;
     }
-    
+
     let friendlyName = state?.attributes?.friendly_name || entityId.split('.')[1].replace(/_/g, ' ');
     const domain = entityId.split('.')[0];
-    
+
     // Determine card type and properties
     let cardType = 'custom:apple-home-card';
     let isTallCard = false;
-    
+
     // Check if domain should be tall by default
     if (DashboardConfig.isDefaultTallDomain(domain)) {
       isTallCard = true;
     }
-    
+
     const card: CardConfig = {
       type: cardType,
       entity: entityId,
       name: friendlyName,
       domain: domain,
-      is_tall: isTallCard
+      is_tall: isTallCard,
     };
-    
+
     // Add default icons for entities without icons
     if (!state.attributes?.icon) {
       let defaultIcon = '';
-      
+
       if (DashboardConfig.isScenesDomain(domain)) {
         defaultIcon = 'mdi:home';
       } else if (domain === 'sensor') {
@@ -1054,12 +1066,12 @@ export class StatusSection {
             defaultIcon = 'mdi:checkbox-marked-circle';
         }
       }
-      
+
       if (defaultIcon) {
         (card as any).default_icon = defaultIcon;
       }
     }
-    
+
     return card;
   }
 
@@ -1071,24 +1083,21 @@ export class StatusSection {
   ): Promise<void> {
     try {
       let cardElement: HTMLElement;
-      
+
       if (cardConfig.type === 'custom:apple-home-card') {
         cardElement = document.createElement('apple-home-card') as HTMLElement;
-        
+
         // Determine if card should be tall based on customizations
-        const shouldBeTall = this.cardManager?.shouldCardBeTall(
-          cardConfig.entity, 
-          areaId || 'unknown', 
-          'modal'
-        ) || cardConfig.is_tall;
-        
+        const shouldBeTall =
+          this.cardManager?.shouldCardBeTall(cardConfig.entity, areaId || 'unknown', 'modal') || cardConfig.is_tall;
+
         const configWithTall = { ...cardConfig, is_tall: shouldBeTall };
-        
+
         // Add default icon if specified
         if ((cardConfig as any).default_icon) {
           configWithTall.default_icon = (cardConfig as any).default_icon;
         }
-        
+
         (cardElement as any).setConfig(configWithTall);
         (cardElement as any).hass = hass;
       } else {
@@ -1105,25 +1114,21 @@ export class StatusSection {
           cardElement.innerHTML = `<div style="color: red;">Unknown card type: ${cardConfig.type}</div>`;
         }
       }
-      
+
       const wrapper = document.createElement('div');
       wrapper.className = 'entity-card-wrapper';
       wrapper.dataset.entityId = cardConfig.entity;
-      
+
       // Apply tall class if needed
-      const shouldBeTall = this.cardManager?.shouldCardBeTall(
-        cardConfig.entity, 
-        areaId || 'unknown', 
-        'modal'
-      ) || cardConfig.is_tall;
-      
+      const shouldBeTall =
+        this.cardManager?.shouldCardBeTall(cardConfig.entity, areaId || 'unknown', 'modal') || cardConfig.is_tall;
+
       if (shouldBeTall) {
         wrapper.classList.add('tall');
       }
-      
+
       wrapper.appendChild(cardElement);
       container.appendChild(wrapper);
-      
     } catch (error) {
       console.error('Error creating status modal card:', error);
     }
@@ -1131,7 +1136,7 @@ export class StatusSection {
 
   private addModalStyles(): void {
     if (document.querySelector('#status-modal-styles')) return;
-    
+
     const style = document.createElement('style');
     style.id = 'status-modal-styles';
     style.textContent = `
@@ -1355,7 +1360,7 @@ export class StatusSection {
         }
       }
     `;
-    
+
     document.head.appendChild(style);
   }
 }

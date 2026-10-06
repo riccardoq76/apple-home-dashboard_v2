@@ -13,21 +13,20 @@ export class EditModeManager {
 
   toggleEditMode() {
     this._editMode = !this._editMode;
-    
+
     // Notify about the change
     this.onEditModeChange(this._editMode);
   }
 
-
   updateEntityWrapperStyles(container: HTMLElement, editMode: boolean) {
     const entityWrappers = container.querySelectorAll('.entity-card-wrapper');
-    
+
     entityWrappers.forEach((wrapper) => {
       const element = wrapper as HTMLElement;
-      
+
       if (editMode) {
         element.classList.add('edit-mode');
-        
+
         // Force refresh of Apple Home cards to update edit mode
         const appleHomeCard = element.querySelector('apple-home-card') as any;
         if (appleHomeCard && typeof appleHomeCard.refreshEditMode === 'function') {
@@ -35,7 +34,7 @@ export class EditModeManager {
         }
       } else {
         element.classList.remove('edit-mode');
-        
+
         // Force refresh of Apple Home cards to update edit mode
         const appleHomeCard = element.querySelector('apple-home-card') as any;
         if (appleHomeCard && typeof appleHomeCard.refreshEditMode === 'function') {

@@ -14,13 +14,17 @@ import { RoomPage } from '../pages/RoomPage';
 import { ScenesPage } from '../pages/ScenesPage';
 import { CamerasPage } from '../pages/CamerasPage';
 import { DeviceGroup } from '../config/DashboardConfig';
-import { RegistrySubscriptionManager, RegistryChangeCallback, RegistryChangeEvent } from '../utils/RegistrySubscriptionManager';
+import {
+  RegistrySubscriptionManager,
+  RegistryChangeCallback,
+  RegistryChangeEvent,
+} from '../utils/RegistrySubscriptionManager';
 
 export class AppleHomeView extends HTMLElement {
   // Dashboard-specific management - keyed by dashboard URL base
   private static dashboardActiveInstances = new Map<string, AppleHomeView>();
   private static dashboardStateListeners = new Map<string, (isActive: boolean) => void>();
-  
+
   private config?: any;
   private _hass?: any;
   private _config?: any;
@@ -40,13 +44,13 @@ export class AppleHomeView extends HTMLElement {
   private visibilityChangeHandler?: () => void; // Add visibility change handler
   private globalRefreshHandler?: (event: Event) => void; // Add global refresh handler
   private currentDashboardKey: string = 'default'; // Track current dashboard key
-  
+
   // Registry subscription handlers for automatic updates
   private registrySubscriptionManager?: RegistrySubscriptionManager;
   private registryChangeHandler?: RegistryChangeCallback;
   private rtlChangeHandler?: (isRTL: boolean, language: string) => void;
   private _lastLanguage?: string; // Track language for change detection
-  
+
   // Helper methods for dashboard-specific management
   private getDashboardKey(): string {
     // Extract dashboard key directly from URL (independent method)
@@ -54,11 +58,11 @@ export class AppleHomeView extends HTMLElement {
     const dashboardMatch = currentPath.match(/\/([^\/]+)/);
     return dashboardMatch && dashboardMatch[1] ? dashboardMatch[1] : 'default';
   }
-  
+
   private getCurrentActiveInstance(): AppleHomeView | undefined {
     return AppleHomeView.dashboardActiveInstances.get(this.currentDashboardKey);
   }
-  
+
   private setCurrentActiveInstance(instance: AppleHomeView | undefined): void {
     if (instance) {
       AppleHomeView.dashboardActiveInstances.set(this.currentDashboardKey, instance);
@@ -66,7 +70,7 @@ export class AppleHomeView extends HTMLElement {
       AppleHomeView.dashboardActiveInstances.delete(this.currentDashboardKey);
     }
   }
-  
+
   // Page renderers
   private homePage: HomePage;
   private groupPage: GroupPage;
@@ -84,10 +88,10 @@ export class AppleHomeView extends HTMLElement {
 
   constructor() {
     super();
-    
+
     // Initialize dashboard key for this instance
     this.currentDashboardKey = this.getDashboardKey();
-    
+
     // Initialize callbacks
     this.refreshCallback = () => this.refreshDashboard();
 
@@ -95,18 +99,18 @@ export class AppleHomeView extends HTMLElement {
     this.customizationManager = CustomizationManager.getInstance();
     this.cardManager = new CardManager(this.customizationManager);
     this.editModeManager = new EditModeManager((editMode) => this.handleEditModeChange(editMode));
-    
+
     // Create instance-specific header (NO SINGLETON!) and pass editModeManager
     this.appleHeader = new AppleHeader(true);
     this.appleHeader.setEditModeManager(this.editModeManager);
     this.appleHeader.addRefreshCallback(this.refreshCallback);
-    
+
     this.dragAndDropManager = new DragAndDropManager(
       (areaId: string) => this.handleSaveCurrentOrder(areaId),
       this.customizationManager,
       'home' // Use home context for home page
     );
-    
+
     // Initialize page renderers
     this.homePage = new HomePage();
     this.groupPage = new GroupPage();
@@ -116,7 +120,6 @@ export class AppleHomeView extends HTMLElement {
 
     // Set up header manager dependencies
     this.appleHeader.setCustomizationManager(this.customizationManager);
-    
   }
 
   connectedCallback() {
@@ -141,19 +144,18 @@ export class AppleHomeView extends HTMLElement {
       }
     };
     document.addEventListener('apple-home-dashboard-refresh', this.globalRefreshHandler);
-    
+
     // Set up registry subscription manager for automatic updates
     this.setupRegistrySubscriptions();
-    
+
     // Set up RTL change detection
     this.setupRTLChangeDetection();
-    
+
     // Note: Dashboard registration is handled by the strategy when it generates the dashboard
     // The DashboardStateManager tracks which dashboards are Apple Home dashboards
-    
+
     // CRITICAL: Set this as the active instance for this dashboard
     this.setCurrentActiveInstance(this);
-
   }
 
   disconnectedCallback() {
@@ -177,28 +179,28 @@ export class AppleHomeView extends HTMLElement {
 
     // Clean up registry subscription handlers
     this.cleanupRegistrySubscriptions();
-    
+
     // Clean up RTL change detection
     this.cleanupRTLChangeDetection();
-    
+
     // Clean up instance-specific header callbacks
     if (this.refreshCallback) {
       this.appleHeader.removeRefreshCallback(this.refreshCallback);
     }
-    
+
     // Clean up managers and their resources
     if (this.dragAndDropManager) {
       this.dragAndDropManager.disableDragAndDrop(this.content!);
     }
-    
+
     // Clear active instance reference if this is the active one for this dashboard
     if (this.getCurrentActiveInstance() === this) {
       this.setCurrentActiveInstance(undefined);
     }
-    
+
     // Clean up all camera managers in the current content
     this.cleanupCameras();
-    
+
     // Note: We don't manually set dashboard inactive here
     // The DashboardStateManager handles this automatically via URL change detection
   }
@@ -207,17 +209,16 @@ export class AppleHomeView extends HTMLElement {
     try {
       // Update the customization manager with fresh data
       await this.customizationManager.setCustomizations(customizations);
-      
+
       // Update config with fresh customizations
       this.config = {
         ...this.config,
-        customizations: customizations
+        customizations: customizations,
       };
-      
+
       // Apply changes immediately if not already rendered by customization changes
       this._rendered = false;
       await this.renderPage('globalRefresh');
-      
     } catch (error) {
       console.error('🏠 APPLE HOME: Error during global refresh:', error);
     }
@@ -229,15 +230,15 @@ export class AppleHomeView extends HTMLElement {
    */
   private setupRegistrySubscriptions(): void {
     this.registrySubscriptionManager = RegistrySubscriptionManager.getInstance();
-    
+
     // Create the handler for registry changes
     this.registryChangeHandler = (event) => {
       if (this.editModeManager?.editMode) return;
       this.handleRegistryChange(event);
     };
-    
+
     this.registrySubscriptionManager.addListener(this.registryChangeHandler);
-    
+
     // Initialize with hass if available
     if (this._hass) {
       this.registrySubscriptionManager.setHass(this._hass);
@@ -294,9 +295,10 @@ export class AppleHomeView extends HTMLElement {
       }
 
       // Check if entity moved areas
-      const newAreaId = entityReg.area_id
-        || (entityReg.device_id ? this._hass.devices?.[entityReg.device_id]?.area_id : null)
-        || 'no_area';
+      const newAreaId =
+        entityReg.area_id ||
+        (entityReg.device_id ? this._hass.devices?.[entityReg.device_id]?.area_id : null) ||
+        'no_area';
 
       const wrapper = this.content.querySelector(`.entity-card-wrapper[data-entity-id="${entityId}"]`) as HTMLElement;
       if (wrapper) {
@@ -310,7 +312,7 @@ export class AppleHomeView extends HTMLElement {
             // Move card to the target area grid
             wrapper.style.transition = 'opacity 0.2s ease';
             wrapper.style.opacity = '0';
-            await new Promise(r => setTimeout(r, 200));
+            await new Promise((r) => setTimeout(r, 200));
             targetGrid.appendChild(wrapper);
             wrapper.style.opacity = '1';
           } else {
@@ -340,7 +342,7 @@ export class AppleHomeView extends HTMLElement {
           title.style.transition = 'opacity 0.2s ease';
           title.style.opacity = '0';
         }
-        await new Promise(r => setTimeout(r, 200));
+        await new Promise((r) => setTimeout(r, 200));
         grid.remove();
         if (title?.classList.contains('area-title')) title.remove();
       }
@@ -412,7 +414,7 @@ export class AppleHomeView extends HTMLElement {
       // Handle RTL/language change
       this.handleRTLChange(isRTL, language);
     };
-    
+
     RTLHelper.addListener(this.rtlChangeHandler);
   }
 
@@ -438,7 +440,7 @@ export class AppleHomeView extends HTMLElement {
         wrapperContent.classList.add(isRTL ? 'rtl' : 'ltr');
       }
     }
-    
+
     // Force re-render to update all RTL-dependent UI elements
     if (this._rendered && !this._isTransitioning) {
       this._rendered = false;
@@ -447,15 +449,13 @@ export class AppleHomeView extends HTMLElement {
   }
 
   async setConfig(config: any) {
-    
     // Store old config for comparison
     const oldConfig = this._config;
-    
+
     // CRITICAL FIX: Force complete reset on every config change
     // This prevents state corruption during navigation
     this._rendered = false;
-    
-    
+
     this.config = config;
 
     // CRITICAL: Always load fresh customizations from storage instead of using config
@@ -464,24 +464,31 @@ export class AppleHomeView extends HTMLElement {
       await this.loadAndApplyCustomizations();
     } else {
       // If no hass yet, set the config customizations as fallback
-      await this.customizationManager.setCustomizations(config.customizations || { 
-        home: { sections: { order: [], hidden: [] }, favorites: [], excluded_from_dashboard: [], excluded_from_home: [] }, 
-        pages: {}, 
-        ui: {}, 
-        background: {} 
-      });
+      await this.customizationManager.setCustomizations(
+        config.customizations || {
+          home: {
+            sections: { order: [], hidden: [] },
+            favorites: [],
+            excluded_from_dashboard: [],
+            excluded_from_home: [],
+          },
+          pages: {},
+          ui: {},
+          background: {},
+        }
+      );
     }
-    
+
     this._config = config;
-    
+
     // Update header title if available
     if (this.appleHeader && config.title) {
       // For room pages, use areaName as title, not config.title
-      const titleToUse = config.pageType === 'room' ? (config.areaName || config.title) : config.title;
+      const titleToUse = config.pageType === 'room' ? config.areaName || config.title : config.title;
       this.appleHeader.setTitle(titleToUse);
     } else {
     }
-    
+
     // Smart render: only full re-render if structural changes occurred
     if (this._hass) {
       if (this.needsFullRender(oldConfig, config)) {
@@ -496,7 +503,7 @@ export class AppleHomeView extends HTMLElement {
   private needsFullRender(oldConfig: any, newConfig: any): boolean {
     // No old config means first render
     if (!oldConfig) return true;
-    
+
     // Check for structural changes that require full re-render
     return (
       oldConfig.pageType !== newConfig.pageType ||
@@ -511,15 +518,15 @@ export class AppleHomeView extends HTMLElement {
     // Update title without full render
     if (this.appleHeader && config.title !== this.config?.title) {
       // For room pages, use areaName as title, not config.title
-      const titleToUse = config.pageType === 'room' ? (config.areaName || config.title) : config.title;
+      const titleToUse = config.pageType === 'room' ? config.areaName || config.title : config.title;
       this.appleHeader.setTitle(titleToUse);
     }
-    
+
     // Update chips active group if changed
     if (this.chipsElement && config.activeGroup !== this.config?.activeGroup) {
       this.chipsElement.setActiveGroup(config.activeGroup);
     }
-    
+
     // Update existing cards with new hass if available (no diff baseline after a config change)
     this.updateExistingCards(undefined, this._hass);
 
@@ -539,26 +546,26 @@ export class AppleHomeView extends HTMLElement {
 
   private async updateHeaderForConfig() {
     if (!this.content || !this.config) return;
-    
+
     // Remove existing group title (but keep Apple Home header)
     const existingGroupTitle = this.content.querySelector('.apple-group-title');
     if (existingGroupTitle) {
       existingGroupTitle.remove();
     }
-    
+
     // Determine page type for header configuration
     const isGroupPage = this.config.pageType === 'group';
     const isSpecialPage = ['room', 'scenes', 'cameras'].includes(this.config.pageType);
-    
+
     // Always ensure Apple Home header exists and is properly configured
-    
+
     // Configure header based on page type - direct to AppleHeader
     if (!isGroupPage && !isSpecialPage) {
       // Home page: configure header for home (show menu, use home title)
       const homeConfig: HeaderConfig = {
         title: this.config.title || localize('pages.my_home'),
         isGroupPage: false,
-        showMenu: true
+        showMenu: true,
       };
       await this.appleHeader.init(this.content, homeConfig);
       // Update page content padding after header is initialized
@@ -567,7 +574,7 @@ export class AppleHomeView extends HTMLElement {
       // Group/Special pages: configure header (show menu and back button for special pages)
       let pageTitle = this.config.title || 'Page';
       let showBackButton = false;
-      
+
       // Set appropriate title and back button based on page type
       if (this.config.pageType === 'room') {
         // For room pages, use config.title (which should be the room name from apple-home-strategy.ts)
@@ -581,30 +588,29 @@ export class AppleHomeView extends HTMLElement {
         pageTitle = localize('pages.cameras');
         showBackButton = true;
       }
-      
+
       const pageConfig: HeaderConfig = {
         title: pageTitle,
         isGroupPage: isGroupPage, // Use same styling as group pages
         isSpecialPage: isSpecialPage, // Add special page flag for immediate scroll header
         showMenu: !isGroupPage, // Show menu for special pages
-        showBackButton: showBackButton // Show back button for special pages
+        showBackButton: showBackButton, // Show back button for special pages
       };
       await this.appleHeader.init(this.content, pageConfig);
     }
-    
+
     // Update page content padding after header is initialized
     this.appleHeader.updatePageContentPadding();
-    
+
     // Always ensure chips are properly configured and connected to header
     this.ensureChipsConfiguredForHeader();
   }
 
   private ensureChipsConfiguredForHeader() {
-    
     // Only set chips to header if this is a group page
     const isGroupPage = this.config?.pageType === 'group';
     const isSpecialPage = ['room', 'scenes', 'cameras'].includes(this.config?.pageType);
-    
+
     // Hide chips completely for special pages (room, scenes, cameras)
     if (isSpecialPage) {
       this.appleHeader.setChipsElement(null); // Clear header chips for special pages
@@ -615,7 +621,7 @@ export class AppleHomeView extends HTMLElement {
       }
       return;
     }
-    
+
     if (!isGroupPage) {
       this.appleHeader.setChipsElement(null); // Clear header chips for home page
       // Show chips container for non-special pages
@@ -625,16 +631,16 @@ export class AppleHomeView extends HTMLElement {
       }
       return;
     }
-    
+
     // Make sure chips exist and are configured
     this.ensureChipsExist();
-    
+
     // Pass chips to header if they're properly configured (group pages only)
     if (this.chipsElement && this.chipsElement.isConfigured() && this.chipsElement.hass) {
       this.appleHeader.setChipsElement(this.chipsElement);
     } else if (this.chipsElement) {
       this.configureChips();
-      
+
       // Try again after configuration
       if (this.chipsElement.isConfigured() && this.chipsElement.hass) {
         this.appleHeader.setChipsElement(this.chipsElement);
@@ -647,19 +653,19 @@ export class AppleHomeView extends HTMLElement {
   set hass(hass: any) {
     const oldHass = this._hass;
     this._hass = hass;
-    
+
     // Setup localization with the new hass instance
     setupLocalize(hass);
-    
+
     // Update managers with new hass
     this.customizationManager.setHass(hass);
     this.appleHeader.setHass(hass);
-    
+
     // Update registry subscription manager with new hass
     if (this.registrySubscriptionManager) {
       this.registrySubscriptionManager.setHass(hass);
     }
-    
+
     // Check for RTL/language changes on every hass update
     const currentLanguage = hass?.locale?.language || hass?.language;
     if (this._lastLanguage && currentLanguage && this._lastLanguage !== currentLanguage) {
@@ -667,7 +673,7 @@ export class AppleHomeView extends HTMLElement {
       RTLHelper.checkForChanges(hass);
     }
     this._lastLanguage = currentLanguage;
-    
+
     // Only load customizations on first hass set, not on every hass update
     // This prevents unnecessary re-rendering and title updates on entity state changes
     const isFirstHassSet = !oldHass;
@@ -676,10 +682,10 @@ export class AppleHomeView extends HTMLElement {
       // This ensures navigation to any page gets the latest excluded entities
       this.loadAndApplyCustomizations();
     }
-    
+
     // Ensure shadow root exists (but don't recreate if it exists)
     this.ensureShadowRootExists();
-    
+
     // Only render if this is the first time
     if (!this._rendered) {
       this.renderPage('setHass-firstTime');
@@ -693,32 +699,32 @@ export class AppleHomeView extends HTMLElement {
 
   private async loadAndApplyCustomizations() {
     if (!this._hass) return;
-    
+
     try {
       // Load customizations from storage
       const customizations = await this.customizationManager.loadCustomizations();
-      
+
       // Set the loaded customizations
       await this.customizationManager.setCustomizations(customizations);
-      
+
       // Update config with loaded customizations
       if (this.config) {
         const oldCustomizations = this.config.customizations;
-        
+
         this.config = {
           ...this.config,
-          customizations: customizations
+          customizations: customizations,
         };
-        
+
         // If page is already rendered and customizations changed, check if full render is needed
         // BUT SKIP re-render if we're in edit mode to prevent breaking drag and drop
         if (this._rendered && JSON.stringify(oldCustomizations) !== JSON.stringify(customizations)) {
           const isInEditMode = this.editModeManager?.editMode;
-          
+
           if (!isInEditMode) {
             // Check if the changes require a full render or just UI updates
             const needsFullRender = this.customizationChangesRequireRender(oldCustomizations, customizations);
-            
+
             if (needsFullRender) {
               this._rendered = false;
               this.renderPage('customizationChange');
@@ -726,7 +732,6 @@ export class AppleHomeView extends HTMLElement {
           }
         }
       }
-      
     } catch (error) {
       console.error('🏠 APPLE HOME: Error loading customizations:', error);
     }
@@ -739,33 +744,32 @@ export class AppleHomeView extends HTMLElement {
   private customizationChangesRequireRender(oldCustomizations: any, newCustomizations: any): boolean {
     // Entity-related changes that require full render
     const entityChangingKeys = ['home', 'pages'];
-    
+
     for (const key of entityChangingKeys) {
       if (JSON.stringify(oldCustomizations?.[key]) !== JSON.stringify(newCustomizations?.[key])) {
         return true;
       }
     }
-    
+
     return false;
   }
-
 
   /**
    * Detect if this is a navigation change vs regular hass update
    */
   private isNavigationChange(oldHass: any, newHass: any): boolean {
     if (!oldHass) return true; // First load
-    
+
     // Check if this component needs to render different content
     // This is more conservative than always re-rendering
     const hasContent = this.content && this.content.children.length > 0;
     const hasChips = this.chipsElement && this.chipsElement.isConfigured();
-    
+
     // Force recreation if content or chips are missing (indicating navigation)
     if (!hasContent || !hasChips) {
       return true;
     }
-    
+
     return false;
   }
 
@@ -774,23 +778,22 @@ export class AppleHomeView extends HTMLElement {
    * This solves navigation state issues by ensuring clean state
    */
   private forceCompleteRecreation() {
-    
     // Reset all state flags
     this._rendered = false;
-    
+
     // Clear chips reference to force recreation
     if (this.chipsElement) {
       this.chipsElement = undefined;
     }
-    
+
     // Ensure shadow root is properly initialized
     this.ensureShadowRootExists();
-    
+
     // Remove only dynamic content, keep permanent elements (header, chips) in place
     if (this.content) {
       const permanentSelectors = ['.apple-home-header.permanent-header', '.permanent-chips'];
-      Array.from(this.content.children).forEach(child => {
-        const isPermanent = permanentSelectors.some(sel => child.matches(sel));
+      Array.from(this.content.children).forEach((child) => {
+        const isPermanent = permanentSelectors.some((sel) => child.matches(sel));
         if (!isPermanent) child.remove();
       });
 
@@ -804,11 +807,11 @@ export class AppleHomeView extends HTMLElement {
 
   private async ensureShadowRootExists() {
     let structureCreated = false;
-    
+
     if (!this.shadowRoot) {
       this.attachShadow({ mode: 'open' });
     }
-    
+
     // Check if HTML structure exists, not just shadow root
     const wrapperContent = this.shadowRoot!.querySelector('.wrapper-content');
     if (!wrapperContent) {
@@ -1764,7 +1767,7 @@ export class AppleHomeView extends HTMLElement {
         </div>
       `;
     }
-    
+
     // Always ensure we have the references after HTML structure exists
     this.content = this.shadowRoot!.querySelector('.page-content') as HTMLElement;
     this.setupContentMutationObserver();
@@ -1778,7 +1781,7 @@ export class AppleHomeView extends HTMLElement {
       } else {
       }
     }
-    
+
     // Only initialize header when structure is created for the first time
     // This prevents repeated header initialization calls
     if (structureCreated) {
@@ -1843,11 +1846,16 @@ export class AppleHomeView extends HTMLElement {
    */
   private getActivePage(): any {
     switch (this.config?.pageType) {
-      case 'group': return this.groupPage;
-      case 'room': return this.roomPage;
-      case 'scenes': return this.scenesPage;
-      case 'cameras': return this.camerasPage;
-      default: return this.homePage;
+      case 'group':
+        return this.groupPage;
+      case 'room':
+        return this.roomPage;
+      case 'scenes':
+        return this.scenesPage;
+      case 'cameras':
+        return this.camerasPage;
+      default:
+        return this.homePage;
     }
   }
 
@@ -1930,7 +1938,7 @@ export class AppleHomeView extends HTMLElement {
     if (this.chipsElement) {
       this.chipsElement.setEditMode(editMode);
     }
-    
+
     // Handle drag and drop for different page types
     if (this.config?.pageType === 'room') {
       // For room pages, use the main drag and drop manager (same as home page)
@@ -1944,7 +1952,7 @@ export class AppleHomeView extends HTMLElement {
           entityWrappers.forEach((wrapper) => {
             const element = wrapper as HTMLElement;
             element.classList.toggle('edit-mode', true);
-            
+
             const appleHomeCard = element.querySelector('apple-home-card') as any;
             if (appleHomeCard && typeof appleHomeCard.refreshEditMode === 'function') {
               appleHomeCard.refreshEditMode();
@@ -1958,13 +1966,13 @@ export class AppleHomeView extends HTMLElement {
         entityWrappers.forEach((wrapper) => {
           const element = wrapper as HTMLElement;
           element.classList.toggle('edit-mode', false);
-        
+
           const appleHomeCard = element.querySelector('apple-home-card') as any;
           if (appleHomeCard && typeof appleHomeCard.refreshEditMode === 'function') {
             appleHomeCard.refreshEditMode();
           }
         });
-        
+
         // Save current layout when exiting edit mode
         this.saveCurrentLayout();
       }
@@ -1990,7 +1998,7 @@ export class AppleHomeView extends HTMLElement {
           entityWrappers.forEach((wrapper) => {
             const element = wrapper as HTMLElement;
             element.classList.toggle('edit-mode', true);
-            
+
             const appleHomeCard = element.querySelector('apple-home-card') as any;
             if (appleHomeCard && typeof appleHomeCard.refreshEditMode === 'function') {
               appleHomeCard.refreshEditMode();
@@ -2005,19 +2013,19 @@ export class AppleHomeView extends HTMLElement {
         entityWrappers.forEach((wrapper) => {
           const element = wrapper as HTMLElement;
           element.classList.toggle('edit-mode', false);
-        
+
           const appleHomeCard = element.querySelector('apple-home-card') as any;
           if (appleHomeCard && typeof appleHomeCard.refreshEditMode === 'function') {
             appleHomeCard.refreshEditMode();
           }
         });
-        
+
         // Save current layout when exiting edit mode
         this.saveCurrentLayout();
       }
-      
+
       // Update host styles
-          // Update host styles for edit mode
+      // Update host styles for edit mode
       this.classList.toggle('edit-mode', editMode);
     }
   }
@@ -2038,8 +2046,7 @@ export class AppleHomeView extends HTMLElement {
     }
   }
 
-  private updatePage() {
-  }
+  private updatePage() {}
 
   // All drag-and-drop functionality is now handled by DragAndDropManager
 
@@ -2060,7 +2067,7 @@ export class AppleHomeView extends HTMLElement {
     const wrappers = areaContainer.querySelectorAll('.entity-card-wrapper:not(.drag-placeholder)');
     const newOrder: string[] = [];
 
-    wrappers.forEach(wrapper => {
+    wrappers.forEach((wrapper) => {
       const entityId = (wrapper as HTMLElement).dataset.entityId;
       if (entityId) {
         newOrder.push(entityId);
@@ -2071,17 +2078,15 @@ export class AppleHomeView extends HTMLElement {
     // This approach persists via Home Assistant storage and doesn't modify immutable objects
     // Use context-specific saving based on page type
     const context = this.getPageContext();
-    
+
     // For room pages, extract the domain from the container's data-device-group attribute
     let domain: string | undefined;
     if (context === 'room') {
       const deviceGroup = (areaContainer as HTMLElement).dataset.deviceGroup;
       domain = deviceGroup;
     }
-    
-    this.customizationManager.saveCardOrderWithContext(areaId, newOrder, context, domain);
-    
 
+    this.customizationManager.saveCardOrderWithContext(areaId, newOrder, context, domain);
   }
 
   private getPageContext(): string {
@@ -2101,14 +2106,14 @@ export class AppleHomeView extends HTMLElement {
     if (!this.content || !this._hass || this._isTransitioning) {
       return;
     }
-    
+
     // Prevent multiple renders within 500ms (accounts for settings save delays)
     const now = Date.now();
     if (now - this._lastRenderTime < 500) {
       return;
     }
     this._lastRenderTime = now;
-    
+
     // Set transition state to prevent concurrent renders
     this._isTransitioning = true;
 
@@ -2122,7 +2127,7 @@ export class AppleHomeView extends HTMLElement {
     if (hasExistingContent) {
       this.content.style.transition = 'opacity 0.15s ease-out';
       this.content.style.opacity = '0';
-      await new Promise(r => setTimeout(r, 150));
+      await new Promise((r) => setTimeout(r, 150));
     }
 
     // **CRITICAL FIX**: Force complete chips reset when reusing component instance
@@ -2137,9 +2142,9 @@ export class AppleHomeView extends HTMLElement {
         this.groupPage.hass = this._hass;
         this.groupPage.setConfig({
           group: this.config.deviceGroup as DeviceGroup,
-          customizations: this.customizationManager.getCustomizations()
+          customizations: this.customizationManager.getCustomizations(),
         });
-        
+
         await this.groupPage.render(
           this.content,
           this.config.deviceGroup as DeviceGroup,
@@ -2151,9 +2156,9 @@ export class AppleHomeView extends HTMLElement {
         this.roomPage.hass = this._hass;
         this.roomPage.setConfig({
           areaId: this.config.areaId,
-          customizations: this.customizationManager.getCustomizations()
+          customizations: this.customizationManager.getCustomizations(),
         });
-        
+
         await this.roomPage.render(
           this.content,
           this.config.areaId,
@@ -2165,25 +2170,21 @@ export class AppleHomeView extends HTMLElement {
         // Configure and render scenes page
         this.scenesPage.hass = this._hass;
         this.scenesPage.setConfig({
-          customizations: this.customizationManager.getCustomizations()
+          customizations: this.customizationManager.getCustomizations(),
         });
-        
-        await this.scenesPage.render(
-          this.content,
-          this._hass,
-          (entityId: string, areaId: string) => this.toggleTallCard(entityId, areaId)
+
+        await this.scenesPage.render(this.content, this._hass, (entityId: string, areaId: string) =>
+          this.toggleTallCard(entityId, areaId)
         );
       } else if (this.config?.pageType === 'cameras') {
         // Configure and render cameras page
         this.camerasPage.hass = this._hass;
         this.camerasPage.setConfig({
-          customizations: this.customizationManager.getCustomizations()
+          customizations: this.customizationManager.getCustomizations(),
         });
-        
-        await this.camerasPage.render(
-          this.content,
-          this._hass,
-          (entityId: string, areaId: string) => this.toggleTallCard(entityId, areaId)
+
+        await this.camerasPage.render(this.content, this._hass, (entityId: string, areaId: string) =>
+          this.toggleTallCard(entityId, areaId)
         );
       } else {
         // Configure and render home page (default)
@@ -2191,14 +2192,11 @@ export class AppleHomeView extends HTMLElement {
         this.homePage.hass = this._hass;
         this.homePage.setConfig({
           title: homeTitle,
-          customizations: this.customizationManager.getCustomizations()
+          customizations: this.customizationManager.getCustomizations(),
         });
-        
-        await this.homePage.render(
-          this.content,
-          this._hass,
-          homeTitle,
-          (entityId: string, areaId: string) => this.toggleTallCard(entityId, areaId)
+
+        await this.homePage.render(this.content, this._hass, homeTitle, (entityId: string, areaId: string) =>
+          this.toggleTallCard(entityId, areaId)
         );
       }
     } catch (error) {
@@ -2221,10 +2219,10 @@ export class AppleHomeView extends HTMLElement {
 
     // CRITICAL: Ensure chips are recreated and properly configured after page render
     this.ensureChipsExist();
-    
+
     // Update chips after page is rendered to reflect current state
     this.updateChips();
-    
+
     // CRITICAL: Connect chips to header after everything is ready
     setTimeout(() => {
       this.ensureChipsConfiguredForHeader();
@@ -2241,24 +2239,22 @@ export class AppleHomeView extends HTMLElement {
     if (!this.chipsElement) {
       return;
     }
-    
-    
+
     // Get chips settings from dashboard config - use defaults if not configured
     const chipsSettings = ChipsConfigurationManager.getSettingsFromConfig(this.config);
-    
+
     // Set configuration from settings
     this.chipsElement.setConfig(chipsSettings.chips_config);
-    
+
     // Set active group if specified in config
     if (this.config?.activeGroup) {
       this.chipsElement.setActiveGroup(this.config.activeGroup);
     }
-    
+
     // Set hass if available
     if (this._hass) {
       this.chipsElement.hass = this._hass;
     }
-    
   }
 
   /**
@@ -2266,7 +2262,6 @@ export class AppleHomeView extends HTMLElement {
    * Since chips are now permanent, we just need to reconfigure them
    */
   private forceChipsReset() {
-    
     // Make sure we have the chips reference from the correct location
     if (!this.chipsElement && this.content) {
       const chipsContainer = this.content.querySelector('.permanent-chips') as HTMLElement;
@@ -2275,12 +2270,12 @@ export class AppleHomeView extends HTMLElement {
         this.setupChipsCallback();
       }
     }
-    
+
     // Clear existing chips content to force clean state
     if (this.chipsElement) {
       this.chipsElement.clearContainer();
     }
-    
+
     // Re-configure chips to ensure they have the proper config
     if (this._hass) {
       this.configureChips();
@@ -2289,7 +2284,6 @@ export class AppleHomeView extends HTMLElement {
   }
 
   private ensureChipsExist() {
-    
     // Chips are now permanent - just make sure we have the reference
     if (!this.chipsElement && this.content) {
       const chipsContainer = this.content.querySelector('.permanent-chips') as HTMLElement;
@@ -2297,28 +2291,27 @@ export class AppleHomeView extends HTMLElement {
         this.chipsElement = new AppleChips(chipsContainer, this.customizationManager);
       }
     }
-    
+
     // Debug chips state
     if (this.chipsElement) {
-      
       // CRITICAL FIX: Always ensure chips are properly configured
       // This handles cases where the element exists but lost its config
       if (!this.chipsElement.isConfigured()) {
         this.configureChips();
       }
-      
+
       // Ensure hass is set
       if (!this.chipsElement.hass && this._hass) {
         this.chipsElement.hass = this._hass;
       }
     } else {
     }
-    
+
     // Configure chips for current page type
     if (this.chipsElement && this.chipsElement.isConfigured()) {
       const isGroupPage = this.config?.pageType === 'group';
       const isSpecialPage = ['room', 'scenes', 'cameras'].includes(this.config?.pageType);
-      
+
       if (isGroupPage && this.config?.deviceGroup) {
         // Group page - set active group for highlighting using deviceGroup
         this.chipsElement.setActiveGroup(this.config.deviceGroup);
@@ -2345,7 +2338,7 @@ export class AppleHomeView extends HTMLElement {
   private async toggleTallCard(entityId: string, areaId: string, clickedElement?: HTMLElement) {
     // Determine the correct context based on the current page type
     let context = 'home'; // default
-    
+
     if (this.config?.pageType === 'room') {
       context = 'room';
     } else if (this.config?.pageType === 'scenes') {
@@ -2356,50 +2349,60 @@ export class AppleHomeView extends HTMLElement {
       context = 'group';
     }
     // If pageType is undefined or 'home', context remains 'home'
-    
+
     // Wait for the toggle operation to complete with the correct context
     const newTallState = await this.cardManager.toggleTallCard(entityId, areaId, context);
-    
+
     // Now update the visual to match the new state - target the specific card that was clicked
     this.updateTallCardVisual(entityId, areaId, clickedElement, context);
-    
+
     return newTallState;
   }
 
   private updateTallCardVisual(entityId: string, areaId: string, clickedElement?: HTMLElement, context?: string) {
     // Try to find the specific card wrapper based on context and entity ID
     let wrapper: HTMLElement | null = null;
-    
+
     // Try context-specific selectors first
     if (context === 'home' && this.config?.pageType !== 'room') {
       // For home page, try to target the specific section based on areaId
       if (areaId === 'favorites') {
-        wrapper = this.shadowRoot!.querySelector(`[data-area-id="favorites"] [data-entity-id="${entityId}"]`) as HTMLElement;
+        wrapper = this.shadowRoot!.querySelector(
+          `[data-area-id="favorites"] [data-entity-id="${entityId}"]`
+        ) as HTMLElement;
       } else if (areaId === 'cameras_section') {
-        wrapper = this.shadowRoot!.querySelector(`[data-area-id="cameras_section"] [data-entity-id="${entityId}"]`) as HTMLElement;
+        wrapper = this.shadowRoot!.querySelector(
+          `[data-area-id="cameras_section"] [data-entity-id="${entityId}"]`
+        ) as HTMLElement;
       } else if (areaId === 'scenes_section') {
-        wrapper = this.shadowRoot!.querySelector(`[data-area-id="scenes_section"] [data-entity-id="${entityId}"]`) as HTMLElement;
+        wrapper = this.shadowRoot!.querySelector(
+          `[data-area-id="scenes_section"] [data-entity-id="${entityId}"]`
+        ) as HTMLElement;
       } else {
         // For regular area sections, try to find the card within that specific area
-        wrapper = this.shadowRoot!.querySelector(`[data-area-id="${areaId}"] [data-entity-id="${entityId}"]`) as HTMLElement;
+        wrapper = this.shadowRoot!.querySelector(
+          `[data-area-id="${areaId}"] [data-entity-id="${entityId}"]`
+        ) as HTMLElement;
       }
     } else {
       // For other contexts (room, cameras page, scenes page), target within the specific area
-      wrapper = this.shadowRoot!.querySelector(`[data-area-id="${areaId}"] [data-entity-id="${entityId}"]`) as HTMLElement;
+      wrapper = this.shadowRoot!.querySelector(
+        `[data-area-id="${areaId}"] [data-entity-id="${entityId}"]`
+      ) as HTMLElement;
     }
-    
+
     // Fallback to the old method if context-specific targeting fails
     if (!wrapper) {
       wrapper = this.shadowRoot!.querySelector(`[data-entity-id="${entityId}"]`) as HTMLElement;
     }
-    
+
     if (!wrapper) return;
-    
+
     const shouldBeTall = this.cardManager.shouldCardBeTall(entityId, areaId, context || 'home');
-    
+
     // Update the wrapper class for grid sizing
     wrapper.classList.toggle('tall', shouldBeTall);
-    
+
     // Update the card's design class
     const cardElement = wrapper.querySelector('apple-home-card') as any;
     if (cardElement) {
@@ -2408,7 +2411,7 @@ export class AppleHomeView extends HTMLElement {
       const newConfig = { ...currentConfig, is_tall: shouldBeTall };
       cardElement.setConfig(newConfig);
     }
-    
+
     // Update the button visual state
     const button = wrapper.querySelector('.tall-toggle') as HTMLButtonElement;
     if (button) {
@@ -2480,22 +2483,30 @@ export class AppleHomeView extends HTMLElement {
         this.diffLists(oldHome.excluded_from_home, newHome.excluded_from_home, toRemove, toAdd);
       }
       // Sensors have no card: they live in the status row and its lists, so rebuild the page
-      const involvesSensor = [...toRemove, ...toAdd].some(id => ['sensor', 'binary_sensor'].includes(id.split('.')[0]));
+      const involvesSensor = [...toRemove, ...toAdd].some((id) =>
+        ['sensor', 'binary_sensor'].includes(id.split('.')[0])
+      );
       if (involvesSensor) {
         this._rendered = false;
         await this.renderPage('refreshCallback');
         return;
       }
-      for (const entityId of toRemove) { this.fadeOutCard(entityId); didChange = true; }
-      for (const entityId of toAdd) { this.addCardToDOM(entityId); didChange = true; }
+      for (const entityId of toRemove) {
+        this.fadeOutCard(entityId);
+        didChange = true;
+      }
+      for (const entityId of toAdd) {
+        this.addCardToDOM(entityId);
+        didChange = true;
+      }
       // The chips count entities too, so they follow the exclusion list
       if (toRemove.size > 0 || toAdd.size > 0) this.chipsElement?.refresh();
 
       // --- Favorites ---
       const oldFav = new Set<string>(oldHome.favorites || []);
       const newFav = new Set<string>(newHome.favorites || []);
-      const favRemoved = [...oldFav].filter(e => !newFav.has(e));
-      const favAdded = [...newFav].filter(e => !oldFav.has(e));
+      const favRemoved = [...oldFav].filter((e) => !newFav.has(e));
+      const favAdded = [...newFav].filter((e) => !oldFav.has(e));
 
       // Remove cards from favorites grid
       const favGrid = this.content.querySelector('.area-entities[data-area-id="favorites"]') as HTMLElement;
@@ -2540,7 +2551,8 @@ export class AppleHomeView extends HTMLElement {
 
       // --- Switches toggle ---
       const switchesChanged = oldHome.showSwitches !== newHome.showSwitches;
-      const includedSwitchesChanged = JSON.stringify(oldHome.includedSwitches || []) !== JSON.stringify(newHome.includedSwitches || []);
+      const includedSwitchesChanged =
+        JSON.stringify(oldHome.includedSwitches || []) !== JSON.stringify(newHome.includedSwitches || []);
       if (switchesChanged || includedSwitchesChanged) {
         // Switches visibility changed - need rebuild since it affects many cards
         this._rendered = false;
@@ -2551,10 +2563,16 @@ export class AppleHomeView extends HTMLElement {
       // --- Extra accessories ---
       const oldExtra = new Set<string>(oldHome.extraAccessories || []);
       const newExtra = new Set<string>(newHome.extraAccessories || []);
-      const extraRemoved = [...oldExtra].filter(e => !newExtra.has(e));
-      const extraAdded = [...newExtra].filter(e => !oldExtra.has(e));
-      for (const entityId of extraRemoved) { this.fadeOutCard(entityId); didChange = true; }
-      for (const entityId of extraAdded) { this.addCardToDOM(entityId); didChange = true; }
+      const extraRemoved = [...oldExtra].filter((e) => !newExtra.has(e));
+      const extraAdded = [...newExtra].filter((e) => !oldExtra.has(e));
+      for (const entityId of extraRemoved) {
+        this.fadeOutCard(entityId);
+        didChange = true;
+      }
+      for (const entityId of extraAdded) {
+        this.addCardToDOM(entityId);
+        didChange = true;
+      }
 
       // --- Section order ---
       const sectionOrderChanged = JSON.stringify(oldHome.sections?.order) !== JSON.stringify(newHome.sections?.order);
@@ -2565,7 +2583,8 @@ export class AppleHomeView extends HTMLElement {
       }
 
       // --- Hidden sections ---
-      const hiddenChanged = JSON.stringify(oldHome.sections?.hidden || []) !== JSON.stringify(newHome.sections?.hidden || []);
+      const hiddenChanged =
+        JSON.stringify(oldHome.sections?.hidden || []) !== JSON.stringify(newHome.sections?.hidden || []);
       if (hiddenChanged) {
         this._rendered = false;
         await this.renderPage('refreshCallback');
@@ -2582,7 +2601,6 @@ export class AppleHomeView extends HTMLElement {
           await this.renderPage('refreshCallback');
         }
       }
-
     } catch (error) {
       console.error('Error refreshing dashboard:', error);
     }
@@ -2602,9 +2620,13 @@ export class AppleHomeView extends HTMLElement {
     const oldSet = new Set(oldList || []);
     const newSet = new Set(newList || []);
     // Newly excluded → remove from UI
-    for (const e of newSet) { if (!oldSet.has(e)) toRemoveFromUI.add(e); }
+    for (const e of newSet) {
+      if (!oldSet.has(e)) toRemoveFromUI.add(e);
+    }
     // Newly un-excluded → add to UI
-    for (const e of oldSet) { if (!newSet.has(e)) toAddToUI.add(e); }
+    for (const e of oldSet) {
+      if (!newSet.has(e)) toAddToUI.add(e);
+    }
   }
 
   /**
@@ -2621,9 +2643,10 @@ export class AppleHomeView extends HTMLElement {
 
     // Determine area
     const entityReg = this._hass.entities?.[entityId];
-    const areaId = entityReg?.area_id
-      || (entityReg?.device_id ? this._hass.devices?.[entityReg.device_id]?.area_id : null)
-      || 'no_area';
+    const areaId =
+      entityReg?.area_id ||
+      (entityReg?.device_id ? this._hass.devices?.[entityReg.device_id]?.area_id : null) ||
+      'no_area';
 
     // Find the area grid
     const grid = this.content.querySelector(`.area-entities[data-area-id="${areaId}"]`) as HTMLElement;
@@ -2639,7 +2662,7 @@ export class AppleHomeView extends HTMLElement {
       entity: entityId,
       name: friendlyName,
       domain: domain,
-      is_tall: false
+      is_tall: false,
     });
     cardElement.hass = this._hass;
 
@@ -2705,7 +2728,7 @@ export class AppleHomeView extends HTMLElement {
       entity: entityId,
       name: friendlyName,
       domain: domain,
-      is_tall: false
+      is_tall: false,
     });
     cardElement.hass = this._hass;
 

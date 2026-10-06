@@ -76,21 +76,26 @@ export class AppleChips {
   private refreshCalendarEventCount(): void {
     if (!this.calendarSection || !this._hass || this.calendarCountFetchInFlight) return;
     this.calendarCountFetchInFlight = true;
-    this.calendarSection.getTodayEventCount(this._hass)
-      .then(count => {
+    this.calendarSection
+      .getTodayEventCount(this._hass)
+      .then((count) => {
         if (count !== this.calendarEventCount) {
           this.calendarEventCount = count;
           this.render();
         }
       })
-      .catch(() => { /* keep the previous count on failure */ })
-      .finally(() => { this.calendarCountFetchInFlight = false; });
+      .catch(() => {
+        /* keep the previous count on failure */
+      })
+      .finally(() => {
+        this.calendarCountFetchInFlight = false;
+      });
   }
 
   private async updateSettings() {
     if (this.customizationManager) {
-      this.showSwitches = await this.customizationManager.getShowSwitches() || false;
-      this.includedSwitches = await this.customizationManager.getIncludedSwitches() || [];
+      this.showSwitches = (await this.customizationManager.getShowSwitches()) || false;
+      this.includedSwitches = (await this.customizationManager.getIncludedSwitches()) || [];
     }
   }
 
@@ -108,13 +113,13 @@ export class AppleChips {
    */
   private getEntityAreaId(entityId: string): string | null {
     if (!this._hass) return null;
-    
+
     // Check entity registry first
     const entityRegistry = this._hass.entities?.[entityId];
     if (entityRegistry?.area_id) {
       return entityRegistry.area_id;
     }
-    
+
     // If entity doesn't have an area but has a device, check device's area
     if (entityRegistry?.device_id) {
       const device = this._hass.devices?.[entityRegistry.device_id];
@@ -122,7 +127,7 @@ export class AppleChips {
         return device.area_id;
       }
     }
-    
+
     // No area found - entity belongs to "no_area" (Default Room)
     return 'no_area';
   }
@@ -133,10 +138,10 @@ export class AppleChips {
   private isEntityInHiddenArea(entityId: string): boolean {
     const hiddenSections = this.getHiddenSections();
     if (hiddenSections.length === 0) return false;
-    
+
     const areaId = this.getEntityAreaId(entityId);
     if (!areaId) return false;
-    
+
     return hiddenSections.includes(areaId);
   }
 
@@ -145,48 +150,48 @@ export class AppleChips {
       climate: {
         group: DeviceGroup.CLIMATE,
         enabled: true,
-        show_when_zero: true
+        show_when_zero: true,
       },
       lights: {
         group: DeviceGroup.LIGHTING,
         enabled: true,
-        show_when_zero: true
+        show_when_zero: true,
       },
       security: {
         group: DeviceGroup.SECURITY,
         enabled: true,
-        show_when_zero: true
+        show_when_zero: true,
       },
       media: {
         group: DeviceGroup.MEDIA,
         enabled: true,
-        show_when_zero: true
+        show_when_zero: true,
       },
       water: {
         group: DeviceGroup.WATER,
         enabled: true,
-        show_when_zero: false
+        show_when_zero: false,
       },
       energy: {
         group: DeviceGroup.ENERGY,
         enabled: true,
-        show_when_zero: false
+        show_when_zero: false,
       },
       battery: {
         group: DeviceGroup.BATTERY,
         enabled: true,
-        show_when_zero: false
+        show_when_zero: false,
       },
       people: {
         group: DeviceGroup.PEOPLE,
         enabled: true,
-        show_when_zero: false
+        show_when_zero: false,
       },
       calendar: {
         group: DeviceGroup.CALENDAR,
         enabled: true,
-        show_when_zero: false
-      }
+        show_when_zero: false,
+      },
     };
   }
 
@@ -194,12 +199,12 @@ export class AppleChips {
     // Merge with default config
     this.config = {
       ...AppleChips.getDefaultConfig(),
-      ...config
+      ...config,
     };
-    
+
     // Update settings in case they changed
     this.updateSettings();
-    
+
     // Trigger render if we have hass
     if (this._hass) {
       this.render();
@@ -227,7 +232,17 @@ export class AppleChips {
     }
   }
 
-  private static readonly RELEVANT_DOMAINS = new Set(['light', 'switch', 'climate', 'alarm_control_panel', 'lock', 'media_player', 'water_heater', 'cover', 'person']);
+  private static readonly RELEVANT_DOMAINS = new Set([
+    'light',
+    'switch',
+    'climate',
+    'alarm_control_panel',
+    'lock',
+    'media_player',
+    'water_heater',
+    'cover',
+    'person',
+  ]);
   private static readonly OPENING_DEVICE_CLASSES = new Set(['door', 'window', 'opening', 'garage_door']);
 
   /** True for door/window/opening sensors and garage doors/gates that are currently open. */
@@ -237,8 +252,10 @@ export class AppleChips {
       return AppleChips.OPENING_DEVICE_CLASSES.has(entity.attributes?.device_class as string) && entity.state === 'on';
     }
     if (domain === 'cover') {
-      return DashboardConfig.isGarageDoorOrGate(entity.entity_id, entity.attributes) &&
-        (entity.state === 'open' || entity.state === 'opening' || entity.state === 'closing');
+      return (
+        DashboardConfig.isGarageDoorOrGate(entity.entity_id, entity.attributes) &&
+        (entity.state === 'open' || entity.state === 'opening' || entity.state === 'closing')
+      );
     }
     return false;
   }
@@ -256,8 +273,9 @@ export class AppleChips {
       if (!isRelevantDomain) {
         // Quick water keyword check only for non-relevant domains (binary_sensor, sensor)
         if (domain !== 'binary_sensor' && domain !== 'sensor') continue;
-        const isWaterEntity = AppleChips.WATER_KEYWORDS.some(kw => entityId.includes(kw)) ||
-                             newHass.states[entityId]?.attributes?.device_class === 'moisture';
+        const isWaterEntity =
+          AppleChips.WATER_KEYWORDS.some((kw) => entityId.includes(kw)) ||
+          newHass.states[entityId]?.attributes?.device_class === 'moisture';
         const isPowerEntity = domain === 'sensor' && newHass.states[entityId]?.attributes?.device_class === 'power';
         const deviceClass = newHass.states[entityId]?.attributes?.device_class;
         const isOpeningEntity = domain === 'binary_sensor' && AppleChips.OPENING_DEVICE_CLASSES.has(deviceClass);
@@ -270,8 +288,10 @@ export class AppleChips {
 
       if (!oldEntity || !newEntity) return true;
       if (oldEntity.state !== newEntity.state) return true;
-      if ((domain === 'climate' || domain === 'water_heater') &&
-          oldEntity.attributes?.current_temperature !== newEntity.attributes?.current_temperature) {
+      if (
+        (domain === 'climate' || domain === 'water_heater') &&
+        oldEntity.attributes?.current_temperature !== newEntity.attributes?.current_temperature
+      ) {
         return true;
       }
     }
@@ -326,13 +346,13 @@ export class AppleChips {
 
   applySavedChipsOrder(chips: ChipData[]): ChipData[] {
     if (!this.customizationManager) return chips;
-    
+
     const savedOrder = this.customizationManager.getSavedChipsOrder();
     if (savedOrder.length === 0) return chips;
-    
+
     // Create a map for quick lookup
     const chipMap = new Map();
-    chips.forEach(chip => {
+    chips.forEach((chip) => {
       chipMap.set(chip.group, chip);
     });
 
@@ -349,7 +369,7 @@ export class AppleChips {
     });
 
     // Then, add any chips that weren't in the saved order (new groups)
-    chips.forEach(chip => {
+    chips.forEach((chip) => {
       if (!usedGroups.has(chip.group)) {
         orderedChips.push(chip);
       }
@@ -375,9 +395,9 @@ export class AppleChips {
 
     // Create a hash of current state to prevent unnecessary re-renders
     const currentHash = JSON.stringify({
-      chips: this.chips.map(c => ({ group: c.group, statusText: c.statusText })),
+      chips: this.chips.map((c) => ({ group: c.group, statusText: c.statusText })),
       activeGroup: this.activeGroup,
-      editMode: this.editMode
+      editMode: this.editMode,
     });
 
     if (this.lastRenderedHash === currentHash) {
@@ -386,11 +406,11 @@ export class AppleChips {
     }
 
     const html = this.generateHTML();
-    
+
     this.container.innerHTML = html;
     this.attachEventListeners();
     this.lastRenderedHash = currentHash;
-    
+
     // Call the render callback if it exists
     if (this.onRenderCallback) {
       this.onRenderCallback();
@@ -412,7 +432,8 @@ export class AppleChips {
         // hass.entities is the display registry: `hidden` here, `hidden_by` only in the full registry
         if (entityRegistry.hidden || entityRegistry.hidden_by || entityRegistry.disabled_by) return false;
         // Exclude configuration and diagnostic entities from chip calculations
-        if (entityRegistry.entity_category === 'config' || entityRegistry.entity_category === 'diagnostic') return false;
+        if (entityRegistry.entity_category === 'config' || entityRegistry.entity_category === 'diagnostic')
+          return false;
       }
       // Filter out entities from hidden areas/rooms
       if (this.isEntityInHiddenArea(entity.entity_id)) {
@@ -431,34 +452,49 @@ export class AppleChips {
       { group: DeviceGroup.ENERGY, config: this.config.energy },
       { group: DeviceGroup.BATTERY, config: this.config.battery },
       { group: DeviceGroup.PEOPLE, config: this.config.people },
-      { group: DeviceGroup.CALENDAR, config: this.config.calendar }
+      { group: DeviceGroup.CALENDAR, config: this.config.calendar },
     ];
 
     for (const { group, config } of deviceGroups) {
       if (!config?.enabled) continue;
 
       // Find entities that belong to this group based on domain mapping
-      const groupEntities = allEntities.filter(entity => {
+      const groupEntities = allEntities.filter((entity) => {
         const domain = entity.entity_id.split('.')[0];
         const entityState = this.hass?.states[entity.entity_id];
-        
+
         // Special handling for switches
         if (domain === 'switch') {
           if (this.showSwitches) {
-            const entityGroup = DashboardConfig.getDeviceGroup(domain, entity.entity_id, entityState?.attributes, this.showSwitches);
+            const entityGroup = DashboardConfig.getDeviceGroup(
+              domain,
+              entity.entity_id,
+              entityState?.attributes,
+              this.showSwitches
+            );
             return entityGroup === group;
           } else {
             // If showSwitches is false, only include outlets or included switches
             const isOutlet = DashboardConfig.isOutlet(entity.entity_id, entityState?.attributes);
             const isIncluded = this.includedSwitches.includes(entity.entity_id);
             if (isOutlet || isIncluded) {
-              const entityGroup = DashboardConfig.getDeviceGroup(domain, entity.entity_id, entityState?.attributes, true); // Force true to get proper group
+              const entityGroup = DashboardConfig.getDeviceGroup(
+                domain,
+                entity.entity_id,
+                entityState?.attributes,
+                true
+              ); // Force true to get proper group
               return entityGroup === group;
             }
             return false;
           }
         } else {
-          const entityGroup = DashboardConfig.getDeviceGroup(domain, entity.entity_id, entityState?.attributes, this.showSwitches);
+          const entityGroup = DashboardConfig.getDeviceGroup(
+            domain,
+            entity.entity_id,
+            entityState?.attributes,
+            this.showSwitches
+          );
           return entityGroup === group;
         }
       });
@@ -467,14 +503,14 @@ export class AppleChips {
       // getDeviceGroup wouldn't otherwise route to Water (e.g. a sensor without device_class 'moisture').
       // Moisture binary_sensors are already routed to Water by getDeviceGroup, so they're excluded here to avoid double-counting.
       if (group === DeviceGroup.WATER) {
-        const existingIds = new Set(groupEntities.map(e => e.entity_id));
-        const waterEntities = allEntities.filter(entity =>
-          !existingIds.has(entity.entity_id) && (
-            entity.entity_id.includes('water') ||
-            entity.entity_id.includes('leak') ||
-            entity.entity_id.includes('flood') ||
-            entity.attributes.device_class === 'moisture'
-          )
+        const existingIds = new Set(groupEntities.map((e) => e.entity_id));
+        const waterEntities = allEntities.filter(
+          (entity) =>
+            !existingIds.has(entity.entity_id) &&
+            (entity.entity_id.includes('water') ||
+              entity.entity_id.includes('leak') ||
+              entity.entity_id.includes('flood') ||
+              entity.attributes.device_class === 'moisture')
         );
         groupEntities.push(...waterEntities);
       }
@@ -491,11 +527,11 @@ export class AppleChips {
         const threshold = typeof home.battery_threshold === 'number' ? home.battery_threshold : 20;
         const batteries = BatterySection.getBatteries(this._hass, threshold, excludedFromDashboard);
         shouldShow = batteries.length > 0;
-        const lowCount = batteries.filter(b => b.low).length;
+        const lowCount = batteries.filter((b) => b.low).length;
         // Computed here rather than in getGroupStatusText: that cache is keyed on group entities, which this group has none of
         batteryStatusText = lowCount > 0 ? `${lowCount} ${localize('batteries.low')}` : localize('batteries.ok_short');
       }
-      
+
       // People chip: shown whenever person entities exist; like Battery, none of the group's entities come from the domain mapping
       let peopleStatusText: string | undefined;
       if (group === DeviceGroup.PEOPLE) {
@@ -510,24 +546,24 @@ export class AppleChips {
       let calendarStatusText: string | undefined;
       if (group === DeviceGroup.CALENDAR) {
         const calendarIds: string[] = Array.isArray(home.calendar_entities) ? home.calendar_entities : [];
-        shouldShow = calendarIds.some(id => !!this._hass.states[id]);
+        shouldShow = calendarIds.some((id) => !!this._hass.states[id]);
         const count = this.calendarEventCount ?? 0;
-        calendarStatusText = count > 0
-          ? `${count} ${localize('calendar.chip_events')}`
-          : localize('calendar.chip_no_events');
+        calendarStatusText =
+          count > 0 ? `${count} ${localize('calendar.chip_events')}` : localize('calendar.chip_no_events');
       }
 
       if (shouldShow) {
         const groupStyle = DashboardConfig.getGroupStyle(group);
-        let statusText = batteryStatusText ?? peopleStatusText ?? calendarStatusText ?? this.getGroupStatusText(group, groupEntities);
-        
+        let statusText =
+          batteryStatusText ?? peopleStatusText ?? calendarStatusText ?? this.getGroupStatusText(group, groupEntities);
+
         // Get inactive background color from DashboardConfig
         const inactiveStyle = DashboardConfig.getEntityData(
-          { entity_id: 'light.dummy', state: 'off', attributes: {} } as EntityState, 
+          { entity_id: 'light.dummy', state: 'off', attributes: {} } as EntityState,
           'light', // Use light domain to get inactive styling
           false
         );
-        
+
         this.chips.push({
           group: group,
           icon: groupStyle.icon,
@@ -537,7 +573,7 @@ export class AppleChips {
           backgroundColor: inactiveStyle.backgroundColor,
           textColor: '#ffffff',
           enabled: config.enabled,
-          navigationPath: config.navigation_path || group // Store just the group name, not absolute path
+          navigationPath: config.navigation_path || group, // Store just the group name, not absolute path
         });
       }
     }
@@ -550,7 +586,7 @@ export class AppleChips {
     // Get the media group's active icon color from DashboardConfig
     const mediaGroupStyle = DashboardConfig.getGroupStyle(DeviceGroup.MEDIA);
     const mediaActiveIconColor = mediaGroupStyle.activeIconColor || mediaGroupStyle.iconColor;
-    
+
     return `
       <style>
         :host {
@@ -827,7 +863,9 @@ export class AppleChips {
       <div class="apple-chips-section">
         <div class="chips-carousel-container ${RTLHelper.isRTL() ? 'rtl' : 'ltr'}">
           <div class="chips-grid" data-area-id="chips" data-section-type="chips">
-            ${this.chips.map(chip => `
+            ${this.chips
+              .map(
+                (chip) => `
               <div class="chip-wrapper ${this.editMode ? 'edit-mode' : ''}" 
                    data-entity-id="${chip.group}" 
                    data-chip-id="${chip.group}">
@@ -844,7 +882,9 @@ export class AppleChips {
                   </div>
                 </div>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
         </div>
       </div>
@@ -853,7 +893,7 @@ export class AppleChips {
 
   private attachEventListeners() {
     if (!this.container) return;
-    
+
     // Add click handlers to chips (not chip wrappers)
     this.container.querySelectorAll('.chip').forEach((chip: any) => {
       chip.addEventListener('click', this.handleChipClick.bind(this));
@@ -893,7 +933,7 @@ export class AppleChips {
 
     // Determine the path to navigate to
     const targetPath = navigationPath || group;
-    
+
     // Additional check to prevent navigation to invalid paths during load
     if (!targetPath || targetPath.trim() === '') {
       return;
@@ -911,7 +951,7 @@ export class AppleChips {
 
     const currentPath = window.location.pathname;
     let basePath = '';
-    
+
     // Handle different dashboard URL patterns
     if (currentPath.startsWith('/lovelace/')) {
       // Default lovelace dashboard: /lovelace/home -> /lovelace/
@@ -922,8 +962,8 @@ export class AppleChips {
     } else {
       // Custom dashboard: /apple-home/home -> /apple-home/
       // Extract the dashboard name (first segment after root)
-      const pathParts = currentPath.split('/').filter(part => part.length > 0);
-      
+      const pathParts = currentPath.split('/').filter((part) => part.length > 0);
+
       if (pathParts.length > 0) {
         basePath = `/${pathParts[0]}/`;
       } else {
@@ -931,11 +971,11 @@ export class AppleChips {
         basePath = '/lovelace/';
       }
     }
-    
+
     // Clean path and construct full URL
     const cleanPath = path.startsWith('/') ? path.slice(1) : path;
     const newUrl = `${basePath}${cleanPath}`;
-    
+
     // Additional validation - ensure we're not navigating to a config path by mistake
     if (newUrl.includes('/config/') && !basePath.includes('/config/')) {
       return;
@@ -948,37 +988,39 @@ export class AppleChips {
   }
 
   private navigateToHomePage() {
-    // Navigate to the home page 
+    // Navigate to the home page
     this.navigateToPath('home');
   }
 
   private getGroupStatusText(group: DeviceGroup, entities: EntityState[]): string {
     // Create a cache key based on entity states
-    const cacheKey = `${group}:${entities.map(e => `${e.entity_id}:${e.state}:${e.attributes?.current_temperature || ''}`).join(';')}`;
-    
+    const cacheKey = `${group}:${entities.map((e) => `${e.entity_id}:${e.state}:${e.attributes?.current_temperature || ''}`).join(';')}`;
+
     // Return cached result if available
     if (this.statusTextCache.has(cacheKey)) {
       return this.statusTextCache.get(cacheKey)!;
     }
-    
+
     let statusText: string;
-    
+
     switch (group) {
       case DeviceGroup.LIGHTING:
-        const onLights = entities.filter(entity => entity.state === 'on');
+        const onLights = entities.filter((entity) => entity.state === 'on');
         statusText = onLights.length > 0 ? `${onLights.length} ${localize('status.on')}` : localize('status.off');
         break;
-        
+
       case DeviceGroup.CLIMATE:
-        const climateEntities = entities.filter(entity => entity.entity_id.startsWith('climate.') || entity.entity_id.startsWith('water_heater.'));
+        const climateEntities = entities.filter(
+          (entity) => entity.entity_id.startsWith('climate.') || entity.entity_id.startsWith('water_heater.')
+        );
         statusText = '--°';
 
         if (climateEntities.length > 0) {
           const temperatures = climateEntities
-            .map(entity => entity.attributes.current_temperature)
-            .filter(temp => temp !== undefined && temp !== null)
+            .map((entity) => entity.attributes.current_temperature)
+            .filter((temp) => temp !== undefined && temp !== null)
             .sort((a, b) => a - b);
-          
+
           if (temperatures.length > 0) {
             const min = Math.round(temperatures[0]);
             const max = Math.round(temperatures[temperatures.length - 1]);
@@ -986,14 +1028,21 @@ export class AppleChips {
           }
         }
         break;
-        
+
       case DeviceGroup.SECURITY:
-        const alarmEntities = entities.filter(entity => entity.entity_id.startsWith('alarm_control_panel.'));
-        const lockEntities = entities.filter(entity => entity.entity_id.startsWith('lock.'));
-        
-        const armed = alarmEntities.filter(entity => entity.state === 'armed_away' || entity.state === 'armed_home' || entity.state === 'armed_night' || entity.state === 'armed_vacation' || entity.state === 'armed_custom_bypass');
-        const unlocked = lockEntities.filter(entity => entity.state === 'unlocked');
-        const openings = entities.filter(entity => AppleChips.isOpenOpening(entity));
+        const alarmEntities = entities.filter((entity) => entity.entity_id.startsWith('alarm_control_panel.'));
+        const lockEntities = entities.filter((entity) => entity.entity_id.startsWith('lock.'));
+
+        const armed = alarmEntities.filter(
+          (entity) =>
+            entity.state === 'armed_away' ||
+            entity.state === 'armed_home' ||
+            entity.state === 'armed_night' ||
+            entity.state === 'armed_vacation' ||
+            entity.state === 'armed_custom_bypass'
+        );
+        const unlocked = lockEntities.filter((entity) => entity.state === 'unlocked');
+        const openings = entities.filter((entity) => AppleChips.isOpenOpening(entity));
 
         const securityParts: string[] = [];
         if (armed.length > 0) securityParts.push(localize('status.armed'));
@@ -1001,16 +1050,15 @@ export class AppleChips {
         if (unlocked.length > 0) securityParts.push(`${unlocked.length} ${localize('status.unlocked')}`);
         statusText = securityParts.length > 0 ? securityParts.join(', ') : localize('chip_status.secure');
         break;
-        
+
       case DeviceGroup.MEDIA:
-        const playingMedia = entities.filter(entity => entity.state === 'playing');
-        const tvEntities = entities.filter(entity => 
-          entity.attributes.device_class === 'tv' || 
-          entity.entity_id.includes('tv') ||
-          entity.attributes.source_list
+        const playingMedia = entities.filter((entity) => entity.state === 'playing');
+        const tvEntities = entities.filter(
+          (entity) =>
+            entity.attributes.device_class === 'tv' || entity.entity_id.includes('tv') || entity.attributes.source_list
         );
-        const onTVs = tvEntities.filter(entity => entity.state === 'on');
-        
+        const onTVs = tvEntities.filter((entity) => entity.state === 'on');
+
         if (playingMedia.length > 0) {
           statusText = `${playingMedia.length} ${localize('status.playing')}`;
         } else if (onTVs.length > 0) {
@@ -1019,10 +1067,13 @@ export class AppleChips {
           statusText = localize('status.off');
         }
         break;
-        
+
       case DeviceGroup.WATER:
-        const activeWater = entities.filter(entity => entity.state === 'on' || entity.state === 'detected');
-        statusText = activeWater.length > 0 ? `${activeWater.length} ${localize('chip_status.active')}` : localize('chip_status.all_inactive');
+        const activeWater = entities.filter((entity) => entity.state === 'on' || entity.state === 'detected');
+        statusText =
+          activeWater.length > 0
+            ? `${activeWater.length} ${localize('chip_status.active')}`
+            : localize('chip_status.all_inactive');
         break;
 
       case DeviceGroup.ENERGY:
@@ -1038,7 +1089,7 @@ export class AppleChips {
         statusText = localize('status.off');
         break;
     }
-    
+
     // Cache the result and clear old cache entries (keep only last 20)
     if (this.statusTextCache.size > 20) {
       const firstKey = this.statusTextCache.keys().next().value;
@@ -1047,7 +1098,7 @@ export class AppleChips {
       }
     }
     this.statusTextCache.set(cacheKey, statusText);
-    
+
     return statusText;
   }
 }

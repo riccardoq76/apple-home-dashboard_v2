@@ -22,12 +22,12 @@ export class CamerasPage {
 
   async setConfig(config: any) {
     this._config = config;
-    
+
     // Initialize customization manager from config
     if (config.customizations && this._hass) {
       this.customizationManager = CustomizationManager.getInstance(this._hass);
       await this.customizationManager.setCustomizations(config.customizations);
-      
+
       // Initialize drag and drop manager with cameras context
       this.dragAndDropManager = new DragAndDropManager(
         (areaId) => this.handleSaveCurrentOrder(areaId),
@@ -51,11 +51,11 @@ export class CamerasPage {
   ): Promise<void> {
     // Store the container reference
     this._container = container;
-    
+
     // Remove only dynamic content, keep permanent elements (header, chips) in place
     const permanentSelectors = ['.apple-home-header', '.permanent-chips'];
-    Array.from(container.children).forEach(child => {
-      const isPermanent = permanentSelectors.some(sel => child.matches(sel));
+    Array.from(container.children).forEach((child) => {
+      const isPermanent = permanentSelectors.some((sel) => child.matches(sel));
       if (!isPermanent) child.remove();
     });
 
@@ -71,9 +71,9 @@ export class CamerasPage {
     try {
       // Get data from Home Assistant
       const entities = await DataService.getEntities(hass);
-      
+
       // Filter entities for cameras and exclude those marked for exclusion
-      const allCamerasEntities = entities.filter(entity => {
+      const allCamerasEntities = entities.filter((entity) => {
         const domain = entity.entity_id.split('.')[0];
         return DashboardConfig.isCamerasDomain(domain);
       });
@@ -81,7 +81,7 @@ export class CamerasPage {
       // Now apply exclusions asynchronously
       const camerasEntities = [];
       for (const entity of allCamerasEntities) {
-        const isExcluded = await this.customizationManager?.isEntityExcludedFromDashboard(entity.entity_id) || false;
+        const isExcluded = (await this.customizationManager?.isEntityExcludedFromDashboard(entity.entity_id)) || false;
         if (!isExcluded) {
           camerasEntities.push(entity);
         }
@@ -91,17 +91,17 @@ export class CamerasPage {
       if (!this.customizationManager) {
         throw new Error(localize('errors.customization_manager_not_initialized'));
       }
-      
+
       const customizations = this.customizationManager.getCustomizations();
-      
+
       // Apply entity order customizations with context
       let sortedCameras = [...camerasEntities];
       const savedOrder = this.customizationManager.getSavedCardOrderWithContext('cameras_section', 'cameras');
-      
+
       if (savedOrder.length > 0) {
-        const entityMap = new Map(camerasEntities.map(entity => [entity.entity_id, entity]));
+        const entityMap = new Map(camerasEntities.map((entity) => [entity.entity_id, entity]));
         const orderedCameras: Entity[] = [];
-        
+
         // First, add cameras in the saved order
         savedOrder.forEach((entityId: string) => {
           if (entityMap.has(entityId)) {
@@ -109,28 +109,22 @@ export class CamerasPage {
             entityMap.delete(entityId);
           }
         });
-        
+
         // Then, add any new cameras that weren't in the saved order
         const remainingCameras = Array.from(entityMap.values());
         orderedCameras.push(...remainingCameras);
-        
+
         sortedCameras = orderedCameras;
       }
 
-            // Apply tall card settings - cameras are handled by CardManager
-      sortedCameras.forEach(entity => {
+      // Apply tall card settings - cameras are handled by CardManager
+      sortedCameras.forEach((entity) => {
         // CardManager handles tall card settings in the new structure
         (entity as any).is_tall = true; // Default for cameras
       });
 
       // Render all cameras in a grid layout (non-carousel)
-      await this.renderCamerasGrid(
-        container,
-        sortedCameras,
-        hass,
-        onTallToggle
-      );
-      
+      await this.renderCamerasGrid(container, sortedCameras, hass, onTallToggle);
     } catch (error) {
       console.error('Error rendering cameras page:', error);
     }
@@ -169,13 +163,13 @@ export class CamerasPage {
 
     const domain = entityId.split('.')[0];
     const stateObj = hass.states[entityId];
-    
+
     if (!stateObj) return null;
 
     // Get user customizations for this entity (for individual entity overrides like names)
     const customizations = this.customizationManager.getCustomizations();
     const entityCustomizations = customizations.entities?.[entityId] || null;
-    
+
     // Create base card configuration
     const cardConfig: any = {
       type: 'custom:apple-home-card',
@@ -185,7 +179,7 @@ export class CamerasPage {
       is_tall: (entity as any).is_tall !== undefined ? (entity as any).is_tall : true, // Cameras are tall by default
       camera_view: 'snapshot',
       refresh_interval: 10000, // 10 seconds
-      ...entityCustomizations
+      ...entityCustomizations,
     };
 
     return cardConfig;
@@ -202,7 +196,7 @@ export class CamerasPage {
     wrapper.className = 'entity-card-wrapper';
     wrapper.dataset.entityId = cardConfig.entity;
     wrapper.dataset.areaId = 'cameras_section';
-    
+
     // Apply tall class if needed
     if (cardConfig.is_tall) {
       wrapper.classList.add('tall');
@@ -217,7 +211,7 @@ export class CamerasPage {
     const controls = document.createElement('div');
     controls.className = 'entity-controls';
     // Cameras don't have resize controls
-    
+
     wrapper.appendChild(controls);
     wrapper.appendChild(cardElement);
     gridContainer.appendChild(wrapper);
@@ -225,7 +219,7 @@ export class CamerasPage {
 
   public updateDragAndDrop(editMode: boolean, container: HTMLElement) {
     if (!this.dragAndDropManager) return;
-    
+
     if (editMode) {
       // Add a small delay to ensure cards are fully rendered
       setTimeout(() => {
@@ -235,7 +229,7 @@ export class CamerasPage {
         entityWrappers.forEach((wrapper) => {
           const element = wrapper as HTMLElement;
           element.classList.toggle('edit-mode', true);
-          
+
           const appleHomeCard = element.querySelector('apple-home-card') as any;
           if (appleHomeCard && typeof appleHomeCard.refreshEditMode === 'function') {
             appleHomeCard.refreshEditMode();
@@ -249,7 +243,7 @@ export class CamerasPage {
       entityWrappers.forEach((wrapper) => {
         const element = wrapper as HTMLElement;
         element.classList.toggle('edit-mode', false);
-        
+
         const appleHomeCard = element.querySelector('apple-home-card') as any;
         if (appleHomeCard && typeof appleHomeCard.refreshEditMode === 'function') {
           appleHomeCard.refreshEditMode();
@@ -262,7 +256,7 @@ export class CamerasPage {
     if (!this._container) {
       return;
     }
-    
+
     // Look for the area container within the stored container
     const areaContainer = this._container.querySelector(`[data-area-id="${areaId}"]`);
     if (!areaContainer) {
@@ -270,10 +264,12 @@ export class CamerasPage {
     }
 
     const wrappers = areaContainer.querySelectorAll('.entity-card-wrapper:not(.drag-placeholder)');
-    const entityOrder = Array.from(wrappers).map(wrapper => {
-      const element = wrapper as HTMLElement;
-      return element.dataset.entityId || '';
-    }).filter(id => id);
+    const entityOrder = Array.from(wrappers)
+      .map((wrapper) => {
+        const element = wrapper as HTMLElement;
+        return element.dataset.entityId || '';
+      })
+      .filter((id) => id);
 
     // Save with 'cameras' context
     if (this.customizationManager) {

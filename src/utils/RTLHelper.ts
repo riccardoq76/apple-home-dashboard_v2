@@ -1,6 +1,6 @@
 /**
  * RTL Helper Utility
- * 
+ *
  * Provides utilities for detecting and handling right-to-left languages
  * in the Apple Home Dashboard.
  */
@@ -40,8 +40,8 @@ export class RTLHelper {
   private static notifyListeners(): void {
     const isRTL = this._isRTL || false;
     const language = this._currentLanguage || 'en';
-    
-    this._listeners.forEach(callback => {
+
+    this._listeners.forEach((callback) => {
       try {
         callback(isRTL, language);
       } catch (error) {
@@ -57,7 +57,7 @@ export class RTLHelper {
   static initialize(hass?: any): boolean {
     const previousIsRTL = this._isRTL;
     const previousLanguage = this._currentLanguage;
-    
+
     let lang = 'en';
     let isRTL = false;
 
@@ -68,13 +68,13 @@ export class RTLHelper {
     if (hass?.localize?.translationMetadata?.translations) {
       const currentLang = hass.locale?.language || hass.language || 'en';
       const translationData = hass.localize.translationMetadata.translations[currentLang];
-      
+
       if (translationData?.isRTL !== undefined) {
         isRTL = translationData.isRTL;
         lang = currentLang;
       }
     }
-    
+
     // Fallback to manual detection if HA doesn't provide RTL info
     if (!isRTL && hass) {
       lang = hass.locale?.language || hass.language || navigator.language.split('-')[0] || 'en';
@@ -96,7 +96,7 @@ export class RTLHelper {
     // Check if direction or language changed
     const directionChanged = previousIsRTL !== null && previousIsRTL !== isRTL;
     const languageChanged = previousLanguage !== null && previousLanguage !== lang;
-    
+
     if (directionChanged || languageChanged) {
       this.notifyListeners();
     }
@@ -114,10 +114,10 @@ export class RTLHelper {
 
     const previousIsRTL = this._isRTL;
     const previousLanguage = this._currentLanguage;
-    
+
     // Re-initialize with current hass
     this.initialize(hassToUse);
-    
+
     // Return true if direction changed
     return previousIsRTL !== this._isRTL || previousLanguage !== this._currentLanguage;
   }
@@ -147,13 +147,13 @@ export class RTLHelper {
    */
   static updateDocumentDirection(): void {
     const isRTL = this.isRTL();
-    
+
     // Set on document element
     document.documentElement.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
-    
+
     // Also set on body for extra compatibility
     document.body.setAttribute('dir', isRTL ? 'rtl' : 'ltr');
-    
+
     // Add class to document for CSS targeting
     document.documentElement.classList.toggle('rtl', isRTL);
     document.documentElement.classList.toggle('ltr', !isRTL);
@@ -190,8 +190,8 @@ export class RTLHelper {
 
     // Map physical properties to logical ones for RTL
     const rtlPropertyMap: Record<string, string> = {
-      'left': 'right',
-      'right': 'left',
+      left: 'right',
+      right: 'left',
       'margin-left': 'margin-right',
       'margin-right': 'margin-left',
       'padding-left': 'padding-right',
@@ -201,7 +201,7 @@ export class RTLHelper {
       'text-align: left': 'text-align: right',
       'text-align: right': 'text-align: left',
       'float: left': 'float: right',
-      'float: right': 'float: left'
+      'float: right': 'float: left',
     };
 
     return rtlPropertyMap[property] || property;

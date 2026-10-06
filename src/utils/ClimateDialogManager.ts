@@ -296,7 +296,7 @@ export class ClimateDialogManager {
       currentTemp: typeof attributes.current_temperature === 'number' ? attributes.current_temperature : null,
       hvacMode: stateObj.state,
       hvacModes: Array.isArray(attributes.hvac_modes) ? attributes.hvac_modes : [stateObj.state],
-      supportsTarget: typeof attributes.temperature === 'number'
+      supportsTarget: typeof attributes.temperature === 'number',
     };
 
     this.render(stateObj, attributes);
@@ -332,9 +332,10 @@ export class ClimateDialogManager {
     const tempUnit = attributes.unit_of_measurement || s.hass?.config?.unit_system?.temperature || '°C';
     const currentLine = document.createElement('p');
     currentLine.className = 'climate-dialog-current';
-    currentLine.textContent = s.currentTemp !== null
-      ? `${localize('climate_dialog.current')}: ${this.formatTemp(s.currentTemp)}${tempUnit}`
-      : '';
+    currentLine.textContent =
+      s.currentTemp !== null
+        ? `${localize('climate_dialog.current')}: ${this.formatTemp(s.currentTemp)}${tempUnit}`
+        : '';
 
     // Ring
     const ringWrap = document.createElement('div');
@@ -414,7 +415,7 @@ export class ClimateDialogManager {
     const rad = (angle * Math.PI) / 180;
     return {
       x: cx + radius * Math.sin(rad),
-      y: cy - radius * Math.cos(rad)
+      y: cy - radius * Math.cos(rad),
     };
   }
 
@@ -504,7 +505,7 @@ export class ClimateDialogManager {
     this.lastServiceCallAt = now;
     s.hass.callService('climate', 'set_temperature', {
       entity_id: s.entityId,
-      temperature: s.targetTemp
+      temperature: s.targetTemp,
     });
   }
 
@@ -516,7 +517,7 @@ export class ClimateDialogManager {
     s.hvacMode = next;
     s.hass.callService('climate', 'set_hvac_mode', {
       entity_id: s.entityId,
-      hvac_mode: next
+      hvac_mode: next,
     });
     // The ring becomes interactive/inert depending on off vs active; re-render is simplest.
     this.updateVisuals();
@@ -608,7 +609,7 @@ export class ClimateDialogManager {
       const [areas, devices, entities] = await Promise.all([
         DataService.getAreas(hass),
         DataService.getDevices(hass),
-        DataService.getEntities(hass)
+        DataService.getEntities(hass),
       ]);
       const entity = entities.find((e: Entity) => e.entity_id === entityId);
       let areaId = entity?.area_id;
@@ -628,16 +629,18 @@ export class ClimateDialogManager {
     const event = new CustomEvent('hass-more-info', {
       detail: { entityId },
       bubbles: true,
-      composed: true
+      composed: true,
     });
     const targets = [
       document.querySelector('ha-app'),
       document.querySelector('home-assistant'),
       document.querySelector('hui-root'),
-      document.querySelector('ha-panel-lovelace')
+      document.querySelector('ha-panel-lovelace'),
     ].filter(Boolean);
     if (targets.length > 0) {
-      targets.forEach(t => t!.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId }, bubbles: true, composed: true })));
+      targets.forEach((t) =>
+        t!.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId }, bubbles: true, composed: true }))
+      );
     } else {
       document.body.dispatchEvent(event);
     }

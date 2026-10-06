@@ -27,7 +27,7 @@ export class SnapshotManager {
 
   private constructor() {
     this.dashboardStateManager = DashboardStateManager.getInstance();
-    
+
     // Listen for dashboard state changes
     this.dashboardStateListener = (isActive: boolean, dashboardKey?: string | null) => {
       if (isActive) {
@@ -60,9 +60,9 @@ export class SnapshotManager {
         base64Data: null,
         timestamp: 0,
         isLoading: false,
-        hasError: false
+        hasError: false,
       });
-      
+
       // Start immediate fetch cycle for new camera
       this.startCameraFetchCycle(entityId);
     }
@@ -76,7 +76,7 @@ export class SnapshotManager {
     if (snapshotData?.fetchTimer) {
       clearTimeout(snapshotData.fetchTimer);
     }
-    
+
     this.snapshots.delete(entityId);
   }
 
@@ -159,7 +159,7 @@ export class SnapshotManager {
    */
   private pause(): void {
     this.isPaused = true;
-    
+
     // Clear all individual camera timers
     this.snapshots.forEach((snapshotData, entityId) => {
       if (snapshotData.fetchTimer) {
@@ -174,9 +174,9 @@ export class SnapshotManager {
    */
   private resume(): void {
     if (!this.isPaused) return;
-    
+
     this.isPaused = false;
-    
+
     // Restart fetch cycles for all registered cameras
     this.snapshots.forEach((snapshotData, entityId) => {
       this.startCameraFetchCycle(entityId);
@@ -211,7 +211,7 @@ export class SnapshotManager {
       }
 
       const base64Data = await this.getCameraSnapshotBase64(entityId);
-      
+
       if (base64Data) {
         snapshotData.base64Data = base64Data;
         snapshotData.timestamp = Date.now();
@@ -241,7 +241,7 @@ export class SnapshotManager {
       }
 
       let imageUrl = '';
-      
+
       // Get camera image URL
       if (state.attributes.entity_picture) {
         imageUrl = state.attributes.entity_picture;
@@ -249,9 +249,9 @@ export class SnapshotManager {
         // Fallback: use camera snapshot service
         const response = await this.hass.callService('camera', 'snapshot', {
           entity_id: entityId,
-          filename: 'temp_snapshot.jpg'
+          filename: 'temp_snapshot.jpg',
         });
-        
+
         if (response && response.path) {
           imageUrl = `/local/${response.path}`;
         }
@@ -264,22 +264,21 @@ export class SnapshotManager {
       // Add timestamp to prevent caching
       const separator = imageUrl.includes('?') ? '&' : '?';
       const timestampedUrl = `${imageUrl}${separator}_t=${Date.now()}`;
-      
+
       // Convert to base64
       const response = await fetch(timestampedUrl);
       if (!response.ok) {
         throw new Error(`Failed to fetch image: ${response.status}`);
       }
-      
+
       const blob = await response.blob();
-      
+
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(reader.result as string);
         reader.onerror = reject;
         reader.readAsDataURL(blob);
       });
-
     } catch (error) {
       return null;
     }
@@ -292,12 +291,10 @@ export class SnapshotManager {
     if (SnapshotManager.instance) {
       // Remove the dashboard state listener
       if (SnapshotManager.instance.dashboardStateListener) {
-        SnapshotManager.instance.dashboardStateManager.removeListener(
-          SnapshotManager.instance.dashboardStateListener
-        );
+        SnapshotManager.instance.dashboardStateManager.removeListener(SnapshotManager.instance.dashboardStateListener);
         SnapshotManager.instance.dashboardStateListener = undefined;
       }
-      
+
       // Clear all individual camera timers
       SnapshotManager.instance.snapshots.forEach((snapshotData, entityId) => {
         if (snapshotData.fetchTimer) {

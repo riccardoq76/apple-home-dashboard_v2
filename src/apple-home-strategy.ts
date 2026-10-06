@@ -1,10 +1,10 @@
 /**
  * Apple Home Dashboard Strategy - Stateless Implementation
  * Apple Home-like automatic dashboard for Home Assistant
- * 
+ *
  * Version: 1.7.0
  * Author: Apple Home Dashboard Team
- * 
+ *
  * This follows the proven mushroom-strategy pattern of stateless configuration generation.
  * No component instances, no singletons, no shared state - just pure configuration.
  */
@@ -48,33 +48,30 @@ function getCurrentDashboardKey(): string {
  * Main strategy function - generates dashboard configuration
  * This is called by Home Assistant's strategy system
  */
-async function generateLovelaceDashboard(
-  info: { hass: any; narrow?: boolean },
-  options?: { title?: string }
-) {
+async function generateLovelaceDashboard(info: { hass: any; narrow?: boolean }, options?: { title?: string }) {
   const { hass } = info;
-  
+
   // Initialize localization FIRST before any localize() calls
   setupLocalize(hass);
-  
+
   // Initialize RTL support
   RTLHelper.initialize(hass);
-  
+
   // CRITICAL: Register this dashboard with the DashboardStateManager
   // This is how we know which dashboards are Apple Home Dashboards
   const dashboardKey = getCurrentDashboardKey();
   const dashboardStateManager = DashboardStateManager.getInstance();
   dashboardStateManager.registerDashboard(dashboardKey);
-  
+
   // Set this dashboard as active since we're generating it
   dashboardStateManager.setDashboardActive(dashboardKey);
-  
+
   const views = [];
 
   // Load user customizations using CustomizationManager singleton
   const customizationManager = CustomizationManager.getInstance(hass);
   const customizations = await customizationManager.loadCustomizations();
-  
+
   // Set the loaded customizations in the manager
   await customizationManager.setCustomizations(customizations);
 
@@ -84,13 +81,13 @@ async function generateLovelaceDashboard(
 
   // Initialize background manager with loaded customizations
   const backgroundManager = new BackgroundManager(customizationManager);
-  
+
   // Initialize background for dashboard (this will also set dashboard as active)
   backgroundManager.initializeBackground();
 
   // Initialize UI manager with customizations for header/sidebar control
   const uiManager = HomeAssistantUIManager.initializeWithCustomizations(customizationManager);
-  
+
   // Apply UI settings once with a small delay to ensure DOM is ready
   setTimeout(() => {
     uiManager.reapplyDashboardSettings();
@@ -103,35 +100,41 @@ async function generateLovelaceDashboard(
     path: 'home',
     icon: 'mdi:home',
     panel: true,
-    cards: [{
-      type: 'custom:apple-home-view',
-      title: homeTitle,
-      pageType: 'home',
-      customizations: customizations
-    }]
+    cards: [
+      {
+        type: 'custom:apple-home-view',
+        title: homeTitle,
+        pageType: 'home',
+        customizations: customizations,
+      },
+    ],
   });
 
   // Group view configurations - one for each device group (exclude OTHER group as it doesn't have its own page)
-  const deviceGroups = (Object.keys(DashboardConfig.GROUP_STYLES) as DeviceGroup[]).filter(group => group !== DeviceGroup.OTHER);
-  
+  const deviceGroups = (Object.keys(DashboardConfig.GROUP_STYLES) as DeviceGroup[]).filter(
+    (group) => group !== DeviceGroup.OTHER
+  );
+
   for (const group of deviceGroups) {
     const groupStyle = DashboardConfig.getGroupStyle(group);
-    
+
     const groupName = typeof groupStyle.name === 'function' ? groupStyle.name() : groupStyle.name;
-    
+
     views.push({
       title: groupName,
       path: group,
       icon: groupStyle.icon,
       panel: true,
       subview: true,
-      cards: [{
-        type: 'custom:apple-home-view',
-        title: groupName,
-        pageType: 'group',
-        deviceGroup: group,
-        customizations: customizations
-      }]
+      cards: [
+        {
+          type: 'custom:apple-home-view',
+          title: groupName,
+          pageType: 'group',
+          deviceGroup: group,
+          customizations: customizations,
+        },
+      ],
     });
   }
 
@@ -142,26 +145,30 @@ async function generateLovelaceDashboard(
     icon: 'mdi:palette',
     panel: true,
     subview: true,
-    cards: [{
-      type: 'custom:apple-home-view',
-      title: localize('pages.scenes'),
-      pageType: 'scenes',
-      customizations: customizations
-    }]
+    cards: [
+      {
+        type: 'custom:apple-home-view',
+        title: localize('pages.scenes'),
+        pageType: 'scenes',
+        customizations: customizations,
+      },
+    ],
   });
 
   views.push({
     title: localize('pages.cameras'),
-    path: 'cameras', 
+    path: 'cameras',
     icon: 'mdi:cctv',
     panel: true,
     subview: true,
-    cards: [{
-      type: 'custom:apple-home-view',
-      title: localize('pages.cameras'),
-      pageType: 'cameras',
-      customizations: customizations
-    }]
+    cards: [
+      {
+        type: 'custom:apple-home-view',
+        title: localize('pages.cameras'),
+        pageType: 'cameras',
+        customizations: customizations,
+      },
+    ],
   });
 
   // Calendar is a device-group page like Battery/People/Energy (see the deviceGroups loop
@@ -170,7 +177,7 @@ async function generateLovelaceDashboard(
   // Add room views for each area
   try {
     const areas = await hass.callWS({ type: 'config/area_registry/list' });
-    
+
     for (const area of areas) {
       views.push({
         title: area.name,
@@ -178,14 +185,16 @@ async function generateLovelaceDashboard(
         icon: 'mdi:home-outline',
         panel: true,
         subview: true,
-        cards: [{
-          type: 'custom:apple-home-view',
-          title: area.name,
-          pageType: 'room',
-          areaId: area.area_id,
-          areaName: area.name,
-          customizations: customizations
-        }]
+        cards: [
+          {
+            type: 'custom:apple-home-view',
+            title: area.name,
+            pageType: 'room',
+            areaId: area.area_id,
+            areaName: area.name,
+            customizations: customizations,
+          },
+        ],
       });
     }
   } catch (error) {
@@ -199,14 +208,16 @@ async function generateLovelaceDashboard(
     icon: 'mdi:home-outline',
     panel: true,
     subview: true,
-    cards: [{
-      type: 'custom:apple-home-view',
-      title: localize('pages.default_room'),
-      pageType: 'room',
-      areaId: 'no_area',
-      areaName: localize('pages.default_room'),
-      customizations: customizations
-    }]
+    cards: [
+      {
+        type: 'custom:apple-home-view',
+        title: localize('pages.default_room'),
+        pageType: 'room',
+        areaId: 'no_area',
+        areaName: localize('pages.default_room'),
+        customizations: customizations,
+      },
+    ],
   });
 
   return { views };
@@ -224,7 +235,7 @@ class AppleHomeStrategy extends HTMLElement {
   static async generateDashboard(info: { hass: any; config: any }): Promise<{ views: any[] }> {
     // Extract options from config if available
     const options = info.config?.strategy?.options || {};
-    
+
     // Use our stateless function
     return generateLovelaceDashboard({ hass: info.hass }, options);
   }
@@ -258,7 +269,7 @@ if (window.customCards) {
     type: 'custom:apple-home-strategy',
     name: 'Apple Home Strategy',
     description: 'Apple Home-style dashboard strategy with stateless architecture',
-    preview: false
+    preview: false,
   });
 }
 
@@ -271,5 +282,3 @@ window.customStrategies.push({
   description: 'Apple Home-style dashboard auto-generated from your Home Assistant entities.',
   documentationURL: 'https://github.com/nitaybz/apple-home-dashboard',
 });
-
-

@@ -22,13 +22,13 @@ export class ScenesPage {
 
   async setConfig(config: any) {
     this._config = config;
-    
+
     // Initialize customization manager from config
     if (config.customizations && this._hass) {
       this.customizationManager = CustomizationManager.getInstance(this._hass);
       await this.customizationManager.setCustomizations(config.customizations);
-      
-      // Initialize drag and drop manager with scenes context  
+
+      // Initialize drag and drop manager with scenes context
       this.dragAndDropManager = new DragAndDropManager(
         (areaId) => this.handleSaveCurrentOrder(areaId),
         this.customizationManager,
@@ -53,8 +53,8 @@ export class ScenesPage {
     this._container = container;
     // Remove only dynamic content, keep permanent elements (header, chips) in place
     const permanentSelectors = ['.apple-home-header', '.permanent-chips'];
-    Array.from(container.children).forEach(child => {
-      const isPermanent = permanentSelectors.some(sel => child.matches(sel));
+    Array.from(container.children).forEach((child) => {
+      const isPermanent = permanentSelectors.some((sel) => child.matches(sel));
       if (!isPermanent) child.remove();
     });
 
@@ -70,9 +70,9 @@ export class ScenesPage {
     try {
       // Get data from Home Assistant
       const entities = await DataService.getEntities(hass);
-      
+
       // Filter entities for scenes and scripts and exclude those marked for exclusion
-      const allScenesEntities = entities.filter(entity => {
+      const allScenesEntities = entities.filter((entity) => {
         const domain = entity.entity_id.split('.')[0];
         return DashboardConfig.isScenesDomain(domain);
       });
@@ -80,7 +80,7 @@ export class ScenesPage {
       // Now apply exclusions asynchronously
       const scenesEntities = [];
       for (const entity of allScenesEntities) {
-        const isExcluded = await this.customizationManager?.isEntityExcludedFromDashboard(entity.entity_id) || false;
+        const isExcluded = (await this.customizationManager?.isEntityExcludedFromDashboard(entity.entity_id)) || false;
         if (!isExcluded) {
           scenesEntities.push(entity);
         }
@@ -90,17 +90,17 @@ export class ScenesPage {
       if (!this.customizationManager) {
         throw new Error(localize('errors.customization_manager_not_initialized'));
       }
-      
+
       const customizations = this.customizationManager.getCustomizations();
-      
+
       // Apply entity order customizations with context
       let sortedScenes = [...scenesEntities];
       const savedOrder = this.customizationManager.getSavedCardOrderWithContext('scenes_section', 'scenes');
-      
+
       if (savedOrder.length > 0) {
-        const entityMap = new Map(scenesEntities.map(entity => [entity.entity_id, entity]));
+        const entityMap = new Map(scenesEntities.map((entity) => [entity.entity_id, entity]));
         const orderedScenes: Entity[] = [];
-        
+
         // First, add scenes in the saved order
         savedOrder.forEach((entityId: string) => {
           if (entityMap.has(entityId)) {
@@ -108,28 +108,22 @@ export class ScenesPage {
             entityMap.delete(entityId);
           }
         });
-        
+
         // Then, add any new scenes that weren't in the saved order
         const remainingScenes = Array.from(entityMap.values());
         orderedScenes.push(...remainingScenes);
-        
+
         sortedScenes = orderedScenes;
       }
 
       // Apply tall card settings - handled by CardManager in the new structure
-      sortedScenes.forEach(entity => {
+      sortedScenes.forEach((entity) => {
         // CardManager handles tall card settings in the new structure
         (entity as any).is_tall = false; // Default for scenes
       });
 
       // Render all scenes in a grid layout (non-carousel)
-      await this.renderScenesGrid(
-        container,
-        sortedScenes,
-        hass,
-        onTallToggle
-      );
-      
+      await this.renderScenesGrid(container, sortedScenes, hass, onTallToggle);
     } catch (error) {
       console.error('Error rendering scenes page:', error);
     }
@@ -168,13 +162,13 @@ export class ScenesPage {
 
     const domain = entityId.split('.')[0];
     const stateObj = hass.states[entityId];
-    
+
     if (!stateObj) return null;
 
     // Get user customizations for this entity (for individual entity overrides like names)
     const customizations = this.customizationManager.getCustomizations();
     const entityCustomizations = customizations.entities?.[entityId] || null;
-    
+
     // Create base card configuration
     const cardConfig: any = {
       type: 'custom:apple-home-card',
@@ -182,7 +176,7 @@ export class ScenesPage {
       name: entityCustomizations?.name || stateObj.attributes.friendly_name || entityId,
       area_id: 'scenes_section',
       is_tall: (entity as any).is_tall !== undefined ? (entity as any).is_tall : false, // Scenes are typically not tall by default
-      ...entityCustomizations
+      ...entityCustomizations,
     };
 
     return cardConfig;
@@ -199,7 +193,7 @@ export class ScenesPage {
     wrapper.className = 'entity-card-wrapper';
     wrapper.dataset.entityId = cardConfig.entity;
     wrapper.dataset.areaId = 'scenes_section';
-    
+
     // Apply tall class if needed
     if (cardConfig.is_tall) {
       wrapper.classList.add('tall');
@@ -214,7 +208,7 @@ export class ScenesPage {
     const controls = document.createElement('div');
     controls.className = 'entity-controls';
     // Scenes don't have resize controls
-    
+
     wrapper.appendChild(controls);
     wrapper.appendChild(cardElement);
     gridContainer.appendChild(wrapper);
@@ -222,7 +216,7 @@ export class ScenesPage {
 
   public updateDragAndDrop(editMode: boolean, container: HTMLElement) {
     if (!this.dragAndDropManager) return;
-    
+
     if (editMode) {
       // Add a small delay to ensure cards are fully rendered
       setTimeout(() => {
@@ -232,7 +226,7 @@ export class ScenesPage {
         entityWrappers.forEach((wrapper) => {
           const element = wrapper as HTMLElement;
           element.classList.toggle('edit-mode', true);
-          
+
           const appleHomeCard = element.querySelector('apple-home-card') as any;
           if (appleHomeCard && typeof appleHomeCard.refreshEditMode === 'function') {
             appleHomeCard.refreshEditMode();
@@ -246,7 +240,7 @@ export class ScenesPage {
       entityWrappers.forEach((wrapper) => {
         const element = wrapper as HTMLElement;
         element.classList.toggle('edit-mode', false);
-        
+
         const appleHomeCard = element.querySelector('apple-home-card') as any;
         if (appleHomeCard && typeof appleHomeCard.refreshEditMode === 'function') {
           appleHomeCard.refreshEditMode();
@@ -259,7 +253,7 @@ export class ScenesPage {
     if (!this._container) {
       return;
     }
-    
+
     // Look for the area container within the stored container
     const areaContainer = this._container.querySelector(`[data-area-id="${areaId}"]`);
     if (!areaContainer) {
@@ -267,10 +261,12 @@ export class ScenesPage {
     }
 
     const wrappers = areaContainer.querySelectorAll('.entity-card-wrapper:not(.drag-placeholder)');
-    const entityOrder = Array.from(wrappers).map(wrapper => {
-      const element = wrapper as HTMLElement;
-      return element.dataset.entityId || '';
-    }).filter(id => id);
+    const entityOrder = Array.from(wrappers)
+      .map((wrapper) => {
+        const element = wrapper as HTMLElement;
+        return element.dataset.entityId || '';
+      })
+      .filter((id) => id);
 
     // Save with 'scenes' context
     if (this.customizationManager) {

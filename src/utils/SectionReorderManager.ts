@@ -30,7 +30,7 @@ export class SectionReorderManager {
   public async showReorderModal(areas: any[], hass: any) {
     // Prepare sections data
     this.sections = await this.prepareSectionsData(areas, hass);
-    
+
     // Create and show modal
     this.createModal();
     this.setupEventListeners();
@@ -40,7 +40,7 @@ export class SectionReorderManager {
   private async prepareSectionsData(areas: any[], hass: any): Promise<SectionItem[]> {
     const sections: SectionItem[] = [];
     const customizations = this.customizationManager.getCustomizations();
-    
+
     // Get current section order and visibility settings
     const sectionOrder = customizations.home?.sections?.order || [];
     const hiddenSections = customizations.home?.sections?.hidden || [];
@@ -53,7 +53,7 @@ export class SectionReorderManager {
         name: localize('section_titles.weather'),
         type: 'weather',
         visible: !hiddenSections.includes('weather_section'),
-        order: sectionOrder.indexOf('weather_section') !== -1 ? sectionOrder.indexOf('weather_section') : 0
+        order: sectionOrder.indexOf('weather_section') !== -1 ? sectionOrder.indexOf('weather_section') : 0,
       });
     }
 
@@ -68,7 +68,8 @@ export class SectionReorderManager {
         name: localize('section_titles.energy'),
         type: 'energy',
         visible: !hiddenSections.includes('energy_section'),
-        order: sectionOrder.indexOf('energy_section') !== -1 ? sectionOrder.indexOf('energy_section') : (hasWeather ? 1 : 0)
+        order:
+          sectionOrder.indexOf('energy_section') !== -1 ? sectionOrder.indexOf('energy_section') : hasWeather ? 1 : 0,
       });
     }
 
@@ -80,20 +81,27 @@ export class SectionReorderManager {
         name: localize('section_titles.calendar'),
         type: 'calendar',
         visible: !hiddenSections.includes('calendar_section'),
-        order: sectionOrder.indexOf('calendar_section') !== -1 ? sectionOrder.indexOf('calendar_section') : (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0)
+        order:
+          sectionOrder.indexOf('calendar_section') !== -1
+            ? sectionOrder.indexOf('calendar_section')
+            : (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0),
       });
     }
 
     // Add Battery section if enabled in settings and battery entities exist
     const excludedForBattery = new Set(await this.customizationManager.getExcludedFromDashboard());
-    const hasBattery = !!(await this.customizationManager.getShowBattery()) && BatterySection.hasBatteries(hass, excludedForBattery);
+    const hasBattery =
+      !!(await this.customizationManager.getShowBattery()) && BatterySection.hasBatteries(hass, excludedForBattery);
     if (hasBattery) {
       sections.push({
         id: 'battery_section',
         name: localize('section_titles.batteries'),
         type: 'battery',
         visible: !hiddenSections.includes('battery_section'),
-        order: sectionOrder.indexOf('battery_section') !== -1 ? sectionOrder.indexOf('battery_section') : (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0)
+        order:
+          sectionOrder.indexOf('battery_section') !== -1
+            ? sectionOrder.indexOf('battery_section')
+            : (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0),
       });
     }
 
@@ -122,7 +130,10 @@ export class SectionReorderManager {
         name: localize('section_titles.cameras'),
         type: 'cameras',
         visible: !hiddenSections.includes('cameras_section'),
-        order: sectionOrder.indexOf('cameras_section') !== -1 ? sectionOrder.indexOf('cameras_section') : (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0) + (hasBattery ? 1 : 0)
+        order:
+          sectionOrder.indexOf('cameras_section') !== -1
+            ? sectionOrder.indexOf('cameras_section')
+            : (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0) + (hasBattery ? 1 : 0),
       });
     }
 
@@ -131,42 +142,53 @@ export class SectionReorderManager {
       if (!state.entity_id.startsWith('scene.') && !state.entity_id.startsWith('script.')) {
         return false;
       }
-      
+
       // Check if entity is hidden in the entity registry
       const entityRegistry = hass.entities?.[state.entity_id];
       if (entityRegistry && (entityRegistry.hidden || entityRegistry.hidden_by)) {
         return false;
       }
-      
+
       // Check if entity is disabled in the entity registry
       if (entityRegistry && entityRegistry.disabled_by) {
         return false;
       }
-      
+
       return true;
     });
-    
+
     if (scenesEntities.length > 0) {
-      const baseOrder = (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0) + (hasBattery ? 1 : 0) + (cameraEntities.length > 0 ? 1 : 0);
+      const baseOrder =
+        (hasWeather ? 1 : 0) +
+        (hasEnergy ? 1 : 0) +
+        (hasCalendar ? 1 : 0) +
+        (hasBattery ? 1 : 0) +
+        (cameraEntities.length > 0 ? 1 : 0);
       sections.push({
         id: 'scenes_section',
         name: localize('section_titles.scenes'),
         type: 'scenes',
         visible: !hiddenSections.includes('scenes_section'),
-        order: sectionOrder.indexOf('scenes_section') !== -1 ? sectionOrder.indexOf('scenes_section') : baseOrder
+        order: sectionOrder.indexOf('scenes_section') !== -1 ? sectionOrder.indexOf('scenes_section') : baseOrder,
       });
     }
 
     // Add Favorites section (third in default order)
     const favoriteAccessories = await this.customizationManager.getFavoriteAccessories();
     if (favoriteAccessories.length > 0) {
-      const baseOrder = (hasWeather ? 1 : 0) + (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0) + (hasBattery ? 1 : 0) + (cameraEntities.length > 0 ? 1 : 0) + (scenesEntities.length > 0 ? 1 : 0);
+      const baseOrder =
+        (hasWeather ? 1 : 0) +
+        (hasEnergy ? 1 : 0) +
+        (hasCalendar ? 1 : 0) +
+        (hasBattery ? 1 : 0) +
+        (cameraEntities.length > 0 ? 1 : 0) +
+        (scenesEntities.length > 0 ? 1 : 0);
       sections.push({
         id: 'favorites_section',
         name: localize('section_titles.favorites'),
         type: 'favorites',
         visible: !hiddenSections.includes('favorites_section'),
-        order: sectionOrder.indexOf('favorites_section') !== -1 ? sectionOrder.indexOf('favorites_section') : baseOrder
+        order: sectionOrder.indexOf('favorites_section') !== -1 ? sectionOrder.indexOf('favorites_section') : baseOrder,
       });
     }
 
@@ -174,19 +196,22 @@ export class SectionReorderManager {
     areas.forEach((area, index) => {
       const areaId = area.area_id || area.id;
       const areaName = area.name || areaId;
-      const baseOrder = (hasWeather ? 1 : 0) +
-                       (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0) + (hasBattery ? 1 : 0) +
-                       (cameraEntities.length > 0 ? 1 : 0) +
-                       (scenesEntities.length > 0 ? 1 : 0) +
-                       (favoriteAccessories.length > 0 ? 1 : 0) +
-                       index;
-      
+      const baseOrder =
+        (hasWeather ? 1 : 0) +
+        (hasEnergy ? 1 : 0) +
+        (hasCalendar ? 1 : 0) +
+        (hasBattery ? 1 : 0) +
+        (cameraEntities.length > 0 ? 1 : 0) +
+        (scenesEntities.length > 0 ? 1 : 0) +
+        (favoriteAccessories.length > 0 ? 1 : 0) +
+        index;
+
       sections.push({
         id: areaId,
         name: areaName,
         type: 'area',
         visible: !hiddenSections.includes(areaId),
-        order: sectionOrder.indexOf(areaId) !== -1 ? sectionOrder.indexOf(areaId) : baseOrder
+        order: sectionOrder.indexOf(areaId) !== -1 ? sectionOrder.indexOf(areaId) : baseOrder,
       });
     });
 
@@ -195,7 +220,7 @@ export class SectionReorderManager {
     try {
       const entities = hass.entities ? Object.values(hass.entities) : [];
       const devices = hass.devices ? Object.values(hass.devices) : [];
-      
+
       // Check if any entities would be grouped under 'no_area'
       hasDefaultRoom = entities.some((entity: any) => {
         if (!entity.area_id && entity.device_id) {
@@ -211,32 +236,35 @@ export class SectionReorderManager {
 
     // Add Default Room if it exists
     if (hasDefaultRoom) {
-      const defaultRoomOrder = (hasWeather ? 1 : 0) +
-                              (hasEnergy ? 1 : 0) + (hasCalendar ? 1 : 0) + (hasBattery ? 1 : 0) +
-                              (cameraEntities.length > 0 ? 1 : 0) +
-                              (scenesEntities.length > 0 ? 1 : 0) +
-                              (favoriteAccessories.length > 0 ? 1 : 0) +
-                              areas.length;
-      
+      const defaultRoomOrder =
+        (hasWeather ? 1 : 0) +
+        (hasEnergy ? 1 : 0) +
+        (hasCalendar ? 1 : 0) +
+        (hasBattery ? 1 : 0) +
+        (cameraEntities.length > 0 ? 1 : 0) +
+        (scenesEntities.length > 0 ? 1 : 0) +
+        (favoriteAccessories.length > 0 ? 1 : 0) +
+        areas.length;
+
       sections.push({
         id: 'no_area',
         name: localize('pages.default_room'),
         type: 'area',
         visible: !hiddenSections.includes('no_area'),
-        order: sectionOrder.indexOf('no_area') !== -1 ? sectionOrder.indexOf('no_area') : defaultRoomOrder
+        order: sectionOrder.indexOf('no_area') !== -1 ? sectionOrder.indexOf('no_area') : defaultRoomOrder,
       });
     }
 
     // Sort by current order
     sections.sort((a, b) => a.order - b.order);
-    
+
     return sections;
   }
 
   private createModal() {
     this.modal = document.createElement('div');
     this.modal.className = `apple-section-reorder-modal ${RTLHelper.isRTL() ? 'rtl' : 'ltr'}`;
-    
+
     this.modal.innerHTML = `
       <div class="modal-backdrop"></div>
       <div class="modal-content">
@@ -252,7 +280,9 @@ export class SectionReorderManager {
         </div>
         <div class="modal-body">
           <div class="sections-list">
-            ${this.sections.map((section, index) => `
+            ${this.sections
+              .map(
+                (section, index) => `
               <div class="section-item" data-section-id="${section.id}" data-index="${index}">
                 <button class="section-visibility-toggle ${section.visible ? 'visible' : 'hidden'}" 
                         data-section-id="${section.id}">
@@ -265,7 +295,9 @@ export class SectionReorderManager {
                   <ha-icon icon="mdi:menu"></ha-icon>
                 </div>
               </div>
-            `).join('')}
+            `
+              )
+              .join('')}
           </div>
         </div>
       </div>
@@ -278,7 +310,7 @@ export class SectionReorderManager {
   private addModalStyles() {
     // Inject centralized liquid glass button styles
     injectLiquidGlassStyles();
-    
+
     if (document.querySelector('#apple-section-reorder-styles')) return;
 
     const style = document.createElement('style');
@@ -619,7 +651,7 @@ export class SectionReorderManager {
         to { transform: rotate(360deg); }
       }
     `;
-    
+
     document.head.appendChild(style);
   }
 
@@ -640,28 +672,36 @@ export class SectionReorderManager {
 
     // Visibility toggles - use event delegation with both click and touchstart for better mobile support
     const sectionsListEl = this.modal.querySelector('.sections-list');
-    
+
     // Handle click events
-    sectionsListEl?.addEventListener('click', (e) => {
-      const target = e.target as HTMLElement;
-      const toggleButton = target.closest('.section-visibility-toggle');
-      if (toggleButton) {
-        e.preventDefault();
-        e.stopPropagation();
-        this.toggleSectionVisibility(toggleButton as HTMLElement);
-      }
-    }, { capture: true });
+    sectionsListEl?.addEventListener(
+      'click',
+      (e) => {
+        const target = e.target as HTMLElement;
+        const toggleButton = target.closest('.section-visibility-toggle');
+        if (toggleButton) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.toggleSectionVisibility(toggleButton as HTMLElement);
+        }
+      },
+      { capture: true }
+    );
 
     // Handle touch events for better mobile responsiveness
-    sectionsListEl?.addEventListener('touchstart', (e) => {
-      const target = e.target as HTMLElement;
-      const toggleButton = target.closest('.section-visibility-toggle');
-      if (toggleButton) {
-        e.preventDefault();
-        e.stopPropagation();
-        this.toggleSectionVisibility(toggleButton as HTMLElement);
-      }
-    }, { capture: true });
+    sectionsListEl?.addEventListener(
+      'touchstart',
+      (e) => {
+        const target = e.target as HTMLElement;
+        const toggleButton = target.closest('.section-visibility-toggle');
+        if (toggleButton) {
+          e.preventDefault();
+          e.stopPropagation();
+          this.toggleSectionVisibility(toggleButton as HTMLElement);
+        }
+      },
+      { capture: true }
+    );
 
     // Setup Sortable.js
     this.setupSortable();
@@ -691,7 +731,7 @@ export class SectionReorderManager {
       fallbackOnBody: true,
       swapThreshold: 1,
       animation: 150,
-      easing: "cubic-bezier(1, 0, 0, 1)",
+      easing: 'cubic-bezier(1, 0, 0, 1)',
       delay: 150,
       delayOnTouchOnly: true,
       // Specify which elements are draggable
@@ -702,7 +742,7 @@ export class SectionReorderManager {
       filter: '.section-visibility-toggle',
       preventOnFilter: false,
       ghostClass: 'sortable-ghost',
-      dragClass: 'sortable-drag', 
+      dragClass: 'sortable-drag',
       chosenClass: 'sortable-chosen',
       fallbackClass: 'sortable-fallback',
       onStart: () => {
@@ -712,16 +752,16 @@ export class SectionReorderManager {
       onEnd: (evt: any) => {
         // Re-enable text selection
         document.body.style.userSelect = '';
-        
+
         // Update internal sections order when drag ends
         this.handleItemMoved(evt);
-      }
+      },
     });
   }
 
   private handleItemMoved(evt: any) {
     const { oldIndex, newIndex } = evt;
-    
+
     if (oldIndex === newIndex) return;
 
     // Update internal sections array
@@ -743,7 +783,7 @@ export class SectionReorderManager {
     if (!sectionId) return;
 
     // Find section in our data
-    const section = this.sections.find(s => s.id === sectionId);
+    const section = this.sections.find((s) => s.id === sectionId);
     if (!section) return;
 
     // Add immediate visual feedback that the click was registered
@@ -781,14 +821,12 @@ export class SectionReorderManager {
     }
   }
 
-
-
   private showModal() {
     if (!this.modal) return;
-    
+
     // Block background scrolling
     document.body.style.overflow = 'hidden';
-    
+
     requestAnimationFrame(() => {
       this.modal?.classList.add('show');
     });
@@ -807,7 +845,7 @@ export class SectionReorderManager {
     }
 
     this.modal.classList.remove('show');
-    
+
     setTimeout(() => {
       document.removeEventListener('keydown', this.handleEscapeKey);
       if (this.modal && this.modal.parentNode) {
@@ -828,7 +866,7 @@ export class SectionReorderManager {
       this.sortableInstance.destroy();
       this.sortableInstance = undefined;
     }
-    
+
     // Start modal fade immediately (while save happens in parallel)
     if (this.modal) {
       this.modal.style.transition = 'opacity 0.3s ease-out';
@@ -841,19 +879,19 @@ export class SectionReorderManager {
     } catch (error) {
       console.error('Error saving section configuration:', error);
     }
-    
+
     // Clean up modal after fade animation
     setTimeout(() => {
       // Restore background scrolling
       document.body.style.overflow = '';
-      
+
       // Remove modal from DOM
       document.removeEventListener('keydown', this.handleEscapeKey);
       if (this.modal && this.modal.parentNode) {
         this.modal.parentNode.removeChild(this.modal);
       }
       this.modal = undefined;
-      
+
       // Trigger callback to refresh the dashboard
       if (this.onSaveCallback) {
         this.onSaveCallback();
@@ -863,17 +901,15 @@ export class SectionReorderManager {
 
   private async saveSectionConfiguration() {
     // Get section order and hidden sections
-    const sectionOrder = this.sections.map(s => s.id);
-    const hiddenSections = this.sections
-      .filter(s => !s.visible)
-      .map(s => s.id);
+    const sectionOrder = this.sections.map((s) => s.id);
+    const hiddenSections = this.sections.filter((s) => !s.visible).map((s) => s.id);
 
     // Update home section - use local update then single save
     const home = this.customizationManager.getCustomization('home') || {};
     if (!home.sections) home.sections = {};
     home.sections.order = sectionOrder;
     home.sections.hidden = hiddenSections;
-    
+
     // Use batch save for efficiency (single WebSocket call)
     await this.customizationManager.batchSetCustomizations({ home });
   }
@@ -886,7 +922,7 @@ export class SectionReorderManager {
 
   public destroy() {
     this.closeModal();
-    
+
     // Remove styles
     const styleElement = document.querySelector('#apple-section-reorder-styles');
     if (styleElement) {

@@ -264,7 +264,7 @@ export class MediaDialogManager {
       onTick: (h) => {
         currentHass = h;
         refresh();
-      }
+      },
     });
     if (!shell) return;
 
@@ -360,7 +360,7 @@ export class MediaDialogManager {
         const d = duration();
         if (!d || !final) return;
         call('media_seek', { seek_position: Math.round(fraction * d) });
-      }
+      },
     });
 
     const volume = createHSlider(q<HTMLElement>('.ahd-media-vol'), {
@@ -370,7 +370,7 @@ export class MediaDialogManager {
         if (!final && now - lastVolumeCall < VOLUME_CALL_THROTTLE_MS) return;
         lastVolumeCall = now;
         call('volume_set', { volume_level: Math.round(fraction * 100) / 100 });
-      }
+      },
     });
 
     const statusText = (state: string): string => {
@@ -389,12 +389,13 @@ export class MediaDialogManager {
     /** Other media players that can be grouped with this one (Sonos, HEOS, Music Assistant...). */
     const groupableSpeakers = (): { id: string; name: string }[] =>
       Object.entries((currentHass.states || {}) as Record<string, any>)
-        .filter(([id, s]) =>
-          id.startsWith('media_player.') &&
-          id !== entityId &&
-          s.state !== 'unavailable' &&
-          ((s.attributes?.supported_features || 0) & FEATURE_GROUP_MEDIA) !== 0 &&
-          !currentHass.entities?.[id]?.hidden
+        .filter(
+          ([id, s]) =>
+            id.startsWith('media_player.') &&
+            id !== entityId &&
+            s.state !== 'unavailable' &&
+            ((s.attributes?.supported_features || 0) & FEATURE_GROUP_MEDIA) !== 0 &&
+            !currentHass.entities?.[id]?.hidden
         )
         .map(([id, s]) => ({ id, name: s.attributes?.friendly_name || id }))
         .sort((x, y) => x.name.localeCompare(y.name));
@@ -411,11 +412,13 @@ export class MediaDialogManager {
 
     const buildSources = (sources: string[], current: string | undefined) => {
       sourceList.innerHTML = '';
-      sources.forEach(name => {
+      sources.forEach((name) => {
         const item = createMenuItem(name, name === current);
         item.addEventListener('click', () => {
           lastUserMenuAt = Date.now();
-          sourceList.querySelectorAll('.ahd-media-source-item').forEach(el => el.classList.toggle('current', el === item));
+          sourceList
+            .querySelectorAll('.ahd-media-source-item')
+            .forEach((el) => el.classList.toggle('current', el === item));
           sourceMenu.classList.remove('open');
           call('select_source', { source: name });
         });
@@ -430,7 +433,7 @@ export class MediaDialogManager {
       const self = createMenuItem(stateObj()?.attributes?.friendly_name || entityId, true);
       self.classList.add('self');
       speakerList.appendChild(self);
-      speakers.forEach(sp => {
+      speakers.forEach((sp) => {
         const item = createMenuItem(sp.name, members.includes(sp.id));
         item.dataset.entity = sp.id;
         item.addEventListener('click', () => {
@@ -438,8 +441,9 @@ export class MediaDialogManager {
           const nowSelected = !item.classList.contains('current');
           item.classList.toggle('current', nowSelected);
           if (nowSelected) {
-            const chosen = Array.from(speakerList.querySelectorAll<HTMLElement>('.ahd-media-source-item.current:not(.self)'))
-              .map(el => el.dataset.entity as string);
+            const chosen = Array.from(
+              speakerList.querySelectorAll<HTMLElement>('.ahd-media-source-item.current:not(.self)')
+            ).map((el) => el.dataset.entity as string);
             call('join', { group_members: chosen });
           } else {
             currentHass.callService('media_player', 'unjoin', { entity_id: sp.id });
@@ -465,7 +469,9 @@ export class MediaDialogManager {
         if (url) {
           const img = document.createElement('img');
           img.alt = '';
-          img.onerror = () => { artBox.innerHTML = '<ha-icon icon="mdi:music"></ha-icon>'; };
+          img.onerror = () => {
+            artBox.innerHTML = '<ha-icon icon="mdi:music"></ha-icon>';
+          };
           img.src = url;
           artBox.innerHTML = '';
           artBox.appendChild(img);
@@ -474,8 +480,8 @@ export class MediaDialogManager {
         }
       }
 
-      titleEl.textContent = isOff ? '' : (a.media_title || a.app_name || localize('media_dialog.nothing_playing'));
-      artistEl.textContent = isOff ? '' : (a.media_artist || a.media_series_title || a.media_album_name || '');
+      titleEl.textContent = isOff ? '' : a.media_title || a.app_name || localize('media_dialog.nothing_playing');
+      artistEl.textContent = isOff ? '' : a.media_artist || a.media_series_title || a.media_album_name || '';
 
       const d = duration();
       const pos = livePosition();
@@ -490,7 +496,7 @@ export class MediaDialogManager {
 
       prevBtn.style.display = !isOff && supports(FEATURE_PREVIOUS_TRACK) ? '' : 'none';
       nextBtn.style.display = !isOff && supports(FEATURE_NEXT_TRACK) ? '' : 'none';
-      const canToggle = isOff ? (supports(FEATURE_TURN_ON) || supports(FEATURE_PLAY)) : true;
+      const canToggle = isOff ? supports(FEATURE_TURN_ON) || supports(FEATURE_PLAY) : true;
       mainBtn.style.display = canToggle && state !== 'unavailable' ? '' : 'none';
       (mainBtn.querySelector('ha-icon') as HTMLElement).setAttribute(
         'icon',
@@ -510,8 +516,8 @@ export class MediaDialogManager {
       const signature = [
         sources.join('\u0000'),
         a.source ?? '',
-        speakers.map(s => `${s.id}=${s.name}`).join('\u0000'),
-        members.join('\u0000')
+        speakers.map((s) => `${s.id}=${s.name}`).join('\u0000'),
+        members.join('\u0000'),
       ].join('\u0001');
       if (showMenu && signature !== lastMenuSignature && Date.now() - lastUserMenuAt > OPTIMISTIC_HOLD_MS) {
         lastMenuSignature = signature;

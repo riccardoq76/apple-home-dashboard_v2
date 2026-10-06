@@ -310,7 +310,7 @@ let tokensInjected = false;
  */
 export function injectDesignTokens(): void {
   if (tokensInjected) return;
-  
+
   const existingStyle = document.getElementById('apple-design-tokens');
   if (existingStyle) {
     tokensInjected = true;
@@ -334,9 +334,9 @@ export function injectDesignTokens(): void {
 export function injectLiquidGlassStyles(): void {
   // Always inject design tokens first
   injectDesignTokens();
-  
+
   if (stylesInjected) return;
-  
+
   const existingStyle = document.getElementById('liquid-glass-styles');
   if (existingStyle) {
     stylesInjected = true;
@@ -358,10 +358,10 @@ export function injectLiquidGlassStyles(): void {
 export const LiquidGlassClasses = {
   /** Header buttons (menu, back, sidebar) - transparent glass */
   headerButton: 'liquid-glass-btn liquid-glass-transparent',
-  
+
   /** Modal cancel/X button - dark glass */
   modalCancel: 'liquid-glass-btn liquid-glass-dark',
-  
+
   /** Modal done/confirm button - light glass */
   modalDone: 'liquid-glass-btn liquid-glass-light',
 } as const;

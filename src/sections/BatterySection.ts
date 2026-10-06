@@ -9,7 +9,8 @@ export interface BatteryInfo {
   low: boolean;
 }
 
-const BATTERY_NAME_SUFFIX = /[\s_-]*(battery|batteria|batterie|batterij|batería|bateria|akku|батарея|电池|סוללה)(\s+(level|low|livello|niveau|nivel|nível|stand))?$/i;
+const BATTERY_NAME_SUFFIX =
+  /[\s_-]*(battery|batteria|batterie|batterij|batería|bateria|akku|батарея|电池|סוללה)(\s+(level|low|livello|niveau|nivel|nível|stand))?$/i;
 const MAX_HOME_ROWS = 4;
 
 export class BatterySection {
@@ -78,7 +79,7 @@ export class BatterySection {
   }
 
   private renderHomeCard(container: HTMLElement, batteries: BatteryInfo[]): void {
-    const lowBatteries = batteries.filter(b => b.low);
+    const lowBatteries = batteries.filter((b) => b.low);
 
     const card = document.createElement('div');
     card.className = 'apple-battery-card';
@@ -91,14 +92,14 @@ export class BatterySection {
         <ha-icon icon="${headerIcon}" class="battery-header-icon ${lowBatteries.length > 0 ? 'low' : 'ok'}"></ha-icon>
         <span class="battery-label">${localize('section_titles.batteries')}</span>
       </div>
-      <span class="battery-summary">${lowBatteries.length > 0
-        ? `${lowBatteries.length} ${localize('batteries.low')}`
-        : localize('batteries.all_ok')}</span>`;
+      <span class="battery-summary">${
+        lowBatteries.length > 0 ? `${lowBatteries.length} ${localize('batteries.low')}` : localize('batteries.all_ok')
+      }</span>`;
     card.appendChild(header);
 
     const rows = document.createElement('div');
     rows.className = 'battery-rows';
-    lowBatteries.slice(0, MAX_HOME_ROWS).forEach(b => rows.appendChild(this.createRow(b)));
+    lowBatteries.slice(0, MAX_HOME_ROWS).forEach((b) => rows.appendChild(this.createRow(b)));
     if (lowBatteries.length > MAX_HOME_ROWS) {
       const more = document.createElement('div');
       more.className = 'battery-more';
@@ -111,8 +112,8 @@ export class BatterySection {
   }
 
   private renderPage(container: HTMLElement, batteries: BatteryInfo[]): void {
-    const lowBatteries = batteries.filter(b => b.low);
-    const okBatteries = batteries.filter(b => !b.low);
+    const lowBatteries = batteries.filter((b) => b.low);
+    const okBatteries = batteries.filter((b) => !b.low);
 
     const addGroup = (title: string, items: BatteryInfo[]) => {
       if (items.length === 0) return;
@@ -125,7 +126,7 @@ export class BatterySection {
       list.className = 'apple-battery-card battery-page-list';
       const rows = document.createElement('div');
       rows.className = 'battery-rows';
-      items.forEach(b => rows.appendChild(this.createRow(b, true)));
+      items.forEach((b) => rows.appendChild(this.createRow(b, true)));
       list.appendChild(rows);
       container.appendChild(list);
     };
@@ -139,9 +140,10 @@ export class BatterySection {
     row.className = `battery-row ${battery.low ? 'low' : 'ok'}`;
 
     const percent = battery.level === null ? (battery.low ? 5 : 100) : Math.max(0, Math.min(100, battery.level));
-    const valueText = battery.level === null
-      ? localize(battery.low ? 'batteries.low_short' : 'batteries.ok_short')
-      : `${Math.round(battery.level)}%`;
+    const valueText =
+      battery.level === null
+        ? localize(battery.low ? 'batteries.low_short' : 'batteries.ok_short')
+        : `${Math.round(battery.level)}%`;
     const icon = battery.low ? 'mdi:battery-alert-variant-outline' : 'mdi:battery-high';
 
     row.innerHTML = `
@@ -154,9 +156,13 @@ export class BatterySection {
 
     if (openMoreInfo) {
       row.addEventListener('click', () => {
-        row.dispatchEvent(new CustomEvent('hass-more-info', {
-          detail: { entityId: battery.entityId }, bubbles: true, composed: true
-        }));
+        row.dispatchEvent(
+          new CustomEvent('hass-more-info', {
+            detail: { entityId: battery.entityId },
+            bubbles: true,
+            composed: true,
+          })
+        );
       });
     }
     return row;

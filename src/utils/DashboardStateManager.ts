@@ -1,6 +1,6 @@
 /**
  * DashboardStateManager - Manages dashboard enter/leave state for Apple Home Dashboard
- * 
+ *
  * Key concept: This manager tracks WHICH specific dashboard(s) are using the Apple Home Strategy.
  * A user can have multiple Apple Home dashboards (e.g., /apple-home, /tablet-dashboard).
  * When navigating between dashboards, we need to know if we're still in an Apple Home Dashboard
@@ -9,17 +9,17 @@
 export class DashboardStateManager {
   private static instance: DashboardStateManager | null = null;
   private isActive = false;
-  
+
   // Set of dashboard keys (URL path segments) that are Apple Home Dashboards
   // e.g., for URL /apple-home/home, the key is "apple-home"
   private registeredDashboardKeys: Set<string> = new Set();
-  
+
   // The currently active dashboard key (if any)
   private currentDashboardKey: string | null = null;
-  
+
   private listeners: Set<(isActive: boolean, dashboardKey: string | null) => void> = new Set();
   private navigationListenersSetup = false;
-  
+
   // Track last processed path to avoid duplicate processing
   private lastProcessedPath: string = '';
 
@@ -40,7 +40,7 @@ export class DashboardStateManager {
    */
   registerDashboard(dashboardKey: string): void {
     this.registeredDashboardKeys.add(dashboardKey);
-    
+
     // Check if we're currently on this dashboard
     const currentKey = this.extractDashboardKey(window.location.pathname);
     if (currentKey === dashboardKey) {
@@ -53,7 +53,7 @@ export class DashboardStateManager {
    */
   unregisterDashboard(dashboardKey: string): void {
     this.registeredDashboardKeys.delete(dashboardKey);
-    
+
     // If this was the active dashboard, deactivate
     if (this.currentDashboardKey === dashboardKey) {
       this.setDashboardInactive();
@@ -108,9 +108,9 @@ export class DashboardStateManager {
     if (!match) {
       return null;
     }
-    
+
     const key = match[1];
-    
+
     // Exclude core HA pages that are not dashboards
     const excludedKeys = [
       'config',
@@ -127,13 +127,13 @@ export class DashboardStateManager {
       'todo',
       'calendar',
       'auth',
-      '_my_redirect'
+      '_my_redirect',
     ];
-    
+
     if (excludedKeys.includes(key)) {
       return null;
     }
-    
+
     return key;
   }
 
@@ -142,16 +142,16 @@ export class DashboardStateManager {
    */
   private isCurrentUrlInAppleHomeDashboard(): { isInDashboard: boolean; dashboardKey: string | null } {
     const currentKey = this.extractDashboardKey(window.location.pathname);
-    
+
     if (!currentKey) {
       return { isInDashboard: false, dashboardKey: null };
     }
-    
+
     // Check if this key is registered as an Apple Home Dashboard
     if (this.registeredDashboardKeys.has(currentKey)) {
       return { isInDashboard: true, dashboardKey: currentKey };
     }
-    
+
     return { isInDashboard: false, dashboardKey: null };
   }
 
@@ -161,10 +161,10 @@ export class DashboardStateManager {
   setDashboardActive(dashboardKey: string): void {
     const wasActive = this.isActive;
     const previousKey = this.currentDashboardKey;
-    
+
     this.isActive = true;
     this.currentDashboardKey = dashboardKey;
-    
+
     // Notify if state changed or if switching between different Apple Home dashboards
     if (!wasActive || previousKey !== dashboardKey) {
       this.notifyListeners(true, dashboardKey);
@@ -176,10 +176,10 @@ export class DashboardStateManager {
    */
   setDashboardInactive(): void {
     const wasActive = this.isActive;
-    
+
     this.isActive = false;
     this.currentDashboardKey = null;
-    
+
     if (wasActive) {
       this.notifyListeners(false, null);
     }
@@ -207,11 +207,11 @@ export class DashboardStateManager {
     // Intercept history methods only once globally
     if (!(window as any).__appleHomeDashboardHistoryIntercepted) {
       (window as any).__appleHomeDashboardHistoryIntercepted = true;
-      
+
       const originalPushState = history.pushState;
       const originalReplaceState = history.replaceState;
 
-      history.pushState = function(...args) {
+      history.pushState = function (...args) {
         originalPushState.apply(history, args);
         // Use setTimeout to ensure URL has changed
         setTimeout(() => {
@@ -219,7 +219,7 @@ export class DashboardStateManager {
         }, 0);
       };
 
-      history.replaceState = function(...args) {
+      history.replaceState = function (...args) {
         originalReplaceState.apply(history, args);
         setTimeout(() => {
           DashboardStateManager.getInstance().handleNavigationChange();
@@ -243,15 +243,15 @@ export class DashboardStateManager {
    */
   handleNavigationChange(): void {
     const currentPath = window.location.pathname;
-    
+
     // Skip if we already processed this exact path
     if (currentPath === this.lastProcessedPath) {
       return;
     }
     this.lastProcessedPath = currentPath;
-    
+
     const { isInDashboard, dashboardKey } = this.isCurrentUrlInAppleHomeDashboard();
-    
+
     if (isInDashboard && dashboardKey) {
       // We're in an Apple Home Dashboard
       this.setDashboardActive(dashboardKey);
@@ -272,7 +272,7 @@ export class DashboardStateManager {
    * Notify all listeners of state change
    */
   private notifyListeners(isActive: boolean, dashboardKey: string | null): void {
-    this.listeners.forEach(callback => {
+    this.listeners.forEach((callback) => {
       try {
         callback(isActive, dashboardKey);
       } catch (error) {

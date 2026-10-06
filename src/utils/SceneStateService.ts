@@ -22,16 +22,23 @@ export class SceneStateService {
     if (existing) return existing;
 
     const configId = scene.attributes?.id;
-    const request: Promise<void> = !configId || typeof hass?.callApi !== 'function'
-      ? Promise.resolve().then(() => { this.targets.set(entityId, null); })
-      : hass.callApi('GET', `config/scene/config/${configId}`)
-          .then((config: any) => {
-            this.targets.set(entityId, config?.entities && Object.keys(config.entities).length ? config.entities : null);
-          })
-          .catch(() => {
-            // Not editable / not admin: no way to know the targets
+    const request: Promise<void> =
+      !configId || typeof hass?.callApi !== 'function'
+        ? Promise.resolve().then(() => {
             this.targets.set(entityId, null);
-          });
+          })
+        : hass
+            .callApi('GET', `config/scene/config/${configId}`)
+            .then((config: any) => {
+              this.targets.set(
+                entityId,
+                config?.entities && Object.keys(config.entities).length ? config.entities : null
+              );
+            })
+            .catch(() => {
+              // Not editable / not admin: no way to know the targets
+              this.targets.set(entityId, null);
+            });
     const tracked = request.finally(() => this.pending.delete(entityId));
     this.pending.set(entityId, tracked);
     return tracked;
@@ -77,9 +84,16 @@ export class SceneStateService {
       typeof a === 'number' && typeof b === 'number' && Math.abs(a - b) <= tolerance;
 
     if (target.brightness !== undefined && !near(attrs.brightness, target.brightness, 5)) return false;
-    if (target.color_temp_kelvin !== undefined && !near(attrs.color_temp_kelvin, target.color_temp_kelvin, 150)) return false;
-    if (target.temperature !== undefined && attrs.temperature !== undefined && !near(attrs.temperature, target.temperature, 0.3)) return false;
-    if (target.current_position !== undefined && !near(attrs.current_position, target.current_position, 3)) return false;
+    if (target.color_temp_kelvin !== undefined && !near(attrs.color_temp_kelvin, target.color_temp_kelvin, 150))
+      return false;
+    if (
+      target.temperature !== undefined &&
+      attrs.temperature !== undefined &&
+      !near(attrs.temperature, target.temperature, 0.3)
+    )
+      return false;
+    if (target.current_position !== undefined && !near(attrs.current_position, target.current_position, 3))
+      return false;
     const rgb: any[] | undefined = attrs.rgb_color;
     if (Array.isArray(target.rgb_color) && Array.isArray(rgb)) {
       if (target.rgb_color.some((v: number, i: number) => !near(rgb[i], v, 12))) return false;

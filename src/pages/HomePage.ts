@@ -36,7 +36,7 @@ export class HomePage {
   async setConfig(config: any) {
     this._config = config;
     this._title = config.title;
-    
+
     // Initialize customization manager from config
     if (config.customizations && this._hass) {
       this.customizationManager = CustomizationManager.getInstance(this._hass);
@@ -73,8 +73,8 @@ export class HomePage {
   ): Promise<void> {
     // Remove only dynamic content, keep permanent elements (header, chips) in place
     const permanentSelectors = ['.apple-home-header', '.permanent-chips'];
-    Array.from(container.children).forEach(child => {
-      const isPermanent = permanentSelectors.some(sel => child.matches(sel));
+    Array.from(container.children).forEach((child) => {
+      const isPermanent = permanentSelectors.some((sel) => child.matches(sel));
       if (!isPermanent) child.remove();
     });
 
@@ -93,13 +93,13 @@ export class HomePage {
         DataService.getAreas(hass),
         DataService.getEntities(hass),
         DataService.getDevices(hass),
-        this.customizationManager?.getShowSwitches().then(v => v || false) ?? Promise.resolve(false),
-        this.customizationManager?.getIncludedSwitches().then(v => v || []) ?? Promise.resolve([] as string[]),
-        this.customizationManager?.getExtraAccessories().then(v => v || []) ?? Promise.resolve([] as string[])
+        this.customizationManager?.getShowSwitches().then((v) => v || false) ?? Promise.resolve(false),
+        this.customizationManager?.getIncludedSwitches().then((v) => v || []) ?? Promise.resolve([] as string[]),
+        this.customizationManager?.getExtraAccessories().then((v) => v || []) ?? Promise.resolve([] as string[]),
       ]);
-      
+
       // Filter entities for supported domains and exclude those marked for exclusion
-      const supportedEntities = entities.filter(entity => {
+      const supportedEntities = entities.filter((entity) => {
         const domain = entity.entity_id.split('.')[0];
 
         // Check if this entity is in the extraAccessories list (manually added entities)
@@ -116,14 +116,19 @@ export class HomePage {
         if (!DashboardConfig.isSupportedDomain(domain)) {
           return false;
         }
-        
+
         // Additional filtering for switches based on showSwitches setting and includedSwitches
         if (domain === 'switch') {
           const entityState = hass.states[entity.entity_id];
-          
+
           // If showSwitches is true, use the standard device group logic
           if (showSwitches) {
-            const entityGroup = DashboardConfig.getDeviceGroup(domain, entity.entity_id, entityState?.attributes, showSwitches);
+            const entityGroup = DashboardConfig.getDeviceGroup(
+              domain,
+              entity.entity_id,
+              entityState?.attributes,
+              showSwitches
+            );
             return entityGroup !== undefined;
           } else {
             // If showSwitches is false, only show switches that are in includedSwitches or are outlets
@@ -132,15 +137,15 @@ export class HomePage {
             return isOutlet || isIncluded;
           }
         }
-        
+
         return true;
       });
 
       // Batch-fetch exclusion lists once, then filter synchronously
-      const excludedFromDashboard = new Set(await this.customizationManager?.getExcludedFromDashboard() || []);
-      const excludedFromHome = new Set(await this.customizationManager?.getExcludedFromHome() || []);
+      const excludedFromDashboard = new Set((await this.customizationManager?.getExcludedFromDashboard()) || []);
+      const excludedFromHome = new Set((await this.customizationManager?.getExcludedFromHome()) || []);
 
-      const filteredEntities = supportedEntities.filter(entity => !excludedFromDashboard.has(entity.entity_id));
+      const filteredEntities = supportedEntities.filter((entity) => !excludedFromDashboard.has(entity.entity_id));
 
       // Separate special section entities from regular area entities
       const scenesEntities: typeof filteredEntities = [];
@@ -158,29 +163,28 @@ export class HomePage {
           regularEntities.push(entity);
         }
       }
-      
+
       // Group regular entities by area
       const entitiesByArea = DataService.groupEntitiesByArea(regularEntities, areas, devices);
-      
+
       // Apply user customizations
       if (!this.customizationManager) {
         throw new Error('CustomizationManager not initialized');
       }
-      
+
       const customizations = this.customizationManager.getCustomizations();
       const customizedAreas = this.applyCustomizations(entitiesByArea, customizations);
-      
+
       // Render sections in order based on customizations
       await this.renderSectionsInOrder(
-        container, 
-        customizedAreas, 
-        scenesEntities, 
-        camerasEntities, 
+        container,
+        customizedAreas,
+        scenesEntities,
+        camerasEntities,
         filteredEntities, // Pass all filtered entities for favorites
-        hass, 
+        hass,
         onTallToggle
       );
-      
     } catch (error) {
       console.error('Error rendering home page:', error);
     }
@@ -195,14 +199,24 @@ export class HomePage {
     hass: any,
     onTallToggle?: (entityId: string, areaId: string) => void | Promise<void | boolean>
   ): Promise<void> {
-    if (!this.customizationManager || !this.scenesSection || !this.camerasSection || !this.areaSection || !this.favoritesSection || !this.weatherSection || !this.energySection || !this.batterySection || !this.calendarSection) {
+    if (
+      !this.customizationManager ||
+      !this.scenesSection ||
+      !this.camerasSection ||
+      !this.areaSection ||
+      !this.favoritesSection ||
+      !this.weatherSection ||
+      !this.energySection ||
+      !this.batterySection ||
+      !this.calendarSection
+    ) {
       throw new Error('Required sections not initialized');
     }
-    
+
     // Get section order and hidden sections
     const sectionOrder = this.customizationManager.getSavedSectionOrder();
     const hiddenSections = this.customizationManager.getHiddenSections();
-    
+
     // Create a map of all available sections (closures accept optional target container)
     const availableSections = new Map<string, (target?: HTMLElement) => Promise<void>>();
 
@@ -226,7 +240,7 @@ export class HomePage {
 
     // Add calendar section if enabled in settings and at least one calendar is selected
     const showCalendar = await this.customizationManager?.getShowCalendar();
-    if (showCalendar && await this.calendarSection.hasCalendars(hass)) {
+    if (showCalendar && (await this.calendarSection.hasCalendars(hass))) {
       availableSections.set('calendar_section', async (target?: HTMLElement) => {
         await this.calendarSection!.render(target || container, hass, 'home');
       });
@@ -234,7 +248,7 @@ export class HomePage {
 
     // Add battery section if enabled in settings and battery entities exist
     const showBattery = await this.customizationManager?.getShowBattery();
-    const excludedForBattery = new Set(await this.customizationManager?.getExcludedFromDashboard() || []);
+    const excludedForBattery = new Set((await this.customizationManager?.getExcludedFromDashboard()) || []);
     if (showBattery && BatterySection.hasBatteries(hass, excludedForBattery)) {
       availableSections.set('battery_section', async (target?: HTMLElement) => {
         await this.batterySection!.render(target || container, hass, 'home');
@@ -267,7 +281,14 @@ export class HomePage {
     for (const areaId of Object.keys(entitiesByArea)) {
       if (entitiesByArea[areaId].length > 0) {
         availableSections.set(areaId, async (target?: HTMLElement) => {
-          await this.areaSection!.renderSingleArea(target || container, areaId, entitiesByArea[areaId], hass, onTallToggle, 'home');
+          await this.areaSection!.renderSingleArea(
+            target || container,
+            areaId,
+            entitiesByArea[areaId],
+            hass,
+            onTallToggle,
+            'home'
+          );
         });
       }
     }
@@ -277,7 +298,7 @@ export class HomePage {
 
     if (sectionOrder.length > 0) {
       // Use saved order
-      orderedSectionIds = sectionOrder.filter(id => availableSections.has(id));
+      orderedSectionIds = sectionOrder.filter((id) => availableSections.has(id));
 
       // Add any new sections that weren't in the saved order
       for (const sectionId of availableSections.keys()) {
@@ -314,7 +335,7 @@ export class HomePage {
     // Render the visible sections in order. Card sections (weather, energy, calendar, batteries) that are
     // adjacent in that order sit side by side, two per row; a leftover card takes the full width.
     const cardSections = new Set(['weather_section', 'energy_section', 'calendar_section', 'battery_section']);
-    const visibleIds = orderedSectionIds.filter(id => !hiddenSections.includes(id) && availableSections.has(id));
+    const visibleIds = orderedSectionIds.filter((id) => !hiddenSections.includes(id) && availableSections.has(id));
     for (let i = 0; i < visibleIds.length; i++) {
       const sectionId = visibleIds[i];
       const nextId = visibleIds[i + 1];
@@ -333,18 +354,21 @@ export class HomePage {
     }
   }
 
-  private applyCustomizations(entitiesByArea: { [areaId: string]: Entity[] }, customizations: any): { [areaId: string]: Entity[] } {
+  private applyCustomizations(
+    entitiesByArea: { [areaId: string]: Entity[] },
+    customizations: any
+  ): { [areaId: string]: Entity[] } {
     const result: { [areaId: string]: Entity[] } = {};
-    
+
     // Apply area order customizations
     const areaIds = Object.keys(entitiesByArea);
     let sortedAreaIds = areaIds;
-    
+
     if (customizations.home?.sections?.order) {
       sortedAreaIds = [...areaIds].sort((a, b) => {
         const aOrder = customizations.home.sections.order!.indexOf(a);
         const bOrder = customizations.home.sections.order!.indexOf(b);
-        
+
         // If both areas have custom order, use it
         if (aOrder !== -1 && bOrder !== -1) {
           return aOrder - bOrder;
@@ -356,12 +380,12 @@ export class HomePage {
         return 0;
       });
     }
-    
+
     // Apply entity customizations within each area
     for (const areaId of sortedAreaIds) {
       const areaEntities = [...entitiesByArea[areaId]];
       const areaCustomizations = customizations.home?.entities_order?.[areaId];
-      
+
       if (areaCustomizations) {
         // Apply entity order - areaCustomizations is now the array directly
         const entityOrder = Array.isArray(areaCustomizations) ? areaCustomizations : [];
@@ -369,7 +393,7 @@ export class HomePage {
           areaEntities.sort((a, b) => {
             const aOrder = entityOrder.indexOf(a.entity_id);
             const bOrder = entityOrder.indexOf(b.entity_id);
-            
+
             if (aOrder !== -1 && bOrder !== -1) {
               return aOrder - bOrder;
             }
@@ -379,10 +403,10 @@ export class HomePage {
           });
         }
       }
-        
+
       // Apply tall card settings from home.tall_cards
       if (customizations.home?.tall_cards) {
-        areaEntities.forEach(entity => {
+        areaEntities.forEach((entity) => {
           if (customizations.home.tall_cards.includes(entity.entity_id)) {
             (entity as any).is_tall = true;
           } else if (customizations.home.tall_cards.includes(`!${entity.entity_id}`)) {
@@ -390,10 +414,10 @@ export class HomePage {
           }
         });
       }
-      
+
       result[areaId] = areaEntities;
     }
-    
+
     return result;
   }
 }

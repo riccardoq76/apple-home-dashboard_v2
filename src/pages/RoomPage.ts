@@ -27,7 +27,7 @@ export class RoomPage {
 
   set hass(hass: any) {
     this._hass = hass;
-    
+
     // Update status section if it exists
     if (this.statusSection) {
       this.statusSection.hass = hass;
@@ -41,7 +41,7 @@ export class RoomPage {
   async setConfig(config: any) {
     this._config = config;
     this._areaId = config.areaId;
-    
+
     // Initialize customization manager from config
     if (config.customizations && this._hass) {
       this.customizationManager = CustomizationManager.getInstance(this._hass);
@@ -57,7 +57,7 @@ export class RoomPage {
       this.camerasSection = new CamerasSection(this.customizationManager, this.cardManager);
       this.areaSection = new AreaSection(this.customizationManager, this.cardManager);
       this.statusSection = new StatusSection(this.customizationManager, this.cardManager);
-      
+
       // Note: No DragAndDropManager needed - AppleHomeView handles drag and drop like for HomePage
     }
   }
@@ -78,11 +78,11 @@ export class RoomPage {
   ): Promise<void> {
     // Store container reference for use in save methods
     this._container = container;
-    
+
     // Remove only dynamic content, keep permanent elements (header, chips) in place
     const permanentSelectors = ['.apple-home-header', '.permanent-chips'];
-    Array.from(container.children).forEach(child => {
-      const isPermanent = permanentSelectors.some(sel => child.matches(sel));
+    Array.from(container.children).forEach((child) => {
+      const isPermanent = permanentSelectors.some((sel) => child.matches(sel));
       if (!isPermanent) child.remove();
     });
 
@@ -101,13 +101,13 @@ export class RoomPage {
         DataService.getAreas(hass),
         DataService.getEntities(hass),
         DataService.getDevices(hass),
-        this.customizationManager?.getShowSwitches().then(v => v || false) ?? Promise.resolve(false),
-        this.customizationManager?.getIncludedSwitches().then(v => v || []) ?? Promise.resolve([] as string[]),
-        this.customizationManager?.getExtraAccessories().then(v => v || []) ?? Promise.resolve([] as string[])
+        this.customizationManager?.getShowSwitches().then((v) => v || false) ?? Promise.resolve(false),
+        this.customizationManager?.getIncludedSwitches().then((v) => v || []) ?? Promise.resolve([] as string[]),
+        this.customizationManager?.getExtraAccessories().then((v) => v || []) ?? Promise.resolve([] as string[]),
       ]);
-      
+
       // Filter entities for supported domains and exclude those marked for exclusion
-      const supportedEntities = entities.filter(entity => {
+      const supportedEntities = entities.filter((entity) => {
         const domain = entity.entity_id.split('.')[0];
 
         // Check if this entity is in the extraAccessories list (manually added entities)
@@ -124,14 +124,19 @@ export class RoomPage {
         if (!DashboardConfig.isSupportedDomain(domain)) {
           return false;
         }
-        
+
         // Additional filtering for switches based on showSwitches setting and includedSwitches
         if (domain === 'switch') {
           const entityState = hass.states[entity.entity_id];
-          
+
           // If showSwitches is true, use the standard device group logic
           if (showSwitches) {
-            const entityGroup = DashboardConfig.getDeviceGroup(domain, entity.entity_id, entityState?.attributes, showSwitches);
+            const entityGroup = DashboardConfig.getDeviceGroup(
+              domain,
+              entity.entity_id,
+              entityState?.attributes,
+              showSwitches
+            );
             return entityGroup !== undefined;
           } else {
             // If showSwitches is false, only show switches that are in includedSwitches or are outlets
@@ -140,12 +145,12 @@ export class RoomPage {
             return isOutlet || isIncluded;
           }
         }
-        
+
         return true;
       });
 
       // Create a separate list for status section that includes sensor domains
-      const statusEntities = entities.filter(entity => {
+      const statusEntities = entities.filter((entity) => {
         // Exclude configuration and diagnostic entities from auto-discovery
         if (entity.entity_category === 'config' || entity.entity_category === 'diagnostic') {
           return false;
@@ -155,14 +160,19 @@ export class RoomPage {
         if (!DashboardConfig.isStatusDomain(domain)) {
           return false;
         }
-        
+
         // Apply same switch filtering logic for status section
         if (domain === 'switch') {
           const entityState = hass.states[entity.entity_id];
-          
+
           // If showSwitches is true, use the standard device group logic
           if (showSwitches) {
-            const entityGroup = DashboardConfig.getDeviceGroup(domain, entity.entity_id, entityState?.attributes, showSwitches);
+            const entityGroup = DashboardConfig.getDeviceGroup(
+              domain,
+              entity.entity_id,
+              entityState?.attributes,
+              showSwitches
+            );
             return entityGroup !== undefined;
           } else {
             // If showSwitches is false, only show switches that are in includedSwitches or are outlets
@@ -171,59 +181,59 @@ export class RoomPage {
             return isOutlet || isIncluded;
           }
         }
-        
+
         return true;
       });
 
       // Batch-fetch exclusion list once, then filter synchronously
-      const excludedFromDashboard = new Set(await this.customizationManager?.getExcludedFromDashboard() || []);
+      const excludedFromDashboard = new Set((await this.customizationManager?.getExcludedFromDashboard()) || []);
 
-      const filteredEntities = supportedEntities.filter(entity => !excludedFromDashboard.has(entity.entity_id));
-      const filteredStatusEntities = statusEntities.filter(entity => !excludedFromDashboard.has(entity.entity_id));
-      
+      const filteredEntities = supportedEntities.filter((entity) => !excludedFromDashboard.has(entity.entity_id));
+      const filteredStatusEntities = statusEntities.filter((entity) => !excludedFromDashboard.has(entity.entity_id));
+
       // Group regular entities by area (excluding sensors)
       const entitiesByArea = DataService.groupEntitiesByArea(filteredEntities, areas, devices);
-      
+
       // Group status entities by area (including sensors)
       const statusEntitiesByArea = DataService.groupEntitiesByArea(filteredStatusEntities, areas, devices);
-      
+
       // Get entities for this specific area
       const areaEntities = entitiesByArea[areaId] || [];
       const statusAreaEntities = statusEntitiesByArea[areaId] || [];
-      
+
       // Add status section after title but before main content
       if (this.statusSection && statusAreaEntities.length > 0) {
         await this.statusSection.render(container, statusAreaEntities, hass, areaId);
       }
-      
+
       // Separate entities by device groups for organized display
       const entitiesByGroup: { [group: string]: Entity[] } = {};
       const deviceGroups = [
         DeviceGroup.LIGHTING,
-        DeviceGroup.CLIMATE, 
+        DeviceGroup.CLIMATE,
         DeviceGroup.SECURITY,
         DeviceGroup.MEDIA,
         DeviceGroup.WATER,
-        DeviceGroup.OTHER
+        DeviceGroup.OTHER,
       ];
 
       // Initialize groups
-      deviceGroups.forEach(group => {
+      deviceGroups.forEach((group) => {
         entitiesByGroup[group] = [];
       });
 
       // Categorize entities by device group, but separate cameras from security
-      areaEntities.forEach(entity => {
+      areaEntities.forEach((entity) => {
         const domain = entity.entity_id.split('.')[0];
         const entityState = this.hass?.states[entity.entity_id];
-        
+
         let entityGroup: DeviceGroup | undefined;
-        
+
         // Special handling for switches when showSwitches is false
         if (domain === 'switch' && !showSwitches) {
           const isOutlet = DashboardConfig.isOutlet(entity.entity_id, entityState?.attributes);
           const isIncluded = includedSwitches.includes(entity.entity_id);
-          
+
           if (isOutlet || isIncluded) {
             entityGroup = DeviceGroup.OTHER; // Force included switches and outlets to OTHER group
           } else {
@@ -232,43 +242,43 @@ export class RoomPage {
         } else {
           entityGroup = DashboardConfig.getDeviceGroup(domain, entity.entity_id, entityState?.attributes, showSwitches);
         }
-        
+
         if (entityGroup && deviceGroups.includes(entityGroup)) {
           entitiesByGroup[entityGroup].push(entity);
         }
       });
 
       // Separate cameras from security group
-      const cameraEntities = entitiesByGroup[DeviceGroup.SECURITY].filter(entity => 
-        entity.entity_id.split('.')[0] === 'camera'
+      const cameraEntities = entitiesByGroup[DeviceGroup.SECURITY].filter(
+        (entity) => entity.entity_id.split('.')[0] === 'camera'
       );
-      
+
       // Remove cameras from security group
-      entitiesByGroup[DeviceGroup.SECURITY] = entitiesByGroup[DeviceGroup.SECURITY].filter(entity => 
-        entity.entity_id.split('.')[0] !== 'camera'
+      entitiesByGroup[DeviceGroup.SECURITY] = entitiesByGroup[DeviceGroup.SECURITY].filter(
+        (entity) => entity.entity_id.split('.')[0] !== 'camera'
       );
 
       // Apply user customizations
       if (!this.customizationManager) {
         throw new Error('CustomizationManager not initialized');
       }
-      
+
       const customizations = this.customizationManager.getCustomizations();
-      
+
       // Apply area-specific customizations from pages structure
       const pageCustomizations = customizations.pages?.[areaId];
       if (pageCustomizations) {
         // Apply entity order customizations for each group
-        deviceGroups.forEach(group => {
+        deviceGroups.forEach((group) => {
           const groupEntities = entitiesByGroup[group];
           const groupOrderKey = `${group.toLowerCase()}_order`;
           const groupOrder = pageCustomizations[groupOrderKey];
-          
+
           if (groupEntities.length > 0 && groupOrder && Array.isArray(groupOrder)) {
             const sortedEntities = [...groupEntities].sort((a, b) => {
               const aOrder = groupOrder.indexOf(a.entity_id);
               const bOrder = groupOrder.indexOf(b.entity_id);
-              
+
               if (aOrder !== -1 && bOrder !== -1) {
                 return aOrder - bOrder;
               }
@@ -278,10 +288,10 @@ export class RoomPage {
             });
             entitiesByGroup[group] = sortedEntities;
           }
-          
+
           // Apply tall card settings from room page tall_cards
           if (pageCustomizations.tall_cards) {
-            entitiesByGroup[group].forEach(entity => {
+            entitiesByGroup[group].forEach((entity) => {
               if (pageCustomizations.tall_cards.includes(entity.entity_id)) {
                 (entity as any).is_tall = true;
               } else if (pageCustomizations.tall_cards.includes(`!${entity.entity_id}`)) {
@@ -298,13 +308,7 @@ export class RoomPage {
       }
 
       // Then render other sections in the specified order: Lights, Climate, Security, Speakers & TVs
-      await this.renderGroupedSections(
-        container,
-        entitiesByGroup,
-        hass,
-        onTallToggle
-      );
-      
+      await this.renderGroupedSections(container, entitiesByGroup, hass, onTallToggle);
     } catch (error) {
       console.error('Error rendering room page:', error);
     }
@@ -325,21 +329,21 @@ export class RoomPage {
       DeviceGroup.LIGHTING,
       DeviceGroup.CLIMATE,
       DeviceGroup.SECURITY,
-      DeviceGroup.MEDIA,  // Speakers & TVs
-      DeviceGroup.OTHER   // Other (switches when enabled)
+      DeviceGroup.MEDIA, // Speakers & TVs
+      DeviceGroup.OTHER, // Other (switches when enabled)
     ];
 
     // Render each group as a separate section
     for (const group of groupOrder) {
       const groupEntities = entitiesByGroup[group];
-      
+
       if (!groupEntities || groupEntities.length === 0) {
         continue; // Skip empty groups
       }
 
       // Get group style for section title
       const groupStyle = DashboardConfig.getGroupStyle(group);
-      
+
       // Add section title
       const titleDiv = document.createElement('div');
       titleDiv.className = 'apple-home-section-title';
@@ -357,7 +361,7 @@ export class RoomPage {
       // Apply saved card order using domain-specific ordering and main area ID
       const savedOrder = this.customizationManager?.getSavedCardOrderWithContext(this._areaId!, this._areaId!, group);
       let orderedEntities = [...groupEntities];
-      
+
       if (savedOrder && savedOrder.length > 0 && this.customizationManager) {
         orderedEntities = this.customizationManager.applySavedCardOrder(groupEntities, savedOrder);
       }
@@ -393,8 +397,8 @@ export class RoomPage {
       hass,
       onTallToggle,
       'room',
-      false,  // Disable navigation in room pages
-      cameraSectionId  // Use room-specific section ID
+      false, // Disable navigation in room pages
+      cameraSectionId // Use room-specific section ID
     );
   }
 
@@ -403,13 +407,13 @@ export class RoomPage {
 
     const domain = entityId.split('.')[0];
     const stateObj = hass.states[entityId];
-    
+
     if (!stateObj) return null;
 
     // Get user customizations for this entity (for individual entity overrides like names)
     const customizations = this.customizationManager.getCustomizations();
     const entityCustomizations = customizations.entities?.[entityId] || null;
-    
+
     // Create base card configuration
     const cardConfig: any = {
       type: 'custom:apple-home-card',
@@ -417,7 +421,7 @@ export class RoomPage {
       name: entityCustomizations?.name || stateObj.attributes.friendly_name || entityId,
       area_id: entity.area_id,
       is_tall: this.cardManager?.shouldCardBeTall(entityId, this._areaId || 'unknown', this._areaId!) || false,
-      ...entityCustomizations
+      ...entityCustomizations,
     };
 
     return cardConfig;
@@ -434,7 +438,7 @@ export class RoomPage {
     wrapper.className = 'entity-card-wrapper';
     wrapper.dataset.entityId = cardConfig.entity;
     wrapper.dataset.areaId = this._areaId || 'unknown';
-    
+
     // Apply tall class if needed
     if (cardConfig.is_tall) {
       wrapper.classList.add('tall');
@@ -448,25 +452,26 @@ export class RoomPage {
     // Add edit mode controls
     const controls = document.createElement('div');
     controls.className = 'entity-controls';
-    
+
     // Tall toggle button
     const tallButton = document.createElement('button');
     tallButton.className = 'entity-control-btn tall-toggle';
     tallButton.innerHTML = `<ha-icon icon="mdi:${cardConfig.is_tall ? 'arrow-collapse' : 'arrow-expand'}"></ha-icon>`;
     tallButton.title = cardConfig.is_tall ? localize('edit.make_normal_size') : localize('edit.make_tall');
     tallButton.classList.toggle('active', cardConfig.is_tall);
-    
+
     tallButton.addEventListener('click', async (e) => {
       e.preventDefault();
       e.stopPropagation();
-      
+
       if (onTallToggle) {
         // Use main area ID for tall card toggle, not the entity's area_id
         const newTallState = await onTallToggle(cardConfig.entity, this._areaId || 'unknown');
-        
+
         // Get the actual state from customization manager to ensure consistency
-        const actualTallState = this.cardManager?.shouldCardBeTall(cardConfig.entity, this._areaId || 'unknown', this._areaId!) || false;
-        
+        const actualTallState =
+          this.cardManager?.shouldCardBeTall(cardConfig.entity, this._areaId || 'unknown', this._areaId!) || false;
+
         // Update visual state with the actual saved state
         this.updateTallCardVisual(wrapper, tallButton, cardConfig, actualTallState);
       }
@@ -486,26 +491,25 @@ export class RoomPage {
   ): void {
     // Update wrapper class
     wrapper.classList.toggle('tall', shouldBeTall);
-    
+
     // Update button state
     tallButton.classList.toggle('active', shouldBeTall);
     tallButton.title = shouldBeTall ? localize('edit.make_normal_size') : localize('edit.make_tall');
-    
+
     // Update icon
     const iconElement = tallButton.querySelector('ha-icon');
     if (iconElement) {
       iconElement.setAttribute('icon', shouldBeTall ? 'mdi:arrow-collapse' : 'mdi:arrow-expand');
     }
-    
+
     // Update card config
     cardConfig.is_tall = shouldBeTall;
-    
+
     // Find the card element and refresh it like in home page
     const cardElement = wrapper.querySelector('hui-card, ha-card, [is-card]') as any;
     if (cardElement) {
       // Don't trigger re-render - let the card handle its own updates
       // Removed: cardElement.hass = cardElement.hass;
-      
       // Don't refresh edit mode - it can cause rerenders
       // Removed: cardElement.refreshEditMode();
     }

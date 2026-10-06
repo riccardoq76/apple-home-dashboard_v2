@@ -105,7 +105,10 @@ export class EnergySection {
 
   private async renderHomeCard(container: HTMLElement, hass: any): Promise<void> {
     const energyData = await this.fetchEnergyData(hass);
-    if (!energyData || (energyData.currentPower === null && energyData.todayTotal === null && energyData.hourlyData.length === 0)) {
+    if (
+      !energyData ||
+      (energyData.currentPower === null && energyData.todayTotal === null && energyData.hourlyData.length === 0)
+    ) {
       return;
     }
 
@@ -249,7 +252,7 @@ export class EnergySection {
         if (period === this.selectedPeriod) return;
         this.selectedPeriod = period;
         // Update active state
-        selector.querySelectorAll('.energy-period-btn').forEach(b => b.classList.remove('active'));
+        selector.querySelectorAll('.energy-period-btn').forEach((b) => b.classList.remove('active'));
         btn.classList.add('active');
         this.handlePeriodChange();
       });
@@ -266,7 +269,7 @@ export class EnergySection {
 
     // Fade out
     dynamicArea.style.opacity = '0';
-    await new Promise(resolve => setTimeout(resolve, 200));
+    await new Promise((resolve) => setTimeout(resolve, 200));
 
     await this.updateDynamicContent(dynamicArea, this.currentHass);
 
@@ -481,7 +484,7 @@ export class EnergySection {
 
     const roundedPct = Math.round(pct);
     const circumference = 2 * Math.PI * 36;
-    const dashOffset = circumference - (circumference * roundedPct / 100);
+    const dashOffset = circumference - (circumference * roundedPct) / 100;
 
     card.innerHTML = `
       <div class="flow-card-header">
@@ -541,7 +544,7 @@ export class EnergySection {
     const barsContainer = document.createElement('div');
     barsContainer.className = 'energy-bars';
 
-    const maxValue = Math.max(...barData.map(d => d.value), 0.001);
+    const maxValue = Math.max(...barData.map((d) => d.value), 0.001);
     const currentHour = new Date().getHours();
 
     for (let i = 0; i < barData.length; i++) {
@@ -584,17 +587,22 @@ export class EnergySection {
         { pos: 6, text: '06' },
         { pos: 12, text: '12' },
         { pos: 18, text: '18' },
-        { pos: currentHour, text: localize('energy.now') }
+        { pos: currentHour, text: localize('energy.now') },
       ];
       // Deduplicate
-      const unique = labelValues.reduce((acc, l) => {
-        if (!acc.find(a => a.pos === l.pos)) acc.push(l);
-        else if (l.text === localize('energy.now')) {
-          const ex = acc.find(a => a.pos === l.pos);
-          if (ex) ex.text = l.text;
-        }
-        return acc;
-      }, [] as typeof labelValues).sort((a, b) => a.pos - b.pos);
+      const unique = labelValues
+        .reduce(
+          (acc, l) => {
+            if (!acc.find((a) => a.pos === l.pos)) acc.push(l);
+            else if (l.text === localize('energy.now')) {
+              const ex = acc.find((a) => a.pos === l.pos);
+              if (ex) ex.text = l.text;
+            }
+            return acc;
+          },
+          [] as typeof labelValues
+        )
+        .sort((a, b) => a.pos - b.pos);
 
       for (const label of unique) {
         const el = document.createElement('span');
@@ -608,9 +616,10 @@ export class EnergySection {
       // For week/month, show labels at start/middle/end
       const lang = this.currentHass?.locale?.language || this.currentHass?.language || 'en';
       const total = barData.length;
-      const indices = total <= 7
-        ? barData.map((_, i) => i) // show all for week
-        : [0, Math.floor(total / 4), Math.floor(total / 2), Math.floor(3 * total / 4), total - 1];
+      const indices =
+        total <= 7
+          ? barData.map((_, i) => i) // show all for week
+          : [0, Math.floor(total / 4), Math.floor(total / 2), Math.floor((3 * total) / 4), total - 1];
 
       for (const idx of indices) {
         const el = document.createElement('span');
@@ -630,7 +639,7 @@ export class EnergySection {
     const chart = document.createElement('div');
     chart.className = 'energy-mini-chart';
 
-    const maxVal = Math.max(...barData.map(d => d.value), 0.001);
+    const maxVal = Math.max(...barData.map((d) => d.value), 0.001);
 
     for (const d of barData) {
       const bar = document.createElement('div');
@@ -781,7 +790,7 @@ export class EnergySection {
         hasSolar: !!solarSource,
         hasBattery: !!batterySource,
         hasGas: !!gasSource,
-        gridEntityId: gridFromEntities[0] || null
+        gridEntityId: gridFromEntities[0] || null,
       };
     } catch (err) {
       console.error('EnergySection: Error fetching energy data:', err);
@@ -834,7 +843,7 @@ export class EnergySection {
       const [currentStats, prevStats, deviceData] = await Promise.all([
         this.fetchPeriodStatistics(hass, allEntities, start, end, statPeriod),
         this.fetchPeriodStatistics(hass, prevEntities, prevStart, prevEnd, statPeriod),
-        this.fetchDeviceConsumption(hass, prefs, start, end, statPeriod)
+        this.fetchDeviceConsumption(hass, prefs, start, end, statPeriod),
       ]);
 
       // Process grid consumption
@@ -949,7 +958,10 @@ export class EnergySection {
       // Gas
       let gasPeriodTotal: number | null = null;
       let gasCostTotal: number | null = null;
-      const gasUnit = EnergySection.gasDisplayUnit(gasEntity ? hass.states[gasEntity]?.attributes?.unit_of_measurement : undefined, 'm³');
+      const gasUnit = EnergySection.gasDisplayUnit(
+        gasEntity ? hass.states[gasEntity]?.attributes?.unit_of_measurement : undefined,
+        'm³'
+      );
       if (gasEntity && currentStats?.[gasEntity]) {
         gasPeriodTotal = currentStats[gasEntity].reduce((sum: number, s: any) => sum + (s.change ?? 0), 0);
       }
@@ -986,7 +998,7 @@ export class EnergySection {
         hasGridReturn: gridToEntities.length > 0,
         hasGas: !!gasSource,
         devices: deviceData,
-        costTotal
+        costTotal,
       };
     } catch (err) {
       console.error('EnergySection: Error fetching full energy data:', err);
@@ -994,10 +1006,16 @@ export class EnergySection {
     }
   }
 
-  private async fetchDeviceConsumption(hass: any, prefs: EnergyPrefs, start: Date, end: Date, period: string): Promise<DeviceConsumption[]> {
+  private async fetchDeviceConsumption(
+    hass: any,
+    prefs: EnergyPrefs,
+    start: Date,
+    end: Date,
+    period: string
+  ): Promise<DeviceConsumption[]> {
     if (!prefs.device_consumption?.length) return [];
 
-    const deviceEntityIds = prefs.device_consumption.map(d => d.stat_consumption);
+    const deviceEntityIds = prefs.device_consumption.map((d) => d.stat_consumption);
     const stats = await this.fetchPeriodStatistics(hass, deviceEntityIds, start, end, period);
     if (!stats) return [];
 
@@ -1050,7 +1068,13 @@ export class EnergySection {
     }
   }
 
-  private async fetchPeriodStatistics(hass: any, entityIds: string[], start: Date, end: Date, period: string): Promise<any> {
+  private async fetchPeriodStatistics(
+    hass: any,
+    entityIds: string[],
+    start: Date,
+    end: Date,
+    period: string
+  ): Promise<any> {
     if (!entityIds.length) return null;
 
     const cacheKey = `${period}:${start.getTime()}:${entityIds.sort().join(',')}`;
@@ -1069,7 +1093,7 @@ export class EnergySection {
         types: ['change'],
         // Statistics come back in the unit the sensor was recorded in (often Wh).
         // Ask the recorder to convert energy to kWh, like the native energy panel does.
-        units: { energy: 'kWh' }
+        units: { energy: 'kWh' },
       });
       this.periodStatsCache.set(cacheKey, { data: result, timestamp: Date.now() });
       return result;
@@ -1311,17 +1335,23 @@ export class EnergySection {
   private static powerInWatts(state: any): number {
     const value = parseFloat(state?.state);
     switch (state?.attributes?.unit_of_measurement) {
-      case 'kW': return value * 1000;
-      case 'MW': return value * 1000000;
-      case 'mW': return value / 1000;
-      default: return value;
+      case 'kW':
+        return value * 1000;
+      case 'MW':
+        return value * 1000000;
+      case 'mW':
+        return value / 1000;
+      default:
+        return value;
     }
   }
 
   /** Gas totals in an energy unit are requested as kWh (see fetchPeriodStatistics); volumes keep their unit. */
   private static gasDisplayUnit(entityUnit: string | undefined, fallback: string): string {
     if (!entityUnit) return fallback;
-    return ['Wh', 'kWh', 'MWh', 'GWh', 'TWh', 'J', 'kJ', 'MJ', 'GJ', 'cal', 'kcal', 'Mcal', 'Gcal'].includes(entityUnit) ? 'kWh' : entityUnit;
+    return ['Wh', 'kWh', 'MWh', 'GWh', 'TWh', 'J', 'kJ', 'MJ', 'GJ', 'cal', 'kcal', 'Mcal', 'Gcal'].includes(entityUnit)
+      ? 'kWh'
+      : entityUnit;
   }
 
   static getTotalPower(hass: any): number | null {

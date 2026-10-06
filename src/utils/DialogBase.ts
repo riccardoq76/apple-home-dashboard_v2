@@ -156,11 +156,7 @@ export function isDialogOpen(): boolean {
   return !!document.querySelector('.ahd-backdrop, .climate-dialog-backdrop');
 }
 
-export function openDialogShell(
-  hass: any,
-  entityId: string,
-  options: DialogShellOptions = {}
-): DialogShell | null {
+export function openDialogShell(hass: any, entityId: string, options: DialogShellOptions = {}): DialogShell | null {
   if (isDialogOpen()) return null;
   const stateObj = hass?.states?.[entityId];
   if (!stateObj) return null;
@@ -186,8 +182,7 @@ export function openDialogShell(
       <ha-icon icon="mdi:cog-outline"></ha-icon>
     </button>
   `;
-  (header.querySelector('.ahd-name') as HTMLElement).textContent =
-    stateObj.attributes?.friendly_name || entityId;
+  (header.querySelector('.ahd-name') as HTMLElement).textContent = stateObj.attributes?.friendly_name || entityId;
   const subtitleEl = header.querySelector('.ahd-subtitle') as HTMLElement;
 
   const body = document.createElement('div');
@@ -218,7 +213,7 @@ export function openDialogShell(
       backdrop.classList.remove('show');
       setTimeout(() => backdrop.remove(), 300);
       options.onClose?.();
-    }
+    },
   };
 
   header.querySelector('.ahd-close')?.addEventListener('click', () => shell.close());
@@ -251,10 +246,10 @@ export function dispatchNativeMoreInfo(entityId: string): void {
     document.querySelector('ha-app'),
     document.querySelector('home-assistant'),
     document.querySelector('hui-root'),
-    document.querySelector('ha-panel-lovelace')
+    document.querySelector('ha-panel-lovelace'),
   ].filter(Boolean) as Element[];
   if (targets.length > 0) {
-    targets.forEach(t =>
+    targets.forEach((t) =>
       t.dispatchEvent(new CustomEvent('hass-more-info', { detail: { entityId }, bubbles: true, composed: true }))
     );
   } else {
@@ -274,7 +269,10 @@ export interface HSliderOptions {
  * `onChange`, and a flag telling whether the user is currently dragging it, so a live refresh does
  * not fight the finger.
  */
-export function createHSlider(host: HTMLElement, options: HSliderOptions): {
+export function createHSlider(
+  host: HTMLElement,
+  options: HSliderOptions
+): {
   set: (fraction: number) => void;
   isDragging: () => boolean;
 } {
@@ -322,7 +320,9 @@ export function createHSlider(host: HTMLElement, options: HSliderOptions): {
     options.onChange(fractionFrom(e.clientX), true);
   };
   host.addEventListener('pointerup', finish);
-  host.addEventListener('pointercancel', () => { dragging = false; });
+  host.addEventListener('pointercancel', () => {
+    dragging = false;
+  });
 
   return { set, isDragging: () => dragging };
 }

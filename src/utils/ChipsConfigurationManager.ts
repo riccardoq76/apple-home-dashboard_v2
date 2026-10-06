@@ -14,17 +14,17 @@ export class ChipsConfigurationManager {
       climate: {
         group: DeviceGroup.CLIMATE,
         enabled: true,
-        show_when_zero: true
+        show_when_zero: true,
       },
       lights: {
         group: DeviceGroup.LIGHTING,
         enabled: true,
-        show_when_zero: false
+        show_when_zero: false,
       },
       security: {
         group: DeviceGroup.SECURITY,
         enabled: true,
-        show_when_zero: true
+        show_when_zero: true,
       },
       media: {
         group: DeviceGroup.MEDIA,
@@ -34,9 +34,9 @@ export class ChipsConfigurationManager {
       water: {
         group: DeviceGroup.WATER,
         enabled: true,
-        show_when_zero: false
-      }
-    }
+        show_when_zero: false,
+      },
+    },
   };
 
   /**
@@ -57,18 +57,18 @@ export class ChipsConfigurationManager {
     const merged: ChipsSettings = {
       enabled: userSettings.enabled !== undefined ? userSettings.enabled : this.DEFAULT_CHIPS_SETTINGS.enabled,
       chips_config: {
-        ...this.DEFAULT_CHIPS_SETTINGS.chips_config
-      }
+        ...this.DEFAULT_CHIPS_SETTINGS.chips_config,
+      },
     };
 
     // Merge individual chip configurations
     if (userSettings.chips_config) {
-      Object.keys(userSettings.chips_config).forEach(key => {
+      Object.keys(userSettings.chips_config).forEach((key) => {
         const chipKey = key as keyof ChipsConfig;
         if (userSettings.chips_config![chipKey]) {
           merged.chips_config[chipKey] = {
             ...this.DEFAULT_CHIPS_SETTINGS.chips_config[chipKey],
-            ...userSettings.chips_config![chipKey]
+            ...userSettings.chips_config![chipKey],
           };
         }
       });
@@ -96,7 +96,7 @@ export class ChipsConfigurationManager {
     // Validate each chip config
     const validChipKeys = ['climate', 'lights', 'security', 'media', 'water'];
     const chipKeys = Object.keys(settings.chips_config);
-    
+
     for (const key of chipKeys) {
       if (!validChipKeys.includes(key)) {
         return false;
@@ -147,5 +147,4 @@ export class ChipsConfigurationManager {
     // Use the CustomizationManager's method which now handles the new structure
     return customizationManager.getSavedChipsOrder();
   }
-
 }

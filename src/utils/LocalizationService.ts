@@ -68,7 +68,7 @@ let _localize: ((key: string) => string) | undefined = undefined;
 export function setupLocalize(hass?: any): void {
   // Get language from Home Assistant or browser
   let lang = DEFAULT_LANG;
-  
+
   if (hass?.locale?.language) {
     lang = hass.locale.language;
   } else if (hass?.language) {
