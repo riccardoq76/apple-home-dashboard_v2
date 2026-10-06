@@ -538,19 +538,27 @@ export class CameraDialogManager {
     shell.body.querySelector('.ahd-cam-done')!.addEventListener('click', () => nearby.classList.remove('open'));
 
     // --- Status line ---------------------------------------------------------------------------
-    /** True once a `<video>` is really playing (the stream started). */
-    const isPlaying = () => {
+    // Sampled once per tick. A video counts as playing when it is not paused and its clock advances
+    // (HLS, WebRTC and native players all do); some cameras fall back to an MJPEG stream shown as an
+    // <img> by ha-camera-stream, which also counts as live.
+    let playing = false;
+    let lastVideoTime = -1;
+    const sampleLive = () => {
       const v = findVideo();
-      return !!v && !v.paused && v.readyState >= 2;
+      if (v) {
+        const advancing = v.currentTime !== lastVideoTime;
+        lastVideoTime = v.currentTime;
+        playing = !v.paused && !v.ended && (advancing || v.readyState >= 3);
+        return;
+      }
+      playing = !!deepFind(view, 'img[src*="camera_proxy_stream"]');
     };
 
     const updateSubtitle = () => {
       const st = stateOf();
       if (isUnavailable(st)) {
         shell.setSubtitle(localize('camera_dialog.unavailable'));
-      } else if (
-        liveCard ? isPlaying() : (((st?.attributes?.supported_features as number) || 0) & FEATURE_STREAM) !== 0
-      ) {
+      } else if (playing) {
         shell.setSubtitle(localize('camera_dialog.live'));
       } else {
         shell.setSubtitle(localize('camera_dialog.snapshot'));
@@ -566,8 +574,8 @@ export class CameraDialogManager {
         liveCard.hass = currentHass;
         if ('stateObj' in liveCard) liveCard.stateObj = st;
       }
+      sampleLive();
       const video = findVideo();
-      const playing = isPlaying();
       const refreshStill = !playing && ticks % FALLBACK_REFRESH_TICKS === 0;
       // A paused video (waiting for the play button) shows the latest snapshot as its poster, so the
       // user sees the room instead of black; with no video yet the still image under the card does.
