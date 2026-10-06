@@ -17,6 +17,7 @@
 
 import { EntityData, EntityState } from '../types/types';
 import { localize } from '../utils/LocalizationService';
+import { SceneStateService } from '../utils/SceneStateService';
 
 // =====================================================================
 // ENUMS AND INTERFACES
@@ -589,7 +590,10 @@ export class DashboardConfig {
 
     // Get device group and determine if active
     const deviceGroup = this.getDeviceGroup(domain, state.entity_id, attributes);
-    const isActive = this.isEntityActive(domain, entityState, attributes);
+    // Scenes are highlighted when their devices currently match the scene (like Apple Home)
+    const isActive = domain === 'scene'
+      ? SceneStateService.isActive(hass, state)
+      : this.isEntityActive(domain, entityState, attributes);
     
     const icon = attributes.icon || this.getFallbackIcon(domain, entityState, attributes, state.entity_id);
     const stateText = this.getStateText(domain, entityState, attributes, hass);
@@ -599,6 +603,8 @@ export class DashboardConfig {
     if (domain === 'climate' || domain === 'water_heater') {
       // Climate and water_heater domains use special mode-based colors
       styling = this.applyClimateStyling(entityState, isActive);
+    } else if (domain === 'scene' && isActive) {
+      styling = { ...this.ACTIVE_BASE_STYLE, iconColor: '#ff9f0a', iconBackgroundColor: 'transparent' };
     } else if (isActive && deviceGroup) {
       // Use group-based styling for active devices
       styling = this.applyGroupStyling(deviceGroup);

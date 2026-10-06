@@ -6,6 +6,7 @@ import { RTLHelper } from '../utils/RTLHelper';
 import { ClimateDialogManager } from '../utils/ClimateDialogManager';
 import { ToggleDialogManager } from '../utils/ToggleDialogManager';
 import { MediaDialogManager } from '../utils/MediaDialogManager';
+import { SceneStateService } from '../utils/SceneStateService';
 
 export class AppleHomeCard extends HTMLElement {
   private config?: CardConfig;
@@ -146,6 +147,10 @@ export class AppleHomeCard extends HTMLElement {
       this.snapshotManager.setHass(hass);
     }
 
+    if (this.domain === 'scene' && this.entity && hass.states[this.entity]) {
+      this.syncSceneActive();
+    }
+
     if (!oldHass) {
       this.render();
     } else if (this.entity && oldHass.states[this.entity] && hass.states[this.entity]) {
@@ -175,6 +180,28 @@ export class AppleHomeCard extends HTMLElement {
     return this._hass;
   }
 
+  private sceneActive = false;
+
+  // Re-render a scene card when its "active" (devices match the scene) state changes
+  private syncSceneActive() {
+    const state = this._hass?.states[this.entity!];
+    if (!state) return;
+    const active = SceneStateService.isActive(this._hass, state);
+    if (active !== this.sceneActive) {
+      this.sceneActive = active;
+      if (this._hasRendered) this.updateCardInPlace();
+    }
+    SceneStateService.ensureLoaded(this._hass, state).then(() => {
+      if (!this.isConnected || !this._hass) return;
+      const now = SceneStateService.isActive(this._hass, this._hass.states[this.entity!] || state);
+      if (now !== this.sceneActive) {
+        this.sceneActive = now;
+        if (this._hasRendered) this.updateCardInPlace();
+        else this.render();
+      }
+    });
+  }
+
   /**
    * The single entity_id this card renders. Public accessor over the private
    * `entity` field so AppleHomeView can index cards by entity without reflection.
@@ -190,7 +217,8 @@ export class AppleHomeCard extends HTMLElement {
    * state-object changes without going stale.
    */
   get needsContinuousHass(): boolean {
-    return this.domain === 'camera';
+    // Scenes depend on the state of their member devices, not just their own state
+    return this.domain === 'camera' || this.domain === 'scene';
   }
 
   private render() {
@@ -390,6 +418,7 @@ export class AppleHomeCard extends HTMLElement {
     this.style.setProperty('--card-icon-color', entityData.iconColor);
     this.style.setProperty('--card-icon-bg', entityData.iconBackgroundColor);
     this.style.setProperty('--card-text-color', entityData.textColor);
+    this.classList.toggle('scene-active', this.domain === 'scene' && !!entityData.isActive);
     this.style.setProperty('--card-state-color',
         entityData.isActive ? 'rgba(29, 29, 31, 0.6)' : 'rgba(255, 255, 255, 0.6)');
   }
@@ -795,6 +824,12 @@ export class AppleHomeCard extends HTMLElement {
       .info-icon.scene-icon ha-icon {
         --mdc-icon-size: clamp(24px, 6vw, 32px);
         color: white !important;
+      }
+
+      /* Active scene (devices match the scene): coloured icon on the white card */
+      :host(.scene-active) .info-icon.scene-icon,
+      :host(.scene-active) .info-icon.scene-icon ha-icon {
+        color: var(--card-icon-color) !important;
       }
 
       /* Activation ring (Apple Home style) shown while a scene/script runs */
