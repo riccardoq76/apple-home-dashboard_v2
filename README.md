@@ -83,6 +83,12 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
+## 🆕 What's New in v1.11.2
+
+### Camera dialog
+- The status under the camera name stayed on "Snapshot" even when the stream was playing. It now says "Live" whenever the video is playing or the camera is streaming as a moving image (MJPEG, which Home Assistant uses when HLS and WebRTC are not available), and the mute button appears with it
+
+---
 ## 🆕 What's New in v1.11.1
 
 ### Camera dialog fixes
