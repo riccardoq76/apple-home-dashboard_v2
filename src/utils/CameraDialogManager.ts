@@ -57,15 +57,25 @@ function injectStyles(): void {
       display: flex;
       align-items: center;
       justify-content: center;
-      --ha-card-background: #000;
+      --ha-card-background: transparent;
       --ha-card-border-radius: 0;
       --ha-card-box-shadow: none;
       --ha-card-border-width: 0;
     }
 
     .ahd-cam-view > * {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
+    }
+
+    .ahd-cam-view > img {
+      z-index: 0;
+    }
+
+    .ahd-cam-view > :not(img) {
+      z-index: 1;
     }
 
     .ahd-cam-view img {
@@ -408,9 +418,11 @@ export class CameraDialogManager {
         </div>`;
     };
 
+    // A still image sits under the live card: it is what you see while the stream is starting
+    // (cameras like Eufy can take many seconds) and when it never starts.
     const showFallbackImage = () => {
       liveCard = null;
-      view.innerHTML = '<img alt="" />';
+      view.innerHTML = '<img class="ahd-cam-still" alt="" />';
       fallbackImg = view.querySelector('img');
       fallbackImg!.src = pictureUrl(currentHass, stateOf());
     };
@@ -442,10 +454,9 @@ export class CameraDialogManager {
         // The dialog may have been closed while the helpers were loading.
         if (token !== renderToken || !view.isConnected) return;
         card.hass = currentHass;
-        view.innerHTML = '';
+        showFallbackImage();
         view.appendChild(card);
         liveCard = card;
-        fallbackImg = null;
       } catch {
         if (token === renderToken) showFallbackImage();
       }
@@ -473,11 +484,19 @@ export class CameraDialogManager {
     }
 
     // --- Status line ---------------------------------------------------------------------------
+    /** True once a `<video>` is really playing (the stream started). */
+    const isPlaying = () => {
+      const v = findVideo();
+      return !!v && !v.paused && v.readyState >= 2;
+    };
+
     const updateSubtitle = () => {
       const st = stateOf();
       if (isUnavailable(st)) {
         shell.setSubtitle(localize('camera_dialog.unavailable'));
-      } else if (((st?.attributes?.supported_features as number) || 0) & FEATURE_STREAM) {
+      } else if (
+        liveCard ? isPlaying() : (((st?.attributes?.supported_features as number) || 0) & FEATURE_STREAM) !== 0
+      ) {
         shell.setSubtitle(localize('camera_dialog.live'));
       } else {
         shell.setSubtitle(localize('camera_dialog.snapshot'));
@@ -490,8 +509,11 @@ export class CameraDialogManager {
       // The camera went (un)available while the dialog is open: rebuild the view.
       if (isUnavailable(st) !== !!view.querySelector('.ahd-cam-off')) renderView();
       if (liveCard) liveCard.hass = currentHass;
-      if (fallbackImg && ticks % FALLBACK_REFRESH_TICKS === 0) {
-        fallbackImg.src = pictureUrl(currentHass, st);
+      if (fallbackImg) {
+        // Hide the still once the video plays; keep it fresh while it is what the user sees.
+        const playing = liveCard ? isPlaying() : false;
+        fallbackImg.style.display = playing ? 'none' : '';
+        if (!playing && ticks % FALLBACK_REFRESH_TICKS === 0) fallbackImg.src = pictureUrl(currentHass, st);
       }
       nearbyCards.forEach((c) => {
         c.hass = currentHass;
