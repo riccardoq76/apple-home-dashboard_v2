@@ -83,6 +83,17 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
+## 🆕 What's New in v1.12.0
+
+### Alarm dialog
+- Tapping an **alarm control panel** card now opens a dialog in the style of the Home app: a tall vertical pill with the modes the panel supports (Home, Away, Night, Vacation, Custom bypass) and **Off** last, with the current one highlighted. Tap another to switch; the chosen mode stays highlighted while the panel is arming
+- Panels that need a code get a **code field** under the pill: it is required to disarm and, unless the panel says otherwise, to arm. Without it the field shakes and nothing is sent
+- The status line shows the active mode, or the regular status (arming, pending, triggered...)
+
+### Settings gear at the bottom right
+- Like in the Home app, the gear that opens Home Assistant's own dialog is now a large button at the **bottom right** in the dialogs for lights, switches, media players, thermostats and the alarm. The camera dialog keeps its "..." menu next to mute
+
+---
 ## 🆕 What's New in v1.11.4
 
 ### Camera dialog
