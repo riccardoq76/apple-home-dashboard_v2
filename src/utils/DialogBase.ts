@@ -36,7 +36,7 @@ export interface DialogShellOptions {
   fullscreen?: boolean;
   /** Icon of the top-right button that opens the native dialog (default: cog). */
   settingsIcon?: string;
-  /** Puts the settings button in a footer at the bottom right (like Apple's alarm dialog) instead of the header. */
+  /** The settings button sits in a footer at the bottom right, like in the Home app (default). `false` keeps it in the header. */
   settingsAtBottom?: boolean;
   /** Replaces the default behaviour of the settings button (opening the native dialog). */
   onSettings?: () => void;
@@ -253,6 +253,7 @@ export function openDialogShell(hass: any, entityId: string, options: DialogShel
 
   const header = document.createElement('div');
   header.className = 'ahd-header';
+  const atBottom = options.settingsAtBottom !== false;
   const settingsButtonHtml = `
     <button class="ahd-settings ${LiquidGlassClasses.modalCancel}">
       <ha-icon icon="${options.settingsIcon || 'mdi:cog-outline'}"></ha-icon>
@@ -265,7 +266,7 @@ export function openDialogShell(hass: any, entityId: string, options: DialogShel
       <p class="ahd-name"></p>
       <p class="ahd-subtitle"></p>
     </div>
-    <div class="ahd-actions">${options.settingsAtBottom ? '' : settingsButtonHtml}</div>
+    <div class="ahd-actions">${atBottom ? '' : settingsButtonHtml}</div>
   `;
   (header.querySelector('.ahd-name') as HTMLElement).textContent = stateObj.attributes?.friendly_name || entityId;
   const subtitleEl = header.querySelector('.ahd-subtitle') as HTMLElement;
@@ -276,7 +277,7 @@ export function openDialogShell(hass: any, entityId: string, options: DialogShel
   content.appendChild(header);
   content.appendChild(body);
   let footer: HTMLElement | null = null;
-  if (options.settingsAtBottom) {
+  if (atBottom) {
     footer = document.createElement('div');
     footer.className = 'ahd-footer';
     footer.innerHTML = settingsButtonHtml;

@@ -382,6 +382,7 @@ export class CameraDialogManager {
     const nearbyCards: any[] = [];
     const shell = openDialogShell(hass, entityId, {
       fullscreen: true,
+      settingsAtBottom: false,
       settingsIcon: 'mdi:dots-horizontal',
       onSettings: () => menu.classList.toggle('open'),
       onTick: (h) => {

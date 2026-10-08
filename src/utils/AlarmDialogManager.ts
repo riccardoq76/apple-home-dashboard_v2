@@ -203,7 +203,6 @@ export class AlarmDialogManager {
     let chosen: { mode: AlarmMode; at: number } | null = null;
     let refresh: () => void = () => {};
     const shell = openDialogShell(hass, entityId, {
-      settingsAtBottom: true,
       onTick: (h) => {
         currentHass = getLiveHass(h);
         refresh();

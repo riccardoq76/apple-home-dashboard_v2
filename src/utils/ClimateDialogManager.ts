@@ -107,6 +107,25 @@ function injectDialogStyles(): void {
       transform: translateY(0);
     }
 
+    .climate-header-spacer {
+      min-width: 40px;
+    }
+
+    .climate-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+    .climate-footer .climate-settings {
+      width: 56px !important;
+      height: 56px !important;
+    }
+
+    .climate-footer .climate-settings ha-icon {
+      --mdc-icon-size: 26px;
+    }
+
     .climate-dialog-header {
       display: flex;
       align-items: flex-start;
@@ -324,6 +343,13 @@ export class ClimateDialogManager {
         ${roomName ? `<p class="climate-dialog-room">${roomName}</p>` : ''}
         <p class="climate-dialog-name">${entityName}</p>
       </div>
+      <span class="climate-header-spacer"></span>
+    `;
+
+    // Settings gear: bottom right, like in the Home app
+    const footer = document.createElement('div');
+    footer.className = 'climate-footer';
+    footer.innerHTML = `
       <button class="climate-settings ${LiquidGlassClasses.modalCancel}">
         <ha-icon icon="mdi:cog-outline"></ha-icon>
       </button>
@@ -351,6 +377,7 @@ export class ClimateDialogManager {
     content.appendChild(currentLine);
     content.appendChild(ringWrap);
     content.appendChild(modePill);
+    content.appendChild(footer);
 
     backdrop.appendChild(content);
     document.body.appendChild(backdrop);
@@ -376,7 +403,7 @@ export class ClimateDialogManager {
     });
 
     // Settings -> native more-info
-    const settingsBtn = header.querySelector('.climate-settings');
+    const settingsBtn = footer.querySelector('.climate-settings');
     settingsBtn?.addEventListener('click', () => {
       const entityId = s.entityId;
       this.close();
