@@ -7,6 +7,7 @@ import { ClimateDialogManager } from '../utils/ClimateDialogManager';
 import { ToggleDialogManager } from '../utils/ToggleDialogManager';
 import { MediaDialogManager } from '../utils/MediaDialogManager';
 import { CameraDialogManager } from '../utils/CameraDialogManager';
+import { AlarmDialogManager } from '../utils/AlarmDialogManager';
 import { SceneStateService } from '../utils/SceneStateService';
 
 export class AppleHomeCard extends HTMLElement {
@@ -1221,6 +1222,10 @@ export class AppleHomeCard extends HTMLElement {
       CameraDialogManager.open(this._hass, this.entity, this);
       return;
     }
+    if (this.domain === 'alarm_control_panel' && AlarmDialogManager.isSupported(this.entity)) {
+      AlarmDialogManager.open(this._hass, this.entity);
+      return;
+    }
 
     // Open more-info dialog for card area clicks
     this.dispatchEvent(
@@ -1266,6 +1271,9 @@ export class AppleHomeCard extends HTMLElement {
         break;
       case 'camera':
         CameraDialogManager.open(this._hass, entityId, this);
+        break;
+      case 'alarm_control_panel':
+        AlarmDialogManager.open(this._hass, entityId);
         break;
       case 'climate':
         // Climate gets the custom thermostat dialog, same as tapping the card body.

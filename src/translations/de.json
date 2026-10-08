@@ -376,5 +376,14 @@
     "nearby_accessories": "Zubehör in der Nähe",
     "no_nearby": "Kein Zubehör in diesem Raum.",
     "no_area": "Weise dieser Kamera in Home Assistant einen Raum zu, um hier das Zubehör in der Nähe zu sehen."
+  },
+  "alarm_dialog": {
+    "home": "Zu Hause",
+    "away": "Abwesend",
+    "night": "Nacht",
+    "vacation": "Urlaub",
+    "bypass": "Benutzerdefiniert",
+    "off": "Aus",
+    "code": "Code"
   }
 }

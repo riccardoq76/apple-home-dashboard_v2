@@ -376,5 +376,14 @@
     "nearby_accessories": "Accessoires à proximité",
     "no_nearby": "Aucun accessoire dans cette pièce.",
     "no_area": "Associez une pièce à cette caméra dans Home Assistant pour voir ici les accessoires à proximité."
+  },
+  "alarm_dialog": {
+    "home": "À la maison",
+    "away": "Absent",
+    "night": "Nuit",
+    "vacation": "Vacances",
+    "bypass": "Personnalisé",
+    "off": "Désactivé",
+    "code": "Code"
   }
 }

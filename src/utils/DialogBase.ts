@@ -36,6 +36,8 @@ export interface DialogShellOptions {
   fullscreen?: boolean;
   /** Icon of the top-right button that opens the native dialog (default: cog). */
   settingsIcon?: string;
+  /** Puts the settings button in a footer at the bottom right (like Apple's alarm dialog) instead of the header. */
+  settingsAtBottom?: boolean;
   /** Replaces the default behaviour of the settings button (opening the native dialog). */
   onSettings?: () => void;
 }
@@ -152,6 +154,25 @@ function injectStyles(): void {
       margin-bottom: 20px;
     }
 
+    .ahd-footer {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 20px;
+    }
+
+    .ahd-footer .ahd-settings {
+      width: 56px !important;
+      height: 56px !important;
+    }
+
+    .ahd-footer .ahd-settings ha-icon {
+      --mdc-icon-size: 26px;
+    }
+
+    .ahd-actions:empty {
+      min-width: 40px;
+    }
+
     .ahd-actions {
       display: flex;
       gap: 8px;
@@ -232,6 +253,10 @@ export function openDialogShell(hass: any, entityId: string, options: DialogShel
 
   const header = document.createElement('div');
   header.className = 'ahd-header';
+  const settingsButtonHtml = `
+    <button class="ahd-settings ${LiquidGlassClasses.modalCancel}">
+      <ha-icon icon="${options.settingsIcon || 'mdi:cog-outline'}"></ha-icon>
+    </button>`;
   header.innerHTML = `
     <button class="ahd-close ${LiquidGlassClasses.modalCancel}">
       <ha-icon icon="mdi:close"></ha-icon>
@@ -240,11 +265,7 @@ export function openDialogShell(hass: any, entityId: string, options: DialogShel
       <p class="ahd-name"></p>
       <p class="ahd-subtitle"></p>
     </div>
-    <div class="ahd-actions">
-      <button class="ahd-settings ${LiquidGlassClasses.modalCancel}">
-        <ha-icon icon="${options.settingsIcon || 'mdi:cog-outline'}"></ha-icon>
-      </button>
-    </div>
+    <div class="ahd-actions">${options.settingsAtBottom ? '' : settingsButtonHtml}</div>
   `;
   (header.querySelector('.ahd-name') as HTMLElement).textContent = stateObj.attributes?.friendly_name || entityId;
   const subtitleEl = header.querySelector('.ahd-subtitle') as HTMLElement;
@@ -254,6 +275,13 @@ export function openDialogShell(hass: any, entityId: string, options: DialogShel
 
   content.appendChild(header);
   content.appendChild(body);
+  let footer: HTMLElement | null = null;
+  if (options.settingsAtBottom) {
+    footer = document.createElement('div');
+    footer.className = 'ahd-footer';
+    footer.innerHTML = settingsButtonHtml;
+    content.appendChild(footer);
+  }
   backdrop.appendChild(content);
   document.body.appendChild(backdrop);
 
@@ -274,7 +302,8 @@ export function openDialogShell(hass: any, entityId: string, options: DialogShel
       btn.className = `ahd-action ${LiquidGlassClasses.modalCancel}`;
       btn.innerHTML = `<ha-icon icon="${icon}"></ha-icon>`;
       btn.addEventListener('click', onClick);
-      actions.insertBefore(btn, settingsBtn);
+      if (footer) actions.appendChild(btn);
+      else actions.insertBefore(btn, settingsBtn);
       return btn;
     },
     settingsButton: undefined as unknown as HTMLElement,
@@ -295,7 +324,7 @@ export function openDialogShell(hass: any, entityId: string, options: DialogShel
     if (e.target === backdrop) shell.close();
   });
   const actions = header.querySelector('.ahd-actions') as HTMLElement;
-  const settingsBtn = header.querySelector('.ahd-settings') as HTMLElement;
+  const settingsBtn = (footer || header).querySelector('.ahd-settings') as HTMLElement;
   shell.settingsButton = settingsBtn;
   settingsBtn.addEventListener('click', () => {
     if (options.onSettings) {

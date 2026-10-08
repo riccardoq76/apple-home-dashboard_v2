@@ -376,5 +376,14 @@
     "nearby_accessories": "附近的配件",
     "no_nearby": "此房间没有配件。",
     "no_area": "请在 Home Assistant 中为此摄像头指定房间，即可在此查看附近的配件。"
+  },
+  "alarm_dialog": {
+    "home": "在家",
+    "away": "离家",
+    "night": "夜间",
+    "vacation": "度假",
+    "bypass": "自定义",
+    "off": "关闭",
+    "code": "密码"
   }
 }

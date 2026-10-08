@@ -376,5 +376,14 @@
     "nearby_accessories": "Acessórios próximos",
     "no_nearby": "Sem acessórios nesta divisão.",
     "no_area": "Atribua uma divisão a esta câmara no Home Assistant para ver aqui os acessórios próximos."
+  },
+  "alarm_dialog": {
+    "home": "Em casa",
+    "away": "Fora",
+    "night": "Noite",
+    "vacation": "Férias",
+    "bypass": "Personalizado",
+    "off": "Desligado",
+    "code": "Código"
   }
 }

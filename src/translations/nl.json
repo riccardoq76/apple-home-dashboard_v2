@@ -376,5 +376,14 @@
     "nearby_accessories": "Accessoires in de buurt",
     "no_nearby": "Geen accessoires in deze kamer.",
     "no_area": "Wijs deze camera in Home Assistant een kamer toe om hier de accessoires in de buurt te zien."
+  },
+  "alarm_dialog": {
+    "home": "Thuis",
+    "away": "Weg",
+    "night": "Nacht",
+    "vacation": "Vakantie",
+    "bypass": "Aangepast",
+    "off": "Uit",
+    "code": "Code"
   }
 }

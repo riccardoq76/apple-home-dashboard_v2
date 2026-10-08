@@ -373,5 +373,14 @@
     "nearby_accessories": "Nearby accessories",
     "no_nearby": "No accessories in this room.",
     "no_area": "Assign a room to this camera in Home Assistant to see the nearby accessories here."
+  },
+  "alarm_dialog": {
+    "home": "Home",
+    "away": "Away",
+    "night": "Night",
+    "vacation": "Vacation",
+    "bypass": "Custom bypass",
+    "off": "Off",
+    "code": "Code"
   }
 }
