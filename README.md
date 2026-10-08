@@ -83,6 +83,16 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
+## 🆕 What's New in v1.13.0
+
+### Lock dialog
+- Tapping a **lock** card now opens a dialog in the style of the Home app: a tall vertical toggle where the knob rests at the bottom with a green closed padlock when the lock is locked, and slides to the top with an orange open padlock when it is unlocked. Tap it to lock or unlock. While the lock is moving the knob already shows where it is going and the status says "Locking…" / "Unlocking…"; a jammed lock shows a red padlock
+- Locks that need a code get a code field under the toggle. The icon on the card keeps its quick lock / unlock action, and the gear still opens Home Assistant's own dialog
+
+### Translucent dialogs
+- The dialogs for lights, switches, media players, thermostats, alarms and locks are now translucent, so the blurred dashboard and wallpaper behind them tint the dialog, like in the Home app. The camera dialog keeps its dark background
+
+---
 ## 🆕 What's New in v1.12.0
 
 ### Alarm dialog
