@@ -385,5 +385,10 @@
     "bypass": "מותאם אישית",
     "off": "כבוי",
     "code": "קוד"
+  },
+  "lock_dialog": {
+    "locking": "נועל…",
+    "unlocking": "מבטל נעילה…",
+    "opening": "פותח…"
   }
 }

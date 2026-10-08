@@ -385,5 +385,10 @@
     "bypass": "自定义",
     "off": "关闭",
     "code": "密码"
+  },
+  "lock_dialog": {
+    "locking": "正在上锁…",
+    "unlocking": "正在解锁…",
+    "opening": "正在打开…"
   }
 }

@@ -385,5 +385,10 @@
     "bypass": "Personalizado",
     "off": "Desactivado",
     "code": "Código"
+  },
+  "lock_dialog": {
+    "locking": "Bloqueando…",
+    "unlocking": "Desbloqueando…",
+    "opening": "Abriendo…"
   }
 }

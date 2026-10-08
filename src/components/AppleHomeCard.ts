@@ -8,6 +8,7 @@ import { ToggleDialogManager } from '../utils/ToggleDialogManager';
 import { MediaDialogManager } from '../utils/MediaDialogManager';
 import { CameraDialogManager } from '../utils/CameraDialogManager';
 import { AlarmDialogManager } from '../utils/AlarmDialogManager';
+import { LockDialogManager } from '../utils/LockDialogManager';
 import { SceneStateService } from '../utils/SceneStateService';
 
 export class AppleHomeCard extends HTMLElement {
@@ -1224,6 +1225,11 @@ export class AppleHomeCard extends HTMLElement {
     }
     if (this.domain === 'alarm_control_panel' && AlarmDialogManager.isSupported(this.entity)) {
       AlarmDialogManager.open(this._hass, this.entity);
+      return;
+    }
+    // Locks open the dialog from the card body; the icon keeps its quick lock / unlock action.
+    if (this.domain === 'lock' && LockDialogManager.isSupported(this.entity)) {
+      LockDialogManager.open(this._hass, this.entity);
       return;
     }
 

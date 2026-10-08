@@ -382,5 +382,10 @@
     "bypass": "Custom bypass",
     "off": "Off",
     "code": "Code"
+  },
+  "lock_dialog": {
+    "locking": "Locking…",
+    "unlocking": "Unlocking…",
+    "opening": "Opening…"
   }
 }

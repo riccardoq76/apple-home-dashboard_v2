@@ -385,5 +385,10 @@
     "bypass": "Benutzerdefiniert",
     "off": "Aus",
     "code": "Code"
+  },
+  "lock_dialog": {
+    "locking": "Wird verriegelt …",
+    "unlocking": "Wird entriegelt …",
+    "opening": "Wird geöffnet …"
   }
 }

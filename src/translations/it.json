@@ -385,5 +385,10 @@
     "bypass": "Esclusione personalizzata",
     "off": "Non attivo",
     "code": "Codice"
+  },
+  "lock_dialog": {
+    "locking": "Chiusura in corso…",
+    "unlocking": "Sblocco in corso…",
+    "opening": "Apertura in corso…"
   }
 }

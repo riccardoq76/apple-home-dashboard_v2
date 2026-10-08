@@ -385,5 +385,10 @@
     "bypass": "Aangepast",
     "off": "Uit",
     "code": "Code"
+  },
+  "lock_dialog": {
+    "locking": "Vergrendelen…",
+    "unlocking": "Ontgrendelen…",
+    "opening": "Openen…"
   }
 }
