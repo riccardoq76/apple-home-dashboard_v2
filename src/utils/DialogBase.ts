@@ -58,9 +58,9 @@ function injectStyles(): void {
     .ahd-backdrop {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(20px) saturate(1.5);
-      -webkit-backdrop-filter: blur(20px) saturate(1.5);
+      background: rgba(0, 0, 0, 0.25);
+      backdrop-filter: blur(24px) saturate(1.8);
+      -webkit-backdrop-filter: blur(24px) saturate(1.8);
       z-index: 1000;
       display: flex;
       align-items: flex-end;
@@ -84,7 +84,7 @@ function injectStyles(): void {
       max-width: 420px;
       max-height: 92vh;
       overflow-y: auto;
-      background: rgba(40, 40, 46, 0.85);
+      background: rgba(44, 44, 50, 0.5);
       border-radius: 28px 28px 0 0;
       padding: 20px 24px 32px;
       box-sizing: border-box;
