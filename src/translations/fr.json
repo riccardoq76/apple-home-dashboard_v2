@@ -228,7 +228,11 @@
   },
   "media": {
     "playing": "En Lecture",
-    "multiple_playing": "En Lecture"
+    "multiple_playing": "En Lecture",
+    "paused": "En Pause",
+    "on": "Allumé",
+    "multiple_on": "Allumés",
+    "off": "Éteint"
   },
   "camera": {
     "no_snapshot_available": "Aucun instantané disponible"

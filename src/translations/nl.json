@@ -228,7 +228,11 @@
   },
   "media": {
     "playing": "Aan Het Spelen",
-    "multiple_playing": "Aan Het Spelen"
+    "multiple_playing": "Aan Het Spelen",
+    "paused": "Gepauzeerd",
+    "on": "Aan",
+    "multiple_on": "Aan",
+    "off": "Uit"
   },
   "camera": {
     "no_snapshot_available": "Geen momentopname beschikbaar"

@@ -228,7 +228,11 @@
   },
   "media": {
     "playing": "Играет",
-    "multiple_playing": "Играет"
+    "multiple_playing": "Играет",
+    "paused": "На паузе",
+    "on": "Включено",
+    "multiple_on": "Включены",
+    "off": "Выключено"
   },
   "camera": {
     "no_snapshot_available": "Снимок недоступен"

@@ -1052,12 +1052,12 @@ export class AppleChips {
         break;
 
       case DeviceGroup.MEDIA:
-        const playingMedia = entities.filter((entity) => entity.state === 'playing');
-        const tvEntities = entities.filter(
-          (entity) =>
-            entity.attributes.device_class === 'tv' || entity.entity_id.includes('tv') || entity.attributes.source_list
+        // Groups of players are skipped: their members are already counted
+        const players = entities.filter((entity) => !DashboardConfig.isMediaPlayerGroup(entity.attributes));
+        const playingMedia = players.filter((entity) => entity.state === 'playing');
+        const onTVs = players.filter(
+          (entity) => DashboardConfig.isTelevision(entity.entity_id, entity.attributes) && entity.state === 'on'
         );
-        const onTVs = tvEntities.filter((entity) => entity.state === 'on');
 
         if (playingMedia.length > 0) {
           statusText = `${playingMedia.length} ${localize('status.playing')}`;

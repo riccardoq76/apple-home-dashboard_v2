@@ -228,7 +228,11 @@
   },
   "media": {
     "playing": "播放中",
-    "multiple_playing": "播放中"
+    "multiple_playing": "播放中",
+    "paused": "已暂停",
+    "on": "开启",
+    "multiple_on": "开启",
+    "off": "关闭"
   },
   "camera": {
     "no_snapshot_available": "无快照可用"

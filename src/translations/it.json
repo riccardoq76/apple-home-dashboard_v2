@@ -216,7 +216,11 @@
   },
   "media": {
     "playing": "In Riproduzione",
-    "multiple_playing": "In Riproduzione"
+    "multiple_playing": "In Riproduzione",
+    "paused": "In Pausa",
+    "on": "Acceso",
+    "multiple_on": "Accesi",
+    "off": "Spento"
   },
   "camera": {
     "no_snapshot_available": "Nessuna istantanea disponibile"

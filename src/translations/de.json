@@ -228,7 +228,11 @@
   },
   "media": {
     "playing": "Wiedergabe",
-    "multiple_playing": "Wiedergabe"
+    "multiple_playing": "Wiedergabe",
+    "paused": "Pausiert",
+    "on": "An",
+    "multiple_on": "An",
+    "off": "Aus"
   },
   "camera": {
     "no_snapshot_available": "Keine Momentaufnahme verfügbar"

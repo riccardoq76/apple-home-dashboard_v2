@@ -290,14 +290,13 @@ export class StatusSection {
       statusMap.get('contact')?.entityIds.push(entityId);
     }
 
-    // TVs (media players with TV device class)
-    else if (domain === 'media_player' && (deviceClass === 'tv' || entityId.includes('tv'))) {
-      statusMap.get('tvs')?.entityIds.push(entityId);
-    }
-
-    // Speakers (other media players)
-    else if (domain === 'media_player' && deviceClass !== 'tv' && !entityId.includes('tv')) {
-      statusMap.get('speakers')?.entityIds.push(entityId);
+    // Media players: groups are skipped, their members are already counted
+    else if (domain === 'media_player' && !DashboardConfig.isMediaPlayerGroup(state.attributes)) {
+      if (DashboardConfig.isTelevision(entityId, state.attributes)) {
+        statusMap.get('tvs')?.entityIds.push(entityId);
+      } else {
+        statusMap.get('speakers')?.entityIds.push(entityId);
+      }
     }
   }
 
@@ -720,28 +719,26 @@ export class StatusSection {
     }
   }
 
+  // Same rule as the cards: only playing, paused and on count, idle and standby players read as off
   private calculateMediaStatus(entityIds: string[], hass: any): string {
-    const playingCount = entityIds.filter((id) => {
-      const state = hass.states[id];
-      return state && state.state === 'playing';
-    }).length;
+    const countIn = (states: string[]) => entityIds.filter((id) => states.includes(hass.states[id]?.state)).length;
 
+    const playingCount = countIn(['playing', 'buffering']);
     if (playingCount > 0) {
       return playingCount === 1 ? localize('media.playing') : `${playingCount} ${localize('media.multiple_playing')}`;
     }
 
-    const onCount = entityIds.filter((id) => {
-      const state = hass.states[id];
-      return state && state.state !== 'off' && state.state !== 'unavailable' && state.state !== 'standby';
-    }).length;
-
-    if (onCount === 0) {
-      return localize('lights.all_off');
-    } else if (onCount === entityIds.length) {
-      return onCount === 1 ? localize('lights.on') : localize('lights.all_on');
-    } else {
-      return `${onCount} ${localize('lights.on')}`;
+    const pausedCount = countIn(['paused']);
+    if (pausedCount > 0) {
+      return pausedCount === 1 ? localize('media.paused') : `${pausedCount} ${localize('media.paused')}`;
     }
+
+    const onCount = countIn(['on']);
+    if (onCount > 0) {
+      return onCount === 1 ? localize('media.on') : `${onCount} ${localize('media.multiple_on')}`;
+    }
+
+    return localize('media.off');
   }
 
   private handleStatusChipClick(statusData: StatusData, areaId?: string): void {

@@ -213,7 +213,11 @@
   },
   "media": {
     "playing": "Playing",
-    "multiple_playing": "Playing"
+    "multiple_playing": "Playing",
+    "paused": "Paused",
+    "on": "On",
+    "multiple_on": "On",
+    "off": "Off"
   },
   "camera": {
     "no_snapshot_available": "No snapshot available"

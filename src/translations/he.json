@@ -228,7 +228,11 @@
   },
   "media": {
     "playing": "מנגן",
-    "multiple_playing": "מנגן"
+    "multiple_playing": "מנגן",
+    "paused": "מושהה",
+    "on": "פועל",
+    "multiple_on": "פועלים",
+    "off": "כבוי"
   },
   "camera": {
     "no_snapshot_available": "תמונה לא זמינה"

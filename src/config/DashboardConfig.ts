@@ -251,6 +251,28 @@ export class DashboardConfig {
   }
 
   /**
+   * Check if a media player is a TV (device class, or "tv" in the entity id when the class is not set)
+   * @param entityId The entity ID to check
+   * @param attributes The entity attributes
+   * @returns true if it's a TV
+   */
+  static isTelevision(entityId: string, attributes: any): boolean {
+    const deviceClass = attributes?.device_class?.toLowerCase();
+    if (deviceClass) return deviceClass === 'tv';
+    return entityId.includes('tv');
+  }
+
+  /**
+   * Check if a media player is a group of other players (e.g. a media_player group): counting it
+   * next to its members would count the same speakers twice
+   * @param attributes The entity attributes
+   * @returns true if it's a group of players
+   */
+  static isMediaPlayerGroup(attributes: any): boolean {
+    return Array.isArray(attributes?.entity_id) && attributes.entity_id.length > 0;
+  }
+
+  /**
    * Get the device group for an entity with special handling
    * @param domain The entity domain
    * @param entityId The entity ID (optional)
