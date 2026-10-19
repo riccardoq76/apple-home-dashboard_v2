@@ -83,6 +83,15 @@ No manual YAML card definitions required.
 **Switch handling:** Regular switches are excluded by default (to avoid clutter from technical / helper switches). Outlets (device_class=outlet) are always shown. You can enable all switches or selectively add specific ones via customization.
 
 ---
+## 🆕 What's New in v1.13.1
+
+### Speakers & TVs counts
+- The **TVs** and **Speakers** chips on the Speakers & TVs page now count players the same way the cards show them: playing first, then paused, then on. An idle player (a HomePod or an Apple TV doing nothing) counts as off, so an idle Apple TV no longer shows "1 TV on" while its card says Off
+- A group of media players (for example a "All media" group) is no longer counted as one more speaker next to its members
+- The chip in the header and the chips on the page use the same rule to tell TVs apart: a soundbar with a list of inputs is a speaker, not a TV
+- Fixed wording such as "4 On" in the plural and "All Off" for speakers
+
+---
 ## 🆕 What's New in v1.13.0
 
 ### Lock dialog
